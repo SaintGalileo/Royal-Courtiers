@@ -269,12 +269,9 @@ export default function AdminSacredRecordsPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
                   >
-                    <option value="Daily Wisdom">Daily Wisdom</option>
-                    <option value="Prayer">Prayer</option>
-                    <option value="Scripture">Scripture</option>
-                    <option value="Meditation">Meditation</option>
-                    <option value="Exhortation">Exhortation</option>
-                    <option value="Testimony">Testimony</option>
+                    <option value="foundation">The Foundation</option>
+                    <option value="family love built">The Family Love Built</option>
+                    <option value="administration & accomplishments">Administration & Accomplishments</option>
                   </select>
                 </div>
               </div>
