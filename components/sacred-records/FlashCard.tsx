@@ -5,16 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2, ArrowRight } from "lucide-react";
 
 interface FlashCardProps {
-  question: string;
-  answer: string;
+  title: string;
+  category: string;
+  content: string;
   onComplete: () => void;
   onClose: () => void;
   isCompleted: boolean;
 }
 
 export default function FlashCard({
-  question,
-  answer,
+  title,
+  category,
+  content,
   onComplete,
   onClose,
   isCompleted,
@@ -51,14 +53,14 @@ export default function FlashCard({
               className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl border-4 border-(--primary-gold)/30 bg-white p-8 text-center shadow-2xl backface-hidden dark:bg-zinc-900"
               onClick={() => setIsFlipped(true)}
             >
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-(--primary-gold)/10 text-(--primary-gold)">
-                <span className="text-xl font-black">?</span>
+              <div className="mb-4 inline-flex rounded-full bg-(--primary-gold)/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-(--primary-gold)">
+                {category}
               </div>
-              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-4">Question</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-4">Sacred Record</h3>
               <p className="text-xl font-bold leading-relaxed text-zinc-900 dark:text-zinc-100">
-                {question}
+                {title}
               </p>
-              <p className="mt-12 text-xs font-semibold text-zinc-400">Click card to reveal answer</p>
+              <p className="mt-12 text-xs font-semibold text-zinc-400">Click card to read content</p>
             </div>
 
             {/* Back Side */}
@@ -68,10 +70,10 @@ export default function FlashCard({
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10 text-green-500">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
-              <h3 className="text-sm font-bold uppercase tracking-widest text-green-600 mb-4">Revelation</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-green-600 mb-4">Daily Insight</h3>
               <div className="max-h-[220px] overflow-y-auto scrollbar-hide">
-                <p className="text-lg font-medium leading-relaxed text-zinc-800 dark:text-zinc-200">
-                  {answer}
+                <p className="text-base font-medium leading-relaxed text-zinc-800 dark:text-zinc-200 text-left">
+                  {content}
                 </p>
               </div>
 

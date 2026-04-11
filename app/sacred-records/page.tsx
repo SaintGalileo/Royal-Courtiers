@@ -139,8 +139,9 @@ export default function SacredRecordsPage() {
       {/* FlashCard Overlay */}
       {selectedRecord && (
         <FlashCard 
-          question={selectedRecord.question}
-          answer={selectedRecord.answer}
+          title={selectedRecord.title}
+          category={selectedRecord.category}
+          content={selectedRecord.content}
           isCompleted={progress.some(p => p.day_number === selectedRecord.day_number && p.completed)}
           onComplete={handleComplete}
           onClose={() => setSelectedRecord(null)}

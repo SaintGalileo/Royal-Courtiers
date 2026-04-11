@@ -1,19 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  getSacredRecords, 
-  createSacredRecord, 
-  updateSacredRecord, 
-  deleteSacredRecord, 
-  SacredRecord 
+import {
+  getSacredRecords,
+  createSacredRecord,
+  updateSacredRecord,
+  deleteSacredRecord,
+  SacredRecord
 } from "@/services/sacred-records";
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Loader2, 
-  Search, 
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Loader2,
+  Search,
   X,
   AlertCircle
 } from "lucide-react";
@@ -23,17 +23,18 @@ export default function AdminSacredRecordsPage() {
   const [records, setRecords] = useState<SacredRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
-  
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<SacredRecord | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Form State
   const [formData, setFormData] = useState({
     day_number: 1,
-    question: "",
-    answer: ""
+    title: "",
+    category: "Daily Wisdom",
+    content: ""
   });
 
   useEffect(() => {
@@ -58,15 +59,17 @@ export default function AdminSacredRecordsPage() {
       setEditingRecord(record);
       setFormData({
         day_number: record.day_number,
-        question: record.question,
-        answer: record.answer
+        title: record.title,
+        category: record.category,
+        content: record.content
       });
     } else {
       setEditingRecord(null);
       setFormData({
         day_number: records.length + 1,
-        question: "",
-        answer: ""
+        title: "",
+        category: "Daily Wisdom",
+        content: ""
       });
     }
     setIsModalOpen(true);
@@ -75,7 +78,7 @@ export default function AdminSacredRecordsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingRecord(null);
-    setFormData({ day_number: 1, question: "", answer: "" });
+    setFormData({ day_number: 1, title: "", category: "Daily Wisdom", content: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +104,7 @@ export default function AdminSacredRecordsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this record? This action cannot be undone.")) return;
-    
+
     try {
       await deleteSacredRecord(id);
       toast.success("Record deleted");
@@ -111,9 +114,10 @@ export default function AdminSacredRecordsPage() {
     }
   };
 
-  const filteredRecords = records.filter(r => 
-    r.question.toLowerCase().includes(search.toLowerCase()) ||
-    r.answer.toLowerCase().includes(search.toLowerCase()) ||
+  const filteredRecords = records.filter(r =>
+    r.title.toLowerCase().includes(search.toLowerCase()) ||
+    r.category.toLowerCase().includes(search.toLowerCase()) ||
+    r.content.toLowerCase().includes(search.toLowerCase()) ||
     r.day_number.toString().includes(search)
   );
 
@@ -147,7 +151,7 @@ export default function AdminSacredRecordsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
-            placeholder="Search questions or answers..."
+            placeholder="Search titles, categories, or content..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
@@ -162,8 +166,9 @@ export default function AdminSacredRecordsPage() {
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Day #</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">The Question</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">The Revelation (Answer)</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Category</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Title</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Content Snippet</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 text-right">Actions</th>
               </tr>
             </thead>
@@ -179,22 +184,27 @@ export default function AdminSacredRecordsPage() {
                   <tr key={r.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="px-6 py-4 font-black text-(--primary-gold)">{r.day_number}</td>
                     <td className="px-6 py-4">
+                      <span className="inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        {r.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
                       <p className="max-w-xs truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                        {r.question}
+                        {r.title}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">
-                      <p className="max-w-md line-clamp-2">{r.answer}</p>
+                      <p className="max-w-md line-clamp-1">{r.content}</p>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => handleOpenModal(r)}
                           className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 transition-colors"
                         >
                           <Edit2 size={16} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(r.id)}
                           className="rounded-lg p-2 text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/10 transition-colors"
                         >
@@ -228,7 +238,7 @@ export default function AdminSacredRecordsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCloseModal} />
           <div className="relative w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-8 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
-            <button 
+            <button
               onClick={handleCloseModal}
               className="absolute right-6 top-6 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
@@ -240,41 +250,55 @@ export default function AdminSacredRecordsPage() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Day Number</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.day_number}
+                    onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) }))}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Category</label>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                  >
+                    <option value="Daily Wisdom">Daily Wisdom</option>
+                    <option value="Prayer">Prayer</option>
+                    <option value="Scripture">Scripture</option>
+                    <option value="Meditation">Meditation</option>
+                    <option value="Exhortation">Exhortation</option>
+                    <option value="Testimony">Testimony</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Day Number</label>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Title</label>
                 <input
-                  type="number"
+                  type="text"
                   required
-                  value={formData.day_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) }))}
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                />
-                <p className="mt-2 flex items-center gap-1.5 text-[10px] text-zinc-400">
-                  <AlertCircle size={10} />
-                  Must be unique. This determines the order in the path.
-                </p>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Question</label>
-                <textarea
-                  required
-                  rows={3}
-                  value={formData.question}
-                  onChange={(e) => setFormData(prev => ({ ...prev, question: e.target.value }))}
-                  placeholder="Enter the spiritual question for this day..."
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter a title for this record..."
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Revelation (Answer)</label>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Content</label>
                 <textarea
                   required
-                  rows={5}
-                  value={formData.answer}
-                  onChange={(e) => setFormData(prev => ({ ...prev, answer: e.target.value }))}
-                  placeholder="Enter the answer/revelation users will see after flipping the card..."
+                  rows={8}
+                  value={formData.content}
+                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Enter the main spiritual content..."
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
                 />
               </div>
@@ -295,9 +319,9 @@ export default function AdminSacredRecordsPage() {
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : editingRecord ? (
-                    "Save Revelations"
+                    "Save"
                   ) : (
-                    "Unveil New Record"
+                    "Create Record"
                   )}
                 </button>
               </div>

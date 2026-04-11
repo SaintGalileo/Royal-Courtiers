@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/client";
 export type SacredRecord = {
   id: string;
   day_number: number;
-  question: string;
-  answer: string;
+  title: string;
+  category: string;
+  content: string;
 };
 
 export type UserProgress = {
