@@ -33,7 +33,7 @@ export default function AdminSacredRecordsPage() {
   const [formData, setFormData] = useState({
     day_number: 1,
     title: "",
-    category: "Daily Wisdom",
+    category: "THE FOUNDATION (1954-2001)",
     content: ""
   });
 
@@ -68,7 +68,7 @@ export default function AdminSacredRecordsPage() {
       setFormData({
         day_number: records.length + 1,
         title: "",
-        category: "Daily Wisdom",
+        category: "THE FOUNDATION (1954-2001)",
         content: ""
       });
     }
@@ -78,7 +78,7 @@ export default function AdminSacredRecordsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingRecord(null);
-    setFormData({ day_number: 1, title: "", category: "Daily Wisdom", content: "" });
+    setFormData({ day_number: 1, title: "", category: "THE FOUNDATION (1954-2001)", content: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -269,9 +269,9 @@ export default function AdminSacredRecordsPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
                   >
-                    <option value="foundation">The Foundation</option>
-                    <option value="family love built">The Family Love Built</option>
-                    <option value="administration & accomplishments">Administration & Accomplishments</option>
+                    <option value="THE FOUNDATION (1954-2001)">THE FOUNDATION (1954-2001)</option>
+                    <option value="THE FAMILY LOVE BUILT (1991-PRESENT)">THE FAMILY LOVE BUILT (1991-PRESENT)</option>
+                    <option value="ADMINISTRATION & ACCOMPLISMENTS">ADMINISTRATION & ACCOMPLISMENTS</option>
                   </select>
                 </div>
               </div>
