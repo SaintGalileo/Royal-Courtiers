@@ -16,7 +16,7 @@ type Countdown = {
 
 const EVENT_DATE = new Date("2026-08-10T00:00:00");
 const EVENT_FAMILIES = [
-  { family: "Family of Dominion", father: "Brother Emmanuel Godwin", mother: "Sister Divine Edosomwan", icon: GiWingedScepter, colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]" },
+  { family: "Family of Dominion", father: "Brother David Abeng", mother: "Sister Divine Edosomwan", icon: GiWingedScepter, colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]" },
   { family: "Family of Light", father: "Brother Paul Etop", mother: "Sister Sarah Cyril", icon: GiPolarStar, colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]" },
   { family: "Family of Power", father: "Brother Victor Omolu", mother: "Sister Fortune Umoh", icon: FaBolt, colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]" },
   { family: "Family of Virtue", father: "Brother Henry Igani", mother: "Sister Mercy Alexander", icon: GiFruitTree, colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]" },

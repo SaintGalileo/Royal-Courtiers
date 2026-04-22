@@ -42,12 +42,13 @@ const familyStyles: Record<
   Seraphs: { color: "Cyan", className: "text-cyan-500", icon: GiDove },
 };
 
-const HEAD_CODES = ["35AABA", "35AABB", "35AABC", "35AABD", "35AABE", "35AABF", "35AABG", "35AABH"];
+
+const HEAD_CODES = ["35AABA", "35AABC", "35AABD", "35AABE", "35AABG", "35AABH", "35AAAI", "35AAAH"];
 
 const familyParents: Record<string, { father: string; mother: string }> = {
   Light: { father: "Brother Paul Etop", mother: "Sister Sarah Cyril" },
   Power: { father: "Brother Victor Omolu", mother: "Sister Fortune Umoh" },
-  Dominion: { father: "Brother Emmanuel Godwin", mother: "Sister Divine Edosomwan" },
+  Dominion: { father: "Brother David Abeng", mother: "Sister Divine Edosomwan" },
   Virtue: { father: "Brother Henry Igani", mother: "Sister Mercy Alexander" },
 };
 
