@@ -86,6 +86,7 @@ interface FamilyCardProps {
   photoUrl?: string;
   gender?: string;
   isHead?: boolean;
+  favoriteSong?: any;
   cardRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -96,6 +97,7 @@ export default function FamilyCard({
   photoUrl,
   gender,
   isHead,
+  favoriteSong,
   cardRef,
 }: FamilyCardProps) {
   const styleObj = familyStyles[family] || familyStyles["Family of Light"];
@@ -225,6 +227,30 @@ export default function FamilyCard({
               August 2026 • Anniversary Edition
             </p>
           </div>
+
+          {/* ── Favorite Song ── */}
+          {favoriteSong && (
+            <div 
+              className="absolute bottom-[3.5%] left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 bg-(--primary-gold)/5 rounded-full border border-(--primary-gold)/20 whitespace-nowrap"
+              style={{ padding: "clamp(2px, 0.5vw, 6px) clamp(6px, 1.5vw, 15px)" }}
+            >
+              <div className="flex gap-[1px]">
+                {[...Array(4)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="w-[1.5px] bg-(--primary-gold) rounded-full" 
+                    style={{ height: `${4 + (i % 2 === 0 ? 4 : 2)}px` }} 
+                  />
+                ))}
+              </div>
+              <p 
+                className="font-bold text-(--primary-gold) truncate max-w-[150px]"
+                style={{ fontSize: "clamp(5px, 1.2vw, 8px)" }}
+              >
+                {favoriteSong.name}
+              </p>
+            </div>
+          )}
 
         </div>
       </div>

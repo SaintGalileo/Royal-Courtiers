@@ -18,6 +18,8 @@ import { getOptimizedUrl } from "@/lib/cloudinary";
 import ImageCropper from "@/components/ImageCropper";
 import TalentSelector from "@/components/TalentSelector";
 import PinLock from "@/components/PinLock";
+import SpotifySearch, { SpotifyTrack } from "@/components/SpotifySearch";
+import { Music, Play, Pause } from "lucide-react";
 
 
 type TabKey = "family-members" | "tshirt" | "account-info" | "share-card";
@@ -105,6 +107,7 @@ type MemberData = {
   nation_of_origin?: string;
   state_of_origin?: string;
   pin?: string;
+  favorite_song?: any;
 };
 
 export default function DashboardPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -132,6 +135,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPinVerified, setIsPinVerified] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ fn: () => void; title: string } | null>(null);
+  const [isSpotifyOpen, setIsSpotifyOpen] = useState(false);
+  const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+  const [audioObj, setAudioObj] = useState<HTMLAudioElement | null>(null);
 
 
   // Protection check
@@ -412,6 +418,54 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     }
   };
 
+  const handleSelectSong = async (track: SpotifyTrack, authorized: any = false) => {
+    if (!user) return;
+    const isAuthorized = authorized === true;
+
+    if (!isAuthorized) {
+      setPendingAction({
+        fn: () => handleSelectSong(track, true),
+        title: "Update Favorite Song",
+      });
+      return;
+    }
+
+    setPendingAction(null);
+    setIsSpotifyOpen(false);
+    setIsSavingField(true);
+    try {
+      const { error } = await supabase
+        .from("members")
+        .update({ favorite_song: track })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setUser({ ...user, favorite_song: track });
+      toast.success(`Favorite song updated to ${track.name}!`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to update song.");
+    } finally {
+      setIsSavingField(false);
+    }
+  };
+
+  const toggleSongPlay = (previewUrl: string, id: string) => {
+    console.log("Playing Preview URL:", previewUrl);
+    if (playingSongId === id || playingSongId === "active") {
+      audioObj?.pause();
+      setPlayingSongId(null);
+    } else {
+      audioObj?.pause();
+      const newAudio = new Audio(previewUrl);
+      newAudio.play();
+      newAudio.onended = () => setPlayingSongId(null);
+      setAudioObj(newAudio);
+      setPlayingSongId(id);
+    }
+  };
+
   const onPhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (user?.is_photo_edited) {
       toast.error("You've already updated your photo once.");
@@ -550,6 +604,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           onCancel={() => setPendingAction(null)}
         />
       )}
+      {isSpotifyOpen && (
+        <SpotifySearch
+          onSelect={handleSelectSong}
+          onClose={() => setIsSpotifyOpen(false)}
+        />
+      )}
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
 
 
@@ -634,6 +694,15 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   <span className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                     {serviceDuration} of service
                   </span>
+                  {user.favorite_song && (
+                    <button
+                      onClick={() => user.favorite_song.previewUrl && toggleSongPlay(user.favorite_song.previewUrl, "active")}
+                      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-bold transition-colors ${playingSongId === "active" ? "bg-green-500 text-white" : "bg-green-500/10 text-green-600 hover:bg-green-500/20"}`}
+                    >
+                      {playingSongId === "active" ? <Pause size={12} /> : <Music size={12} />}
+                      <span className="max-w-[120px] truncate">{user.favorite_song.name}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -773,6 +842,71 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                     )}
                   </div>
                 ))}
+              </div>
+
+              {/* Favorite Song Section */}
+              <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Favorite Song</h3>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">Your personal anthem</p>
+                  </div>
+                  {isViewerOwner && (
+                    <button
+                      onClick={() => setIsSpotifyOpen(true)}
+                      className="rounded-md border border-zinc-200 bg-white p-1.5 text-zinc-400 transition-all hover:text-green-500 dark:border-zinc-800 dark:bg-zinc-900"
+                      title="Change Song"
+                    >
+                      <Music className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  {user.favorite_song ? (
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-black/40">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md shadow-sm">
+                          <img 
+                            src={user.favorite_song.albumArt} 
+                            alt={user.favorite_song.name} 
+                            className="h-full w-full object-cover" 
+                          />
+                          {user.favorite_song.previewUrl && (
+                            <button
+                              onClick={() => toggleSongPlay(user.favorite_song.previewUrl, user.favorite_song.id)}
+                              className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 transition-opacity hover:opacity-100"
+                            >
+                              {playingSongId === user.favorite_song.id ? <Pause size={16} /> : <Play size={16} />}
+                            </button>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">{user.favorite_song.name}</p>
+                          <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{user.favorite_song.artist}</p>
+                        </div>
+                      </div>
+                      <a 
+                        href={user.favorite_song.spotifyUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="rounded-full bg-green-500/10 p-2 text-green-500 hover:bg-green-500/20 transition-colors"
+                      >
+                        <Music size={16} />
+                      </a>
+                    </div>
+                  ) : (
+                    <div 
+                      onClick={() => isViewerOwner && setIsSpotifyOpen(true)}
+                      className={`flex h-20 flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-200 dark:border-zinc-800 ${isViewerOwner ? "cursor-pointer hover:border-green-500/50 hover:bg-green-500/5 transition-all" : ""}`}
+                    >
+                      <Music size={20} className="mb-1 text-zinc-300 dark:text-zinc-700" />
+                      <p className="text-[11px] font-medium text-zinc-400">
+                        {isViewerOwner ? "Click to add your favorite song" : "No song selected"}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Talents Section */}
@@ -1025,6 +1159,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   photoUrl={user.photo_url}
                   gender={user.gender}
                   isHead={HEAD_CODES.includes(user.code)}
+                  favoriteSong={user.favorite_song}
                   cardRef={cardRef}
                 />
               </div>
@@ -1111,6 +1246,43 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   </p>
                 </div>
               </div>
+
+              {/* Added: Favorite Song in Modal */}
+              {selectedMember.favorite_song && (
+                <div className="mt-4 rounded-2xl border border-green-100 bg-green-50/30 p-4 dark:border-green-900/20 dark:bg-green-900/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-sm border border-green-200/50">
+                        <img 
+                          src={selectedMember.favorite_song.albumArt} 
+                          alt={selectedMember.favorite_song.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                        {selectedMember.favorite_song.previewUrl && (
+                          <button
+                            onClick={() => toggleSongPlay(selectedMember.favorite_song.previewUrl, selectedMember.favorite_song.id)}
+                            className="absolute inset-0 flex items-center justify-center bg-black/30 text-white opacity-0 transition-opacity hover:opacity-100"
+                          >
+                            {playingSongId === selectedMember.favorite_song.id ? <Pause size={14} /> : <Play size={14} />}
+                          </button>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100">{selectedMember.favorite_song.name}</p>
+                        <p className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">{selectedMember.favorite_song.artist}</p>
+                      </div>
+                    </div>
+                    <a 
+                      href={selectedMember.favorite_song.spotifyUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="rounded-full bg-green-500/10 p-2 text-green-500 hover:bg-green-500/20 transition-colors"
+                    >
+                      <Music size={14} />
+                    </a>
+                  </div>
+                </div>
+              )}
 
               {/* Talents section if any */}
               {selectedMember.talents && selectedMember.talents.length > 0 && (

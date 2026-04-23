@@ -169,3 +169,9 @@ select option {
     transform: translateX(-50%);
   }
 }
+
+@keyframes kenBurns {
+  0%   { transform: scale(1)    translateX(0)     translateY(0); }
+  50%  { transform: scale(1.07) translateX(-1.5%) translateY(-1%); }
+  100% { transform: scale(1.12) translateX(1%)    translateY(-2%); }
+}

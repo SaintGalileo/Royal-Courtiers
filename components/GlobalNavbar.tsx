@@ -26,6 +26,9 @@ export default function GlobalNavbar() {
   const [authSlug, setAuthSlug] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [iconIndex, setIconIndex] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  const isHome = pathname === "/";
 
   // If we are on the dashboard or admin, don't show this navbar
   const isDashboard = pathname?.startsWith("/dashboard");
@@ -67,10 +70,27 @@ export default function GlobalNavbar() {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  useEffect(() => {
+    if (!isHome) return;
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
   if (isDashboard || isAdmin) return null;
 
+  const isTransparent = isHome && !scrolled && !isMenuOpen;
+
   return (
-    <header className="relative z-50 flex w-full flex-col px-4 py-4 md:px-12 lg:px-20 border-b border-(--primary-gold)/20 backdrop-blur-md">
+    <header className={`z-50 flex w-full flex-col px-4 py-4 md:px-12 lg:px-20 transition-all duration-300 ${
+      isHome
+        ? `fixed top-0 left-0 right-0 ${
+            isTransparent
+              ? "bg-transparent border-transparent"
+              : "bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-(--primary-gold)/20"
+          }`
+        : "relative border-b border-(--primary-gold)/20 backdrop-blur-md"
+    }`}>
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link href="/" onClick={closeMenu} className="flex items-center gap-3">
@@ -86,7 +106,7 @@ export default function GlobalNavbar() {
         </Link>
 
         {/* Desktop Links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+        <nav className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors duration-300 ${isTransparent ? "text-white/90" : ""}`}>
           <Link href="/" className="hover:text-(--primary-gold) transition-colors">Home</Link>
           {/* <Link href="/itinerary" className="hover:text-(--primary-gold) transition-colors">Itinerary</Link> */}
           <Link href="/sports" className={`hover:text-(--primary-gold) transition-colors ${pathname === '/sports' || pathname?.startsWith('/sports/') ? 'font-bold text-(--primary-gold)' : ''}`}>Sports</Link>
@@ -97,7 +117,11 @@ export default function GlobalNavbar() {
         {/* Desktop Auth & Theme */}
         <div className="hidden md:flex items-center gap-4">
           <button
-            className="rounded-md border border-zinc-400 p-2 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className={`rounded-md border p-2 transition-colors ${
+              isTransparent
+                ? "border-white/30 text-white hover:bg-white/10"
+                : "border-zinc-400 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            }`}
             onClick={toggleTheme}
             type="button"
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
@@ -111,11 +135,23 @@ export default function GlobalNavbar() {
             </Link>
           ) : (
             <>
-              <Link className="text-sm font-semibold hover:text-(--primary-gold) transition-colors" href="/login">
+              <Link
+                className={`text-sm font-semibold transition-colors ${
+                  isTransparent ? "text-white/90 hover:text-white" : "hover:text-(--primary-gold)"
+                }`}
+                href="/login"
+              >
                 Log In
               </Link>
-              <Link className="btn-primary rounded-md px-4 py-2 text-sm font-semibold" href="/create-account">
-                SignUp
+              <Link
+                className={`rounded-md px-4 py-2 text-sm font-semibold transition-all ${
+                  isTransparent
+                    ? "border border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+                    : "btn-primary"
+                }`}
+                href="/create-account"
+              >
+                Sign Up
               </Link>
             </>
           )}
@@ -123,7 +159,7 @@ export default function GlobalNavbar() {
 
         {/* Mobile Hamburger */}
         <button
-          className="md:hidden p-2 text-zinc-900 dark:text-zinc-100"
+          className={`md:hidden p-2 transition-colors ${isTransparent ? "text-white" : "text-zinc-900 dark:text-zinc-100"}`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
