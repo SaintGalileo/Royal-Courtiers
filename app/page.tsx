@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import WelcomePopup from "@/components/WelcomePopup";
-import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
+import {
+  GiPolarStar,
+  GiWingedScepter,
+  GiFruitTree,
+  GiDove,
+} from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import { ChevronDown } from "lucide-react";
 
@@ -61,7 +66,14 @@ const HERO_IMAGES = [
   "/virgins/two.jpg",
 ];
 
-const WALL_PREVIEW_FRAMES = ["Frame 1", "Frame 2", "Frame 3", "Frame 4", "Frame 5", "Frame 6"];
+const WALL_PREVIEW_FRAMES = [
+  "Frame 1",
+  "Frame 2",
+  "Frame 3",
+  "Frame 4",
+  "Frame 5",
+  "Frame 6",
+];
 
 function getCountdown(now: Date): Countdown {
   const distance = EVENT_DATE.getTime() - now.getTime();
@@ -83,13 +95,17 @@ function CountdownDigit({ value, label }: { value: number; label: string }) {
           {display}
         </span>
       </div>
-      <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">{label}</span>
+      <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">
+        {label}
+      </span>
     </div>
   );
 }
 
 export default function Home() {
-  const [countdown, setCountdown] = useState<Countdown>(() => getCountdown(new Date()));
+  const [countdown, setCountdown] = useState<Countdown>(() =>
+    getCountdown(new Date()),
+  );
   const [currentSlide, setCurrentSlide] = useState(0);
   const [prevSlide, setPrevSlide] = useState<number | null>(null);
   const [isFading, setIsFading] = useState(false);
@@ -97,7 +113,10 @@ export default function Home() {
 
   // Countdown tick
   useEffect(() => {
-    const timer = setInterval(() => setCountdown(getCountdown(new Date())), 1000);
+    const timer = setInterval(
+      () => setCountdown(getCountdown(new Date())),
+      1000,
+    );
     return () => clearInterval(timer);
   }, []);
 
@@ -106,7 +125,9 @@ export default function Home() {
     intervalRef.current = setInterval(() => {
       goToSlide((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   const goToSlide = (nextFn: (prev: number) => number) => {
@@ -138,7 +159,6 @@ export default function Home() {
 
       {/* ─── HERO ─── */}
       <section className="relative w-full h-screen overflow-hidden">
-
         {/* Slide images */}
         {HERO_IMAGES.map((src, idx) => (
           <div
@@ -149,7 +169,10 @@ export default function Home() {
               backgroundImage: `url(${src})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              animation: idx === currentSlide ? "kenBurns 10s ease-in-out infinite alternate" : "none",
+              animation:
+                idx === currentSlide
+                  ? "kenBurns 10s ease-in-out infinite alternate"
+                  : "none",
             }}
           />
         ))}
@@ -164,10 +187,13 @@ export default function Home() {
           </p>
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-tight max-w-4xl">
             35th Anniversary
-            <span className="block text-(--primary-gold) italic font-serif">Celebration</span>
+            <span className="block text-(--primary-gold) italic font-serif">
+              Celebration
+            </span>
           </h1>
           <p className="mt-6 max-w-xl text-base sm:text-lg text-white/75 leading-relaxed">
-            <p className="text-xl -mb-8">The Family Love Built </p><br /> Bearers of the Seal of the Universal Monarch
+            <p className="text-xl -mb-8">The Family Love Built </p>
+            <br /> Bearers of the Seal of the Universal Monarch
           </p>
 
           <div className="mt-10 flex items-center gap-4">
@@ -201,7 +227,9 @@ export default function Home() {
                 <div key={item.label} className="flex items-center gap-4">
                   <CountdownDigit value={item.value} label={item.label} />
                   {i < countdownBlocks.length - 1 && (
-                    <span className="text-white/30 text-2xl font-thin mb-3">:</span>
+                    <span className="text-white/30 text-2xl font-thin mb-3">
+                      :
+                    </span>
                   )}
                 </div>
               ))}
@@ -219,8 +247,8 @@ export default function Home() {
               key={idx}
               onClick={() => goToSlide(() => idx)}
               className={`rounded-full transition-all duration-300 ${idx === currentSlide
-                ? "w-6 h-2 bg-(--primary-gold)"
-                : "w-2 h-2 bg-white/40 hover:bg-white/60"
+                  ? "w-6 h-2 bg-(--primary-gold)"
+                  : "w-2 h-2 bg-white/40 hover:bg-white/60"
                 }`}
             />
           ))}
@@ -230,12 +258,10 @@ export default function Home() {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 translate-y-8 flex flex-col items-center gap-1 text-white/40 animate-bounce">
           <ChevronDown size={20} />
         </div>
-
       </section>
 
       {/* ─── REST OF PAGE ─── */}
       <div className="flex w-full flex-col gap-10 px-3 py-12 sm:px-4 md:px-20">
-
         {/* Event Families */}
         <section className="rounded-3xl border border-(--primary-gold)/35 bg-black/20 p-8 sm:p-12 relative overflow-hidden backdrop-blur-sm">
           {/* Decorative background glow */}
@@ -348,11 +374,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Wall of Fame */}
+        {/* Hall of Fame */}
         <section className="rounded-2xl border border-(--primary-gold)/35 p-6 mb-10">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold">Wall of Fame</h2>
-            <Link className="text-(--primary-gold) font-semibold underline underline-offset-4" href="/wall-of-fame">
+            <h2 className="text-2xl font-bold">Hall of Fame</h2>
+            <Link
+              className="text-(--primary-gold) font-semibold underline underline-offset-4"
+              href="/hall-of-fame"
+            >
               See all
             </Link>
           </div>
@@ -364,13 +393,14 @@ export default function Home() {
                 className={`wall-frame wall-frame-portrait flex aspect-3/4 items-center justify-center rounded-xl border border-(--primary-gold)/40 p-2 ${idx === 5 ? "lg:hidden" : ""}`}
               >
                 <div className="wall-frame-inner flex h-full w-full items-center justify-center rounded-md border border-(--primary-gold)/45">
-                  <span className="text-4xl font-bold text-(--primary-gold)">?</span>
+                  <span className="text-4xl font-bold text-(--primary-gold)">
+                    ?
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </section>
-
       </div>
     </main>
   );

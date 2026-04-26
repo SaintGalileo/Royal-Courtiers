@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Search, Filter, Loader2, User, Mail, Phone, Calendar } from "lucide-react";
+import { Search, Filter, Loader2, User, Mail, Phone, Calendar, ChevronUp, ChevronDown, Edit2, X, Save, Trash2 } from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
+import { toast } from "sonner";
 
 type Member = {
   id: string;
@@ -27,6 +28,17 @@ export default function AdminMembersPage() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Sorting
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Member; direction: "asc" | "desc" } | null>({
+    key: "created_at",
+    direction: "desc",
+  });
+
+  // Editing
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -56,11 +68,97 @@ export default function AdminMembersPage() {
     });
   }, [members, search, familyFilter]);
 
-  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+  const sortedMembers = useMemo(() => {
+    if (!sortConfig) return filteredMembers;
+
+    return [...filteredMembers].sort((a, b) => {
+      const aValue = a[sortConfig.key] || "";
+      const bValue = b[sortConfig.key] || "";
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredMembers, sortConfig]);
+
+  const handleSort = (key: keyof Member) => {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const handleDeleteMember = async () => {
+    if (!editingMember) return;
+    
+    if (!confirm(`Are you sure you want to delete ${editingMember.first_name} ${editingMember.last_name}? This will also make the access code ${editingMember.code} available again.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // 1. Restore access code
+      const { error: codeError } = await supabase
+        .from("access_codes")
+        .update({ is_used: false, used_at: null })
+        .eq("code", editingMember.code);
+
+      if (codeError) throw codeError;
+
+      // 2. Delete member
+      const { error: deleteError } = await supabase
+        .from("members")
+        .delete()
+        .eq("id", editingMember.id);
+
+      if (deleteError) throw deleteError;
+
+      toast.success("Member deleted and access code restored!");
+      setMembers((prev) => prev.filter((m) => m.id !== editingMember.id));
+      setEditingMember(null);
+    } catch (err: any) {
+      toast.error("Operation failed: " + err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleSaveMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    setIsSaving(true);
+    const { error } = await supabase
+      .from("members")
+      .update({
+        first_name: editingMember.first_name,
+        last_name: editingMember.last_name,
+        nick_name: editingMember.nick_name,
+        email: editingMember.email,
+        phone_number: editingMember.phone_number,
+        // family is now non-editable
+      })
+      .eq("id", editingMember.id);
+
+    if (error) {
+      toast.error("Failed to update member: " + error.message);
+    } else {
+      toast.success("Member updated successfully!");
+      setMembers((prev) =>
+        prev.map((m) => (m.id === editingMember.id ? editingMember : m))
+      );
+      setEditingMember(null);
+    }
+    setIsSaving(false);
+  };
+
+  const totalPages = Math.ceil(sortedMembers.length / itemsPerPage);
   const paginatedMembers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredMembers.slice(start, start + itemsPerPage);
-  }, [filteredMembers, currentPage, itemsPerPage]);
+    return sortedMembers.slice(start, start + itemsPerPage);
+  }, [sortedMembers, currentPage, itemsPerPage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -133,11 +231,52 @@ export default function AdminMembersPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Member</th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("first_name")}
+                >
+                  <div className="flex items-center gap-2">
+                    Member
+                    {sortConfig?.key === "first_name" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Contact</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Family</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Access Code</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Joined</th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("family")}
+                >
+                  <div className="flex items-center gap-2">
+                    Family
+                    {sortConfig?.key === "family" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("code")}
+                >
+                  <div className="flex items-center gap-2">
+                    Access Code
+                    {sortConfig?.key === "code" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("created_at")}
+                >
+                  <div className="flex items-center gap-2">
+                    Joined
+                    {sortConfig?.key === "created_at" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -200,6 +339,15 @@ export default function AdminMembersPage() {
                         {new Date(m.created_at).toLocaleDateString()}
                       </p>
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => setEditingMember(m)}
+                        className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-(--primary-gold) dark:hover:bg-zinc-800 transition-colors"
+                        title="View Details / Edit"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -242,6 +390,150 @@ export default function AdminMembersPage() {
             >
               Next
             </button>
+          </div>
+        </div>
+      )}
+      {/* Member Edit/Detail Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+            onClick={() => setEditingMember(null)}
+          />
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
+            <header className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-8 py-5 dark:border-zinc-800 dark:bg-zinc-900/50">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Member Profile</h2>
+              <button
+                onClick={() => setEditingMember(null)}
+                className="rounded-full p-2 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </header>
+
+            <form onSubmit={handleSaveMember} className="p-8">
+              <div className="flex flex-col gap-8 md:flex-row">
+                {/* Photo & Identity Section */}
+                <div className="flex flex-col items-center gap-4">
+                  <div className="h-32 w-32 relative group">
+                    {editingMember.photo_url ? (
+                      <img
+                        src={getOptimizedUrl(editingMember.photo_url)}
+                        alt={editingMember.first_name}
+                        className="h-32 w-32 rounded-3xl object-cover ring-4 ring-zinc-50 dark:ring-zinc-900"
+                      />
+                    ) : (
+                      <div className="flex h-32 w-32 items-center justify-center rounded-3xl bg-zinc-100 text-3xl font-black text-zinc-400 dark:bg-zinc-800">
+                        {editingMember.first_name[0]}{editingMember.last_name[0]}
+                      </div>
+                    )}
+                    <div className="absolute -bottom-2 -right-2 rounded-xl bg-(--primary-gold) p-2 text-white shadow-lg">
+                      <User size={18} />
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-mono text-sm font-black tracking-widest text-(--primary-gold) uppercase">
+                      {editingMember.code}
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500 uppercase font-bold tracking-tighter">Access Code</p>
+                  </div>
+                </div>
+
+                {/* Form Fields Section */}
+                <div className="flex-1 space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">First Name</label>
+                      <input
+                        type="text"
+                        value={editingMember.first_name}
+                        onChange={(e) => setEditingMember({ ...editingMember, first_name: e.target.value })}
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Last Name</label>
+                      <input
+                        type="text"
+                        value={editingMember.last_name}
+                        onChange={(e) => setEditingMember({ ...editingMember, last_name: e.target.value })}
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Nickname</label>
+                      <input
+                        type="text"
+                        value={editingMember.nick_name}
+                        onChange={(e) => setEditingMember({ ...editingMember, nick_name: e.target.value })}
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Family (Non-editable)</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={editingMember.family}
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-2.5 text-sm outline-none cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-800/50 text-zinc-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Email Address</label>
+                    <input
+                      type="email"
+                      value={editingMember.email}
+                      onChange={(e) => setEditingMember({ ...editingMember, email: e.target.value })}
+                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={editingMember.phone_number}
+                      onChange={(e) => setEditingMember({ ...editingMember, phone_number: e.target.value })}
+                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-10 flex flex-col gap-3 border-t border-zinc-100 pt-8 dark:border-zinc-800 sm:flex-row">
+                <button
+                  type="button"
+                  disabled={isSaving || isDeleting}
+                  onClick={handleDeleteMember}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-6 py-3 text-sm font-bold text-red-600 transition-all hover:bg-red-100 active:scale-95 disabled:opacity-50 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400"
+                >
+                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={18} />}
+                  Delete Member
+                </button>
+                <div className="flex flex-1 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMember(null)}
+                    className="flex-1 rounded-xl border border-zinc-200 py-3 text-sm font-bold text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    Discard Changes
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving || isDeleting}
+                    className="flex flex-[2] items-center justify-center gap-2 rounded-xl bg-(--primary-gold) py-3 text-sm font-black text-white shadow-lg shadow-(--primary-gold)/20 transition-all hover:bg-(--primary-gold-hover) active:scale-95 disabled:opacity-50"
+                  >
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}

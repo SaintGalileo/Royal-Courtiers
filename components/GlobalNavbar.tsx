@@ -8,10 +8,30 @@ import { GiPolarStar, GiWingedScepter, GiFruitTree } from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 
 const EVENT_FAMILIES = [
-  { family: "Dominion", icon: GiWingedScepter, colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)] border-purple-500/70 bg-purple-500/10" },
-  { family: "Light", icon: GiPolarStar, colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)] border-yellow-500/70 bg-yellow-500/10" },
-  { family: "Power", icon: FaBolt, colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)] border-red-500/70 bg-red-500/10" },
-  { family: "Virtue", icon: GiFruitTree, colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)] border-green-500/70 bg-green-500/10" },
+  {
+    family: "Dominion",
+    icon: GiWingedScepter,
+    colorClass:
+      "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)] border-purple-500/70 bg-purple-500/10",
+  },
+  {
+    family: "Light",
+    icon: GiPolarStar,
+    colorClass:
+      "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)] border-yellow-500/70 bg-yellow-500/10",
+  },
+  {
+    family: "Power",
+    icon: FaBolt,
+    colorClass:
+      "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)] border-red-500/70 bg-red-500/10",
+  },
+  {
+    family: "Virtue",
+    icon: GiFruitTree,
+    colorClass:
+      "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)] border-green-500/70 bg-green-500/10",
+  },
 ];
 
 export default function GlobalNavbar() {
@@ -19,8 +39,12 @@ export default function GlobalNavbar() {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
     const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    return savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light";
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    return savedTheme === "dark" || (!savedTheme && prefersDark)
+      ? "dark"
+      : "light";
   });
   const [isClient, setIsClient] = useState(false);
   const [authSlug, setAuthSlug] = useState<string | null>(null);
@@ -47,7 +71,9 @@ export default function GlobalNavbar() {
     if (auth) {
       try {
         const { firstName, lastName } = JSON.parse(auth);
-        setAuthSlug(`${firstName.toLowerCase().replace(/\s+/g, "-")}-${lastName.toLowerCase().replace(/\s+/g, "-")}`);
+        setAuthSlug(
+          `${firstName.toLowerCase().replace(/\s+/g, "-")}-${lastName.toLowerCase().replace(/\s+/g, "-")}`,
+        );
       } catch {
         localStorage.removeItem("virgins-auth");
         setAuthSlug(null);
@@ -82,15 +108,17 @@ export default function GlobalNavbar() {
   const isTransparent = isHome && !scrolled && !isMenuOpen;
 
   return (
-    <header className={`z-50 flex w-full flex-col px-4 py-4 md:px-12 lg:px-20 transition-all duration-300 ${
-      isHome
-        ? `fixed top-0 left-0 right-0 ${
-            isTransparent
-              ? "bg-transparent border-transparent"
-              : "bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-(--primary-gold)/20"
-          }`
-        : "relative border-b border-(--primary-gold)/20 backdrop-blur-md"
-    }`}>
+    <header
+      className={`z-50 flex w-full flex-col px-4 py-4 md:px-12 lg:px-20 transition-all duration-300 ${
+        isHome
+          ? `fixed top-0 left-0 right-0 ${
+              isTransparent
+                ? "bg-transparent border-transparent"
+                : "bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-(--primary-gold)/20"
+            }`
+          : "relative border-b border-(--primary-gold)/20 backdrop-blur-md"
+      }`}
+    >
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link href="/" onClick={closeMenu} className="flex items-center gap-3">
@@ -106,12 +134,49 @@ export default function GlobalNavbar() {
         </Link>
 
         {/* Desktop Links */}
-        <nav className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors duration-300 ${isTransparent ? "text-white/90" : ""}`}>
-          <Link href="/" className="hover:text-(--primary-gold) transition-colors">Home</Link>
-          {/* <Link href="/itinerary" className="hover:text-(--primary-gold) transition-colors">Itinerary</Link> */}
-          <Link href="/sports" className={`hover:text-(--primary-gold) transition-colors ${pathname === '/sports' || pathname?.startsWith('/sports/') ? 'font-bold text-(--primary-gold)' : ''}`}>Sports</Link>
-          <Link href="/wall-of-fame" className="hover:text-(--primary-gold) transition-colors">Wall of Fame</Link>
-          <Link href="/exco" className="hover:text-(--primary-gold) transition-colors">Excos</Link>
+        <nav
+          className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors duration-300 ${isTransparent ? "text-white/90" : ""}`}
+        >
+          <Link
+            href="/"
+            className={`hover:text-(--primary-gold) transition-colors ${pathname === "/" ? "font-bold text-(--primary-gold)" : ""}`}
+          >
+            Home
+          </Link>
+          <Link
+            href="/itinerary"
+            className={`hover:text-(--primary-gold) transition-colors ${pathname === "/itinerary" ? "font-bold text-(--primary-gold)" : ""}`}
+          >
+            Itinerary
+          </Link>
+          {authSlug && (
+            <>
+              <Link
+                href="/competitions"
+                className={`hover:text-(--primary-gold) transition-colors ${pathname === "/competitions" || pathname?.startsWith("/competitions/") || pathname?.startsWith("/sports") || pathname?.startsWith("/choral") || pathname?.startsWith("/extracurricular") ? "font-bold text-(--primary-gold)" : ""}`}
+              >
+                Competitions
+              </Link>
+              <Link
+                href="/scoresheet"
+                className={`hover:text-(--primary-gold) transition-colors ${pathname === "/scoresheet" ? "font-bold text-(--primary-gold)" : ""}`}
+              >
+                Scoresheet
+              </Link>
+            </>
+          )}
+          <Link
+            href="/wall-of-fame"
+            className={`hover:text-(--primary-gold) transition-colors ${pathname === "/wall-of-fame" ? "font-bold text-(--primary-gold)" : ""}`}
+          >
+            Hall of Fame
+          </Link>
+          <Link
+            href="/exco"
+            className={`hover:text-(--primary-gold) transition-colors ${pathname === "/exco" ? "font-bold text-(--primary-gold)" : ""}`}
+          >
+            Excos
+          </Link>
         </nav>
 
         {/* Desktop Auth & Theme */}
@@ -124,20 +189,27 @@ export default function GlobalNavbar() {
             }`}
             onClick={toggleTheme}
             type="button"
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
           >
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
           {authSlug ? (
-            <Link className="btn-primary rounded-md px-4 py-2 text-sm font-semibold animate-pulse shadow-[0_0_15px_rgba(143,107,42,0.4)] hover:animate-none" href={`/dashboard/${authSlug}`}>
+            <Link
+              className="btn-primary rounded-md px-4 py-2 text-sm font-semibold animate-pulse shadow-[0_0_15px_rgba(143,107,42,0.4)] hover:animate-none"
+              href={`/dashboard/${authSlug}`}
+            >
               View Dashboard
             </Link>
           ) : (
             <>
               <Link
                 className={`text-sm font-semibold transition-colors ${
-                  isTransparent ? "text-white/90 hover:text-white" : "hover:text-(--primary-gold)"
+                  isTransparent
+                    ? "text-white/90 hover:text-white"
+                    : "hover:text-(--primary-gold)"
                 }`}
                 href="/login"
               >
@@ -169,11 +241,52 @@ export default function GlobalNavbar() {
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
         <nav className="mt-4 flex flex-col gap-4 border-t border-(--primary-gold)/20 pt-4 md:hidden pb-2">
-          <Link href="/" onClick={closeMenu} className="block px-2 py-1 font-medium hover:text-(--primary-gold)">Home</Link>
-          <Link href="/itinerary" onClick={closeMenu} className="block px-2 py-1 font-medium hover:text-(--primary-gold)">Itinerary</Link>
-          <Link href="/sports" onClick={closeMenu} className={`block px-2 py-1 font-medium ${pathname === '/sports' || pathname?.startsWith('/sports/') ? 'text-(--primary-gold) font-bold' : 'hover:text-(--primary-gold)'}`}>Sports</Link>
-          <Link href="/wall-of-fame" onClick={closeMenu} className="block px-2 py-1 font-medium hover:text-(--primary-gold)">Wall of Fame</Link>
-          <Link href="/exco" onClick={closeMenu} className="block px-2 py-1 font-medium hover:text-(--primary-gold)">Excos</Link>
+          <Link
+            href="/"
+            onClick={closeMenu}
+            className={`block px-2 py-1 font-medium ${pathname === "/" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+          >
+            Home
+          </Link>
+          <Link
+            href="/itinerary"
+            onClick={closeMenu}
+            className={`block px-2 py-1 font-medium ${pathname === "/itinerary" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+          >
+            Itinerary
+          </Link>
+          {authSlug && (
+            <>
+              <Link
+                href="/competitions"
+                onClick={closeMenu}
+                className={`block px-2 py-1 font-medium ${pathname === "/competitions" || pathname?.startsWith("/competitions/") || pathname?.startsWith("/sports") || pathname?.startsWith("/choral") || pathname?.startsWith("/extracurricular") ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+              >
+                Competitions
+              </Link>
+              <Link
+                href="/scoresheet"
+                onClick={closeMenu}
+                className={`block px-2 py-1 font-medium ${pathname === "/scoresheet" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+              >
+                Scoresheet
+              </Link>
+            </>
+          )}
+          <Link
+            href="/wall-of-fame"
+            onClick={closeMenu}
+            className={`block px-2 py-1 font-medium ${pathname === "/wall-of-fame" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+          >
+            Hall of Fame
+          </Link>
+          <Link
+            href="/exco"
+            onClick={closeMenu}
+            className={`block px-2 py-1 font-medium ${pathname === "/exco" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+          >
+            Excos
+          </Link>
 
           <div className="my-2 h-px w-full bg-(--primary-gold)/20" />
 
@@ -190,15 +303,27 @@ export default function GlobalNavbar() {
             </div>
 
             {authSlug ? (
-              <Link onClick={closeMenu} className="btn-primary block w-full text-center rounded-md px-4 py-2 text-sm font-semibold" href={`/dashboard/${authSlug}`}>
+              <Link
+                onClick={closeMenu}
+                className="btn-primary block w-full text-center rounded-md px-4 py-2 text-sm font-semibold"
+                href={`/dashboard/${authSlug}`}
+              >
                 View Dashboard
               </Link>
             ) : (
               <div className="grid grid-cols-2 gap-3 mt-2">
-                <Link onClick={closeMenu} className="block text-center rounded-md border border-(--primary-gold) px-4 py-2 text-sm font-semibold hover:bg-(--primary-gold)/10" href="/login">
+                <Link
+                  onClick={closeMenu}
+                  className="block text-center rounded-md border border-(--primary-gold) px-4 py-2 text-sm font-semibold hover:bg-(--primary-gold)/10"
+                  href="/login"
+                >
                   Log In
                 </Link>
-                <Link onClick={closeMenu} className="btn-primary block text-center rounded-md px-4 py-2 text-sm font-semibold" href="/create-account">
+                <Link
+                  onClick={closeMenu}
+                  className="btn-primary block text-center rounded-md px-4 py-2 text-sm font-semibold"
+                  href="/create-account"
+                >
                   SignUp
                 </Link>
               </div>
