@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import WelcomePopup from "@/components/WelcomePopup";
-import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
+import {
+  GiPolarStar,
+  GiWingedScepter,
+  GiFruitTree,
+  GiDove,
+} from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import { ChevronDown } from "lucide-react";
 
@@ -17,10 +22,34 @@ type Countdown = {
 const EVENT_DATE = new Date("2026-08-10T00:00:00");
 
 const EVENT_FAMILIES = [
-  { family: "Family of Dominion", father: "Brother David Abeng", mother: "Sister Divine Edosomwan", icon: GiWingedScepter, colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]" },
-  { family: "Family of Light", father: "Brother Paul Etop", mother: "Sister Sarah Cyril", icon: GiPolarStar, colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]" },
-  { family: "Family of Power", father: "Brother Victor Omolu", mother: "Sister Fortune Umoh", icon: FaBolt, colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]" },
-  { family: "Family of Virtue", father: "Brother Henry Igani", mother: "Sister Mercy Alexander", icon: GiFruitTree, colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]" },
+  {
+    family: "Family of Dominion",
+    father: "Brother David Abeng",
+    mother: "Sister Divine Edosomwan",
+    icon: GiWingedScepter,
+    colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]",
+  },
+  {
+    family: "Family of Light",
+    father: "Brother Paul Etop",
+    mother: "Sister Sarah Cyril",
+    icon: GiPolarStar,
+    colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]",
+  },
+  {
+    family: "Family of Power",
+    father: "Brother Victor Omolu",
+    mother: "Sister Fortune Umoh",
+    icon: FaBolt,
+    colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]",
+  },
+  {
+    family: "Family of Virtue",
+    father: "Brother Henry Igani",
+    mother: "Sister Mercy Alexander",
+    icon: GiFruitTree,
+    colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]",
+  },
 ];
 
 const HERO_IMAGES = [
@@ -29,7 +58,14 @@ const HERO_IMAGES = [
   "/virgins/two.jpg",
 ];
 
-const WALL_PREVIEW_FRAMES = ["Frame 1", "Frame 2", "Frame 3", "Frame 4", "Frame 5", "Frame 6"];
+const WALL_PREVIEW_FRAMES = [
+  "Frame 1",
+  "Frame 2",
+  "Frame 3",
+  "Frame 4",
+  "Frame 5",
+  "Frame 6",
+];
 
 function getCountdown(now: Date): Countdown {
   const distance = EVENT_DATE.getTime() - now.getTime();
@@ -51,13 +87,17 @@ function CountdownDigit({ value, label }: { value: number; label: string }) {
           {display}
         </span>
       </div>
-      <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">{label}</span>
+      <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">
+        {label}
+      </span>
     </div>
   );
 }
 
 export default function Home() {
-  const [countdown, setCountdown] = useState<Countdown>(() => getCountdown(new Date()));
+  const [countdown, setCountdown] = useState<Countdown>(() =>
+    getCountdown(new Date()),
+  );
   const [currentSlide, setCurrentSlide] = useState(0);
   const [prevSlide, setPrevSlide] = useState<number | null>(null);
   const [isFading, setIsFading] = useState(false);
@@ -65,7 +105,10 @@ export default function Home() {
 
   // Countdown tick
   useEffect(() => {
-    const timer = setInterval(() => setCountdown(getCountdown(new Date())), 1000);
+    const timer = setInterval(
+      () => setCountdown(getCountdown(new Date())),
+      1000,
+    );
     return () => clearInterval(timer);
   }, []);
 
@@ -74,7 +117,9 @@ export default function Home() {
     intervalRef.current = setInterval(() => {
       goToSlide((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   const goToSlide = (nextFn: (prev: number) => number) => {
@@ -106,18 +151,21 @@ export default function Home() {
 
       {/* ─── HERO ─── */}
       <section className="relative w-full h-screen overflow-hidden">
-
         {/* Slide images */}
         {HERO_IMAGES.map((src, idx) => (
           <div
             key={src}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+            }`}
             style={{
               backgroundImage: `url(${src})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              animation: idx === currentSlide ? "kenBurns 10s ease-in-out infinite alternate" : "none",
+              animation:
+                idx === currentSlide
+                  ? "kenBurns 10s ease-in-out infinite alternate"
+                  : "none",
             }}
           />
         ))}
@@ -132,10 +180,13 @@ export default function Home() {
           </p>
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-tight max-w-4xl">
             35th Anniversary
-            <span className="block text-(--primary-gold) italic font-serif">Celebration</span>
+            <span className="block text-(--primary-gold) italic font-serif">
+              Celebration
+            </span>
           </h1>
           <p className="mt-6 max-w-xl text-base sm:text-lg text-white/75 leading-relaxed">
-            <p className="text-xl -mb-8">The Family Love Built </p><br /> Bearers of the Seal of the Universal Monarch
+            <p className="text-xl -mb-8">The Family Love Built </p>
+            <br /> Bearers of the Seal of the Universal Monarch
           </p>
 
           <div className="mt-10 flex items-center gap-4">
@@ -169,7 +220,9 @@ export default function Home() {
                 <div key={item.label} className="flex items-center gap-4">
                   <CountdownDigit value={item.value} label={item.label} />
                   {i < countdownBlocks.length - 1 && (
-                    <span className="text-white/30 text-2xl font-thin mb-3">:</span>
+                    <span className="text-white/30 text-2xl font-thin mb-3">
+                      :
+                    </span>
                   )}
                 </div>
               ))}
@@ -186,10 +239,11 @@ export default function Home() {
             <button
               key={idx}
               onClick={() => goToSlide(() => idx)}
-              className={`rounded-full transition-all duration-300 ${idx === currentSlide
-                ? "w-6 h-2 bg-(--primary-gold)"
-                : "w-2 h-2 bg-white/40 hover:bg-white/60"
-                }`}
+              className={`rounded-full transition-all duration-300 ${
+                idx === currentSlide
+                  ? "w-6 h-2 bg-(--primary-gold)"
+                  : "w-2 h-2 bg-white/40 hover:bg-white/60"
+              }`}
             />
           ))}
         </div>
@@ -198,17 +252,16 @@ export default function Home() {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 translate-y-8 flex flex-col items-center gap-1 text-white/40 animate-bounce">
           <ChevronDown size={20} />
         </div>
-
       </section>
 
       {/* ─── REST OF PAGE ─── */}
       <div className="flex w-full flex-col gap-10 px-3 py-12 sm:px-4 md:px-20">
-
         {/* Event Families */}
         <section className="rounded-2xl border border-(--primary-gold)/35 p-6">
           <h2 className="text-2xl font-bold">Event Families</h2>
           <p className="mt-2 text-zinc-500 dark:text-zinc-400">
-            Meet the families serving at the event, each with a father and a mother.
+            Meet the families serving at the event, each with a father and a
+            mother.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {EVENT_FAMILIES.map((item) => {
@@ -218,16 +271,26 @@ export default function Home() {
                   key={item.family}
                   className="relative overflow-hidden rounded-xl border border-(--primary-gold)/35 bg-black/5 p-5 dark:bg-white/5"
                 >
-                  <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-black/10 dark:bg-white/10 ${item.colorClass}`}>
+                  <div
+                    className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-black/10 dark:bg-white/10 ${item.colorClass}`}
+                  >
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-bold text-(--primary-gold)">{item.family}</h3>
+                  <h3 className="text-lg font-bold text-(--primary-gold)">
+                    {item.family}
+                  </h3>
                   <div className="mt-3 space-y-1">
                     <p className="text-sm">
-                      <span className="font-semibold text-zinc-500 dark:text-zinc-400">Father:</span> {item.father}
+                      <span className="font-semibold text-zinc-500 dark:text-zinc-400">
+                        Father:
+                      </span>{" "}
+                      {item.father}
                     </p>
                     <p className="text-sm">
-                      <span className="font-semibold text-zinc-500 dark:text-zinc-400">Mother:</span> {item.mother}
+                      <span className="font-semibold text-zinc-500 dark:text-zinc-400">
+                        Mother:
+                      </span>{" "}
+                      {item.mother}
                     </p>
                   </div>
                 </article>
@@ -236,11 +299,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Wall of Fame */}
+        {/* Hall of Fame */}
         <section className="rounded-2xl border border-(--primary-gold)/35 p-6 mb-10">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold">Wall of Fame</h2>
-            <Link className="text-(--primary-gold) font-semibold underline underline-offset-4" href="/wall-of-fame">
+            <h2 className="text-2xl font-bold">Hall of Fame</h2>
+            <Link
+              className="text-(--primary-gold) font-semibold underline underline-offset-4"
+              href="/hall-of-fame"
+            >
               See all
             </Link>
           </div>
@@ -252,13 +318,14 @@ export default function Home() {
                 className={`wall-frame wall-frame-portrait flex aspect-3/4 items-center justify-center rounded-xl border border-(--primary-gold)/40 p-2 ${idx === 5 ? "lg:hidden" : ""}`}
               >
                 <div className="wall-frame-inner flex h-full w-full items-center justify-center rounded-md border border-(--primary-gold)/45">
-                  <span className="text-4xl font-bold text-(--primary-gold)">?</span>
+                  <span className="text-4xl font-bold text-(--primary-gold)">
+                    ?
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </section>
-
       </div>
     </main>
   );

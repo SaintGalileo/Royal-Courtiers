@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Search, Filter, Loader2, Key, CheckCircle, Clock, User, UserPlus, Copy, ClipboardCheck } from "lucide-react";
+import { Search, Filter, Loader2, Key, CheckCircle, Clock, User, UserPlus, Copy, ClipboardCheck, ChevronUp, ChevronDown } from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
 
@@ -30,9 +30,14 @@ export default function AdminAccessCodesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+
+  // Sorting
+  const [sortConfig, setSortConfig] = useState<{ key: keyof AccessCode; direction: "asc" | "desc" } | null>({
+    key: "created_at",
+    direction: "desc",
+  });
   
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -67,11 +72,45 @@ export default function AdminAccessCodesPage() {
     });
   }, [codes, search, statusFilter]);
 
-  const totalPages = Math.ceil(filteredCodes.length / itemsPerPage);
+  const sortedCodes = useMemo(() => {
+    if (!sortConfig) return filteredCodes;
+
+    return [...filteredCodes].sort((a, b) => {
+      let aValue: any = a[sortConfig.key];
+      let bValue: any = b[sortConfig.key];
+
+      if (sortConfig.key === "is_used") {
+        aValue = a.is_used ? 1 : 0;
+        bValue = b.is_used ? 1 : 0;
+      }
+      
+      if (sortConfig.key as string === "used_by") {
+        const memberA = members.find((m) => m.code.toUpperCase() === a.code.toUpperCase());
+        const memberB = members.find((m) => m.code.toUpperCase() === b.code.toUpperCase());
+        aValue = memberA ? `${memberA.first_name} ${memberA.last_name}` : (a.is_used ? "zzz" : "");
+        bValue = memberB ? `${memberB.first_name} ${memberB.last_name}` : (b.is_used ? "zzz" : "");
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredCodes, sortConfig]);
+
+  const handleSort = (key: keyof AccessCode) => {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const totalPages = Math.ceil(sortedCodes.length / itemsPerPage);
   const paginatedCodes = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredCodes.slice(start, start + itemsPerPage);
-  }, [filteredCodes, currentPage, itemsPerPage]);
+    return sortedCodes.slice(start, start + itemsPerPage);
+  }, [sortedCodes, currentPage, itemsPerPage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -180,10 +219,50 @@ export default function AdminAccessCodesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Access Code</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Status</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Used By</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Created</th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("code")}
+                >
+                  <div className="flex items-center gap-2">
+                    Access Code
+                    {sortConfig?.key === "code" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("is_used")}
+                >
+                  <div className="flex items-center gap-2">
+                    Status
+                    {sortConfig?.key === "is_used" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("used_by" as any)}
+                >
+                  <div className="flex items-center gap-2">
+                    Used By
+                    {sortConfig?.key as string === "used_by" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => handleSort("created_at")}
+                >
+                  <div className="flex items-center gap-2">
+                    Created
+                    {sortConfig?.key === "created_at" && (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">

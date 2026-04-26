@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Users, Key, LogOut, Loader2, Menu, X, ScrollText } from "lucide-react";
+import { Users, Key, LogOut, Loader2, Menu, X, ScrollText, Trophy } from "lucide-react";
 import { GiDove as GiDoveIcon } from "react-icons/gi";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -46,6 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "Members", href: "/admin/members", icon: Users },
     { label: "Access Codes", href: "/admin/access-codes", icon: Key },
     { label: "Sacred Records", href: "/admin/sacred-records", icon: ScrollText },
+    { label: "Scoresheet", href: "/admin/scoresheet", icon: Trophy },
   ];
 
   return (

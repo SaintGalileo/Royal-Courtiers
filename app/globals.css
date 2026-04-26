@@ -40,6 +40,19 @@ body {
   display: none;
 }
 
+/* Add default cursor pointer for all clickable elements (Tailwind v4 removes this for buttons) */
+button,
+[role="button"],
+a,
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"]:disabled {
+  cursor: not-allowed;
+}
+
 input,
 select,
 textarea {
