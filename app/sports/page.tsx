@@ -198,10 +198,9 @@ export default function SportsPage() {
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold
                 transition-all border whitespace-nowrap
-                ${
-                  activeTab === sport
-                    ? "bg-(--primary-gold) text-white border-(--primary-gold) shadow-sm"
-                    : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                ${activeTab === sport
+                  ? "bg-(--primary-gold) text-white border-(--primary-gold) shadow-sm"
+                  : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
                 }
               `}
             >
@@ -218,14 +217,14 @@ export default function SportsPage() {
           "Egg Race (Junior)",
           "Filling the Basket (Junior)",
         ].includes(activeTab) && (
-          <div className="mb-8 flex items-start gap-3 px-4 py-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-            <AlertCircle className="h-4 w-4 text-(--primary-gold) shrink-0 mt-0.5" />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-              The Draw will be confirmed after the Event Meeting with the Family
-              Heads.
-            </p>
-          </div>
-        )}
+            <div className="mb-8 flex items-start gap-3 px-4 py-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <AlertCircle className="h-4 w-4 text-(--primary-gold) shrink-0 mt-0.5" />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                The Draw will be confirmed after the Event Meeting with the Family
+                Heads.
+              </p>
+            </div>
+          )}
 
         <div className="space-y-10">
           {/* Day 1 */}
