@@ -17,10 +17,42 @@ type Countdown = {
 const EVENT_DATE = new Date("2026-08-10T00:00:00");
 
 const EVENT_FAMILIES = [
-  { family: "Family of Dominion", father: "Brother David Abeng", mother: "Sister Divine Edosomwan", icon: GiWingedScepter, colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]" },
-  { family: "Family of Light", father: "Brother Paul Etop", mother: "Sister Sarah Cyril", icon: GiPolarStar, colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]" },
-  { family: "Family of Power", father: "Brother Victor Omolu", mother: "Sister Fortune Umoh", icon: FaBolt, colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]" },
-  { family: "Family of Virtue", father: "Brother Henry Igani", mother: "Sister Mercy Alexander", icon: GiFruitTree, colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]" },
+  {
+    family: "Family of Dominion",
+    father: "Brother David Abeng",
+    mother: "Sister Divine Edosomwan",
+    icon: GiWingedScepter,
+    colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934848/photo_2026-04-23_10-00-57_rhas9s.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1776936363/i4qhipfe3zwgnerymcdn.jpg"
+  },
+  {
+    family: "Family of Light",
+    father: "Brother Paul Etop",
+    mother: "Sister Sarah Cyril",
+    icon: GiPolarStar,
+    colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775139477/wdzbv3jvdvsjabzlprev.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775129139/nkxr8dc5iyredtlgyazu.png"
+  },
+  {
+    family: "Family of Power",
+    father: "Brother Victor Omolu",
+    mother: "Sister Fortune Umoh",
+    icon: FaBolt,
+    colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934875/photo_2026-04-23_10-01-33_fer1th.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1775042678/zjyanfopnubxuumxi050.jpg"
+  },
+  {
+    family: "Family of Virtue",
+    father: "Brother Henry Igani",
+    mother: "Sister Mercy Alexander",
+    icon: GiFruitTree,
+    colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775128274/wwjphkfky1iuyvuqfe9q.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775300787/mptvkengmiciz6bawipr.jpg"
+  },
 ];
 
 const HERO_IMAGES = [
@@ -205,32 +237,112 @@ export default function Home() {
       <div className="flex w-full flex-col gap-10 px-3 py-12 sm:px-4 md:px-20">
 
         {/* Event Families */}
-        <section className="rounded-2xl border border-(--primary-gold)/35 p-6">
-          <h2 className="text-2xl font-bold">Event Families</h2>
-          <p className="mt-2 text-zinc-500 dark:text-zinc-400">
-            Meet the families serving at the event, each with a father and a mother.
-          </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="rounded-3xl border border-(--primary-gold)/35 bg-black/20 p-8 sm:p-12 relative overflow-hidden backdrop-blur-sm">
+          {/* Decorative background glow */}
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-(--primary-gold)/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Section header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-(--primary-gold)/10 border border-(--primary-gold)/20 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-(--primary-gold) w-fit">
+                Foundational Pillars
+              </div>
+              <h2 className="text-4xl sm:text-5xl font-black text-white">Event Families</h2>
+            </div>
+          </div>
+
+          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
             {EVENT_FAMILIES.map((item) => {
-              const Icon = item.icon;
+              const FamilyIcon = item.icon;
               return (
-                <article
-                  key={item.family}
-                  className="relative overflow-hidden rounded-xl border border-(--primary-gold)/35 bg-black/5 p-5 dark:bg-white/5"
-                >
-                  <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-black/10 dark:bg-white/10 ${item.colorClass}`}>
-                    <Icon className="h-6 w-6" />
+                <div key={item.family} className="flex flex-col gap-6">
+                  {/* Family Header */}
+                  <div className="group relative flex items-center gap-3">
+                    <div className={`p-2 rounded-lg bg-black/40 border border-white/5 ${item.colorClass} transition-transform group-hover:scale-110`}>
+                      <FamilyIcon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90 group-hover:text-(--primary-gold) transition-colors">
+                      {item.family}
+                    </h3>
+                    <div className="h-px flex-1 bg-gradient-to-r from-(--primary-gold)/30 to-transparent" />
                   </div>
-                  <h3 className="text-lg font-bold text-(--primary-gold)">{item.family}</h3>
-                  <div className="mt-3 space-y-1">
-                    <p className="text-sm">
-                      <span className="font-semibold text-zinc-500 dark:text-zinc-400">Father:</span> {item.father}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold text-zinc-500 dark:text-zinc-400">Mother:</span> {item.mother}
-                    </p>
+
+                  {/* Heads Grid (Vertical Cards) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Father Head - Cinematic Portrait */}
+                    <article className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-(--primary-gold)/40 hover:shadow-(--primary-gold)/10">
+                      {/* Background Image / Placeholder */}
+                      <div className="absolute inset-0">
+                        {item.fatherImage ? (
+                          <img
+                            src={item.fatherImage}
+                            alt={item.father}
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-t from-black via-black/40 to-blue-900/40" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
+                      </div>
+
+                      {/* Monogram / Icon Placeholder (if no image) */}
+                      {!item.fatherImage && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-4xl font-serif italic text-white/10 group-hover:text-white/20 transition-all duration-700 group-hover:scale-150">
+                            {item.father.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))?.[0] ?? "F"}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Content Overlay */}
+                      <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-2.5 sm:p-4 bg-gradient-to-t from-black via-black/20 to-transparent">
+                        <p className="text-[10px] sm:text-xs font-black text-white uppercase tracking-wide truncate">
+                          Bro {item.father.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))}
+                        </p>
+                      </div>
+
+                      {/* Glass Shine Effect */}
+                      <div className="absolute inset-x-0 -top-full h-full bg-gradient-to-b from-white/10 to-transparent skew-y-12 transition-all duration-1000 group-hover:top-full" />
+                    </article>
+
+                    {/* Mother Head - Cinematic Portrait */}
+                    <article className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-rose-500/40 hover:shadow-rose-500/10">
+                      {/* Background Image / Placeholder */}
+                      <div className="absolute inset-0">
+                        {item.motherImage ? (
+                          <img
+                            src={item.motherImage}
+                            alt={item.mother}
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-t from-black via-black/40 to-rose-900/40" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
+                      </div>
+
+                      {/* Monogram / Icon Placeholder (if no image) */}
+                      {!item.motherImage && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-4xl font-serif italic text-white/10 group-hover:text-white/20 transition-all duration-700 group-hover:scale-150">
+                            {item.mother.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))?.[0] ?? "M"}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Content Overlay */}
+                      <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-2.5 sm:p-4 bg-gradient-to-t from-black via-black/20 to-transparent">
+                        <p className="text-[10px] sm:text-xs font-black text-white uppercase tracking-wide truncate">
+                          Sis {item.mother.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))}
+                        </p>
+                      </div>
+
+                      {/* Glass Shine Effect */}
+                      <div className="absolute inset-x-0 -top-full h-full bg-gradient-to-b from-white/10 to-transparent skew-y-12 transition-all duration-1000 group-hover:top-full" />
+                    </article>
                   </div>
-                </article>
+                </div>
               );
             })}
           </div>
