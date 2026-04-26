@@ -60,7 +60,7 @@ const sports: SportTab[] = [
   "Ludo",
 ];
 
-const MOCK_MATCHES: Match[] = sports.flatMap((tab, i) => {
+const MOCK_MATCHES: Match[] = sports.flatMap((tab, i): Match[] => {
   const isGraded = [
     "Track Events",
     "Sack Race (Junior)",
