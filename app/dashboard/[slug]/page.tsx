@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Copy, Check, Star, Moon, Sun } from "lucide-react";
 import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import type { ComponentType } from "react";
@@ -11,15 +10,16 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import TshirtModel from "@/components/TshirtModel";
 import FamilyCard from "@/components/FamilyCard";
+import BirthdayCard from "@/components/BirthdayCard";
+import BirthdayConfetti from "@/components/BirthdayConfetti";
 import { toPng } from "html-to-image";
 import { useRef } from "react";
-import { Download, Share2, Edit2, X, Camera } from "lucide-react";
+import { Download, Share2, Edit2, X, Camera, Cake, Gift, Music, ArrowLeft, Copy, Check, Star, Moon, Sun } from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import ImageCropper from "@/components/ImageCropper";
 import TalentSelector from "@/components/TalentSelector";
 import PinLock from "@/components/PinLock";
 import SpotifySearch, { SpotifyTrack } from "@/components/SpotifySearch";
-import { Music } from "lucide-react";
 
 
 type TabKey = "family-members" | "tshirt" | "account-info" | "share-card";
@@ -136,6 +136,10 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const [isPinVerified, setIsPinVerified] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ fn: () => void; title: string } | null>(null);
   const [isSpotifyOpen, setIsSpotifyOpen] = useState(false);
+  const [isUserBirthday, setIsUserBirthday] = useState(false);
+  const [birthdayFamilyMembers, setBirthdayFamilyMembers] = useState<MemberData[]>([]);
+  const [isDownloadingBdayCard, setIsDownloadingBdayCard] = useState(false);
+  const birthdayCardRef = useRef<HTMLDivElement>(null);
 
 
 
@@ -254,6 +258,30 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     loadData();
   }, [resolvedSlug, supabase]);
 
+  // Birthday detection
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date();
+    const todayMonth = today.getMonth() + 1;
+    const todayDay = today.getDate();
+
+    // Check if logged-in user has birthday today
+    if (user.date_of_birth) {
+      const dob = new Date(user.date_of_birth);
+      if (dob.getMonth() + 1 === todayMonth && dob.getDate() === todayDay) {
+        setIsUserBirthday(true);
+      }
+    }
+
+    // Check which family members have birthdays today
+    const bdayMembers = familyMembers.filter((m) => {
+      if (!m.date_of_birth || m.id === user.id) return false;
+      const dob = new Date(m.date_of_birth);
+      return dob.getMonth() + 1 === todayMonth && dob.getDate() === todayDay;
+    });
+    setBirthdayFamilyMembers(bdayMembers);
+  }, [user, familyMembers]);
+
   const copyCode = () => {
     if (!user?.code) return;
     navigator.clipboard.writeText(user.code);
@@ -271,25 +299,48 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     router.push("/");
   };
 
-  const downloadCard = async () => {
-    if (!cardRef.current) return;
+  const downloadCard = async (ref?: React.RefObject<HTMLDivElement | null>, filename?: string) => {
+    const targetRef = ref || cardRef;
+    if (!targetRef.current) return;
     setIsDownloading(true);
     try {
-      const dataUrl = await toPng(cardRef.current, {
+      const dataUrl = await toPng(targetRef.current, {
         cacheBust: true,
         canvasWidth: 1080,
         canvasHeight: 1080,
       });
       const link = document.createElement("a");
-      link.download = `virgins-family-card-${user?.first_name}.png`;
+      link.download = filename || `virgins-family-card-${user?.first_name}.png`;
       link.href = dataUrl;
       link.click();
-      toast.success("Family Card downloaded! Share it on your status.");
+      toast.success(filename?.includes("birthday") ? "Birthday Card downloaded! 🎉" : "Family Card downloaded! Share it on your status.");
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate card image.");
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const downloadBirthdayCard = async () => {
+    if (!birthdayCardRef.current) return;
+    setIsDownloadingBdayCard(true);
+    try {
+      const dataUrl = await toPng(birthdayCardRef.current, {
+        cacheBust: true,
+        canvasWidth: 1080,
+        canvasHeight: 1080,
+      });
+      const link = document.createElement("a");
+      link.download = `happy-birthday-${user?.first_name}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success("Birthday Card downloaded! 🎉 Share it with everyone!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate birthday card.");
+    } finally {
+      setIsDownloadingBdayCard(false);
     }
   };
 
@@ -596,122 +647,230 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           onClose={() => setIsSpotifyOpen(false)}
         />
       )}
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
 
+      {/* Birthday Confetti — fires when it's the logged-in user's birthday */}
+      {isViewerOwner && <BirthdayConfetti active={isUserBirthday} />}
 
-        {/* ── Header Card ── */}
-        <header className="rounded-2xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900 p-4 sm:p-6">
-          <div className="mb-4 sm:mb-6 flex items-center justify-between">
-            <Link href="/" className="text-xs sm:text-sm font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
-              ← Back
-            </Link>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={toggleTheme}
-                className="rounded-md border border-zinc-200 p-2 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors"
-                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-              <button
-                onClick={handleLogout}
-                className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors"
-              >
-                Log Out
-              </button>
+      {/* ── Dashboard Navbar ── */}
+      <nav className="sticky top-0 z-40 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-all active:scale-95"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+              <ArrowLeft size={18} />
             </div>
+            <span className="hidden sm:inline text-sm font-black uppercase tracking-widest">Back to Home</span>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-all active:scale-90 shadow-sm"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-500/20 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30 transition-all active:scale-95"
+            >
+              Logout
+            </button>
           </div>
+        </div>
+      </nav>
 
-          {/* Top row: avatar + name + code (stacks gracefully on mobile) */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6">
 
-            {/* Left: avatar + name block */}
-            <div className="flex items-center gap-3 sm:gap-5">
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                {user.photo_url ? (
-                  <img src={getOptimizedUrl(user.photo_url)} alt="Profile" className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl object-cover border border-(--primary-gold)/20 shadow-sm" />
-                ) : (
-                  <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-(--primary-gold)/10 text-lg sm:text-xl font-bold text-(--primary-gold)">
-                    {initials}
-                  </div>
-                )}
-                {isViewerOwner && (
-                  <label
-                    className={`absolute -top-1 -left-1 flex h-6 w-6 items-center justify-center rounded-full border border-zinc-200 bg-white shadow-xs transition-transform hover:scale-110 dark:border-zinc-700 dark:bg-zinc-800 ${!user.is_photo_edited && !isUploadingPhoto ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
-                    title={user.is_photo_edited ? "Photo locked" : "Update Photo"}
-                  >
-                    {isUploadingPhoto ? (
-                      <div className="h-3 w-3 animate-spin rounded-full border border-(--primary-gold) border-t-transparent" />
-                    ) : (
-                      <Camera className={`h-3 w-3 ${user.is_photo_edited ? "text-zinc-300 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-400"}`} />
-                    )}
-                    {!user.is_photo_edited && (
+
+        {/* ── Compact Centered Dashboard Header ── */}
+        <header className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 relative overflow-hidden">
+          <div className="flex flex-col items-center gap-4">
+            
+            {/* Avatar & Identity (Centered) */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border-2 border-zinc-100 bg-white shadow-md dark:border-zinc-800 dark:bg-zinc-950 overflow-hidden relative group">
+                  {user.photo_url ? (
+                    <img
+                      src={getOptimizedUrl(user.photo_url)}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-(--primary-gold)/5 text-xl font-black text-(--primary-gold)">
+                      {initials}
+                    </div>
+                  )}
+                  {isViewerOwner && !user.is_photo_edited && (
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                      <Camera className="text-white h-5 w-5" />
                       <input type="file" accept="image/*" className="hidden" onChange={onPhotoChange} disabled={isUploadingPhoto} />
-                    )}
-                  </label>
-                )}
-                <div className={`absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-md border border-zinc-100 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-950 ${styleObj.className}`}>
-                  <Icon className="h-3.5 w-3.5" />
+                    </label>
+                  )}
+                </div>
+                <div className={`absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-white shadow-sm dark:border-zinc-900 dark:bg-zinc-950 ${styleObj.className}`}>
+                  <Icon className="h-3 w-3" />
                 </div>
               </div>
 
-              {/* Name & badges */}
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold leading-tight truncate">
+              <div className="text-center min-w-0">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 dark:text-white capitalize truncate">
                   {user.first_name} {user.last_name}
                 </h1>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                  @{user.nick_name || user.first_name.toLowerCase()}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-(--primary-gold)/10 px-2 py-1 text-xs font-semibold text-(--primary-gold)">
-                    <span className="h-1.5 w-1.5 rounded-full bg-(--primary-gold)" />
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-0.5">
+                  <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500">
+                    @{user.nick_name || user.first_name.toLowerCase()}
+                  </p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-(--primary-gold)/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-(--primary-gold) border border-(--primary-gold)/20">
                     {user.family}
                   </span>
                   {HEAD_CODES.includes(user.code) && (
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-purple-100 px-2 py-1 text-xs font-bold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                      Family Head
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20">
+                      Head
                     </span>
-                  )}
-                  <span className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
-                    {age} year{age !== 1 ? "s" : ""} old
-                  </span>
-                  <span className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
-                    {serviceDuration} of service
-                  </span>
-                  {user.favorite_song && (
-                    <div
-                      className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-bold bg-green-500/10 text-green-600"
-                    >
-                      <Music size={12} />
-                      <span className="max-w-[120px] truncate">{user.favorite_song.name}</span>
-                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Right: access code — full width on mobile, inline on sm+ */}
-            <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4 sm:min-w-[140px] dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Access Code</p>
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-lg font-bold tracking-[0.2em] text-(--primary-gold)">
-                  {user.code}
-                </span>
-                <button
-                  onClick={copyCode}
-                  className="rounded-md border border-zinc-200 bg-white p-2 text-zinc-500 shadow-xs transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
-                  title="Copy Access Code"
-                >
-                  {copied
-                    ? <Check className="h-4 w-4 text-green-500" />
-                    : <Copy className="h-4 w-4" />}
+            {/* Access Code (Centered) */}
+            <div className="flex flex-col items-center gap-3 w-full">
+              <div className="flex items-center gap-3 px-6 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-100 dark:border-zinc-800">
+                <div className="text-center">
+                  <p className="text-[8px] uppercase tracking-widest font-black text-zinc-400">Unique Access Code</p>
+                  <span className="font-mono text-base sm:text-lg font-black tracking-[0.2em] text-(--primary-gold)">{user.code}</span>
+                </div>
+                <button onClick={copyCode} className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md transition-all">
+                  {copied ? <Check className="text-green-500 h-4 w-4" /> : <Copy size={14} className="text-zinc-400" />}
                 </button>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-zinc-300 dark:text-zinc-700">AGE:</span>
+                  <span className="text-zinc-700 dark:text-zinc-300">{age}</span>
+                </div>
+                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-800" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-zinc-300 dark:text-zinc-700">SVC:</span>
+                  <span className="text-zinc-700 dark:text-zinc-300">{serviceDuration}</span>
+                </div>
+                {user.favorite_song && (
+                  <>
+                    <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-800" />
+                    <div className="flex items-center gap-1.5 text-emerald-500">
+                      <Music size={10} />
+                      <span className="max-w-[100px] truncate">{user.favorite_song.name}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </header>
+
+        {/* ── Birthday Banner ── */}
+        {isViewerOwner && isUserBirthday && (
+          <div className="relative rounded-2xl border border-amber-200/50 dark:border-amber-500/15 bg-gradient-to-r from-amber-50 via-white to-rose-50 dark:from-amber-950/20 dark:via-zinc-900 dark:to-rose-950/10 shadow-lg overflow-hidden p-6 sm:p-8 animate-in slide-in-from-top-4 fade-in duration-700">
+            {/* Decorative background */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-400/10 blur-3xl" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-rose-400/8 blur-3xl" />
+              {[...Array(20)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full animate-pulse"
+                  style={{
+                    width: `${2 + Math.random() * 4}px`,
+                    height: `${2 + Math.random() * 4}px`,
+                    top: `${Math.random() * 100}%`,
+                    left: `${Math.random() * 100}%`,
+                    backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#22c55e', '#ec4899'][i % 5],
+                    opacity: 0.2 + Math.random() * 0.15,
+                    animationDelay: `${Math.random() * 2}s`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="relative flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
+              <div className="text-5xl sm:text-6xl">🎂</div>
+              <div className="text-center sm:text-left flex-1">
+                <h3 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                  Happy Birthday, {user.first_name}! 🎉
+                </h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
+                  The <span className="font-bold text-amber-600 dark:text-amber-400">Family of {user.family}</span> celebrates you today.
+                  Wishing you love, grace, and everything beautiful!
+                </p>
+              </div>
+              <button
+                onClick={downloadBirthdayCard}
+                disabled={isDownloadingBdayCard}
+                className="shrink-0 flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50"
+              >
+                {isDownloadingBdayCard ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <Download size={16} />
+                )}
+                {isDownloadingBdayCard ? "Generating..." : "Get Birthday Card"}
+              </button>
+            </div>
+
+            {/* Hidden birthday card for download */}
+            <div className="absolute -left-[9999px] top-0">
+              <div className="w-[450px]">
+                <BirthdayCard
+                  firstName={user.first_name}
+                  lastName={user.last_name}
+                  family={user.family}
+                  photoUrl={user.photo_url}
+                  age={age}
+                  cardRef={birthdayCardRef}
+                />
               </div>
             </div>
           </div>
-        </header>
+        )}
+
+        {/* ── Family Members' Birthdays ── */}
+        {birthdayFamilyMembers.length > 0 && (
+          <div className="rounded-2xl border border-amber-200/40 dark:border-amber-500/10 bg-amber-50/50 dark:bg-amber-950/10 p-5 animate-in fade-in duration-500">
+            <div className="flex items-center gap-2 mb-3">
+              <Cake size={16} className="text-amber-500" />
+              <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400">Family Birthdays Today</h3>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {birthdayFamilyMembers.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center gap-3 rounded-xl border border-amber-200/50 dark:border-amber-500/10 bg-white dark:bg-zinc-900 px-4 py-3 shadow-sm"
+                >
+                  <div className="relative">
+                    {m.photo_url ? (
+                      <img src={getOptimizedUrl(m.photo_url)} alt="" className="h-10 w-10 rounded-full object-cover border-2 border-amber-400" />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 text-sm font-bold text-amber-600">
+                        {m.first_name[0]}{m.last_name[0]}
+                      </div>
+                    )}
+                    <div className="absolute -top-1 -right-1 text-xs">🎂</div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">{m.first_name} {m.last_name}</p>
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                      🎉 Happy Birthday!
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Tab Section ── */}
         <section className="rounded-2xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900 p-6">
@@ -1116,7 +1275,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   <p className="text-xs sm:text-sm text-zinc-500 mt-1">Download this square card to share on social media.</p>
                 </div>
                 <button
-                  onClick={downloadCard}
+                  onClick={() => downloadCard()}
                   disabled={isDownloading}
                   className="w-full sm:w-auto btn-primary flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-bold shadow-lg shadow-(--primary-gold)/20 transition-all active:scale-95 disabled:opacity-50"
                 >

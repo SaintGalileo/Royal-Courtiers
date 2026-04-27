@@ -10,7 +10,8 @@ import {
   GiDove,
 } from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Cake, Gift } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 type Countdown = {
   days: number;
@@ -102,6 +103,15 @@ function CountdownDigit({ value, label }: { value: number; label: string }) {
   );
 }
 
+type BirthdayMember = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  family: string;
+  photo_url?: string;
+  date_of_birth: string;
+};
+
 export default function Home() {
   const [countdown, setCountdown] = useState<Countdown>(() =>
     getCountdown(new Date()),
@@ -110,6 +120,8 @@ export default function Home() {
   const [prevSlide, setPrevSlide] = useState<number | null>(null);
   const [isFading, setIsFading] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [birthdayMembers, setBirthdayMembers] = useState<BirthdayMember[]>([]);
+  const supabase = useMemo(() => createClient(), []);
 
   // Countdown tick
   useEffect(() => {
@@ -129,6 +141,36 @@ export default function Home() {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
+
+  // Fetch today's birthday members
+  useEffect(() => {
+    async function fetchBirthdays() {
+      const today = new Date();
+      const month = today.getMonth() + 1;
+      const day = today.getDate();
+
+      // Supabase stores date_of_birth as DATE — extract month/day
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, first_name, last_name, family, photo_url, date_of_birth")
+        .not("date_of_birth", "is", null);
+
+      if (error) {
+        console.error("Error fetching birthdays", error);
+        return;
+      }
+
+      // Filter client-side for matching month & day
+      const matches = (data || []).filter((m: any) => {
+        if (!m.date_of_birth) return false;
+        const dob = new Date(m.date_of_birth);
+        return dob.getMonth() + 1 === month && dob.getDate() === day;
+      });
+
+      setBirthdayMembers(matches);
+    }
+    fetchBirthdays();
+  }, [supabase]);
 
   const goToSlide = (nextFn: (prev: number) => number) => {
     setCurrentSlide((prev) => {
@@ -178,37 +220,44 @@ export default function Home() {
         ))}
 
         {/* Dark gradient overlay */}
-        <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/55 via-black/20 to-black/70" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/90 via-black/50 to-transparent md:via-black/30" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
 
         {/* Hero content */}
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-4">
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.35em] text-(--primary-gold) mb-4">
-            August 10, 2026
-          </p>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-tight max-w-4xl">
-            35th Anniversary
-            <span className="block text-(--primary-gold) italic font-serif">
-              Celebration
-            </span>
-          </h1>
-          <p className="mt-6 max-w-xl text-base sm:text-lg text-white/75 leading-relaxed">
-            <p className="text-xl -mb-8">The Family Love Built </p>
-            <br /> Bearers of the Seal of the Universal Monarch
-          </p>
+        <div className="absolute inset-0 z-30 flex flex-col items-start justify-start pt-32 sm:pt-0 sm:justify-center px-6 sm:px-12 md:px-24 lg:px-32">
+          <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-(--primary-gold) mb-6">
+              August 10, 2026
+            </p>
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-[0.95] tracking-tight">
+              35th Anniversary
+              <span className="block text-(--primary-gold) mt-1 tracking-normal">
+                Celebration
+              </span>
+            </h1>
+            <div className="mt-8 space-y-2">
+              <p className="text-base sm:text-lg md:text-xl font-bold text-white/90 tracking-tight">
+                The Family Love Built
+              </p>
+              <p className="max-w-lg text-[10px] sm:text-xs md:text-sm text-white/50 leading-relaxed font-medium tracking-wide">
+                Bearers of the Seal of the Universal Monarch
+              </p>
+            </div>
 
-          <div className="mt-10 flex items-center gap-4">
-            <Link
-              href="/create-account"
-              className="btn-primary rounded-full px-7 py-3 text-sm font-bold shadow-lg shadow-black/30 transition-transform active:scale-95"
-            >
-              Join a Family
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-full border border-white/30 bg-white/10 backdrop-blur-sm px-7 py-3 text-sm font-bold text-white hover:bg-white/20 transition-all"
-            >
-              Log In
-            </Link>
+            <div className="mt-10 flex flex-row items-center gap-3 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+              <Link
+                href="/create-account"
+                className="btn-primary rounded-full px-4 py-4 sm:px-10 sm:py-5 text-[10px] sm:text-base font-black shadow-2xl shadow-black/50 transition-all hover:scale-105 active:scale-95 text-center flex-1 sm:flex-initial whitespace-nowrap"
+              >
+                JOIN A FAMILY
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-full border border-white/20 bg-white/5 backdrop-blur-md px-4 py-4 sm:px-10 sm:py-5 text-[10px] sm:text-base font-black text-white hover:bg-white/10 transition-all text-center flex-1 sm:flex-initial whitespace-nowrap"
+              >
+                LOG IN
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -241,14 +290,14 @@ export default function Home() {
         </div>
 
         {/* Carousel dots */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-3">
           {HERO_IMAGES.map((_, idx) => (
             <button
               key={idx}
               onClick={() => goToSlide(() => idx)}
-              className={`rounded-full transition-all duration-300 ${idx === currentSlide
-                  ? "w-6 h-2 bg-(--primary-gold)"
-                  : "w-2 h-2 bg-white/40 hover:bg-white/60"
+              className={`rounded-full transition-all duration-500 ${idx === currentSlide
+                ? "h-10 w-1.5 bg-(--primary-gold)"
+                : "h-3 w-1.5 bg-white/30 hover:bg-white/60"
                 }`}
             />
           ))}
@@ -260,120 +309,227 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── REST OF PAGE ─── */}
-      <div className="flex w-full flex-col gap-10 px-3 py-12 sm:px-4 md:px-20">
-        {/* Event Families */}
-        <section className="rounded-3xl border border-(--primary-gold)/35 bg-black/20 p-8 sm:p-12 relative overflow-hidden backdrop-blur-sm">
-          {/* Decorative background glow */}
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-(--primary-gold)/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Section header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-(--primary-gold)/10 border border-(--primary-gold)/20 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-(--primary-gold) w-fit">
-                Foundational Pillars
-              </div>
-              <h2 className="text-4xl sm:text-5xl font-black text-white">Event Families</h2>
+      {/* ─── EVENT FAMILIES — VERTICAL STICKY STACK ─── */}
+      <section className="relative w-full">
+        {/* Section Header — sticky at top */}
+        <div className="relative pb-12 pt-24">
+          <div className="px-6 sm:px-12 md:px-24 lg:px-32">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-(--primary-gold)/10 border border-(--primary-gold)/20 text-[10px] font-black uppercase tracking-[0.3em] text-(--primary-gold) mb-4">
+              Foundational Pillars
             </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
+              Event Families
+            </h2>
+            <p className="text-zinc-500 text-sm mt-2 max-w-lg font-medium">
+              Scroll to discover the families leading the 35th Anniversary celebration.
+            </p>
           </div>
+        </div>
 
-          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-            {EVENT_FAMILIES.map((item) => {
-              const FamilyIcon = item.icon;
-              return (
-                <div key={item.family} className="flex flex-col gap-6">
-                  {/* Family Header */}
-                  <div className="group relative flex items-center gap-3">
-                    <div className={`p-2 rounded-lg bg-black/40 border border-white/5 ${item.colorClass} transition-transform group-hover:scale-110`}>
-                      <FamilyIcon className="h-5 w-5" />
+        {/* Stacking Cards */}
+        <div className="relative px-6 sm:px-12 md:px-24 lg:px-32">
+          {EVENT_FAMILIES.map((item, idx) => {
+            const FamilyIcon = item.icon;
+            const bgColor = item.colorClass.includes("purple") ? "bg-purple-500" : item.colorClass.includes("yellow") ? "bg-yellow-500" : item.colorClass.includes("red") ? "bg-red-500" : "bg-green-500";
+            return (
+              <div
+                key={item.family}
+                className="sticky top-0 h-screen flex items-center justify-center"
+                style={{ zIndex: 10 + idx }}
+              >
+                <div
+                  className="group relative w-full max-w-6xl h-[700px] sm:h-[750px] md:h-[600px] rounded-[2.5rem] border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950 overflow-hidden shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] transition-all duration-700 hover:border-(--primary-gold)/30"
+                  style={{
+                    transform: `scale(${1 - idx * 0.02})`,
+                  }}
+                >
+                  {/* Decorative glow */}
+                  <div className={`absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[100px] opacity-15 pointer-events-none ${bgColor}`} />
+                  <div className={`absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-[80px] opacity-10 pointer-events-none ${bgColor}`} />
+
+                  <div className="relative grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-0 h-full">
+                    {/* Left — Info Panel */}
+                    <div className="flex flex-col justify-center p-8 sm:p-10 md:p-14">
+                      {/* Pillar Icon */}
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="relative">
+                          <div className={`absolute inset-0 blur-xl opacity-30 dark:opacity-50 ${bgColor}`} />
+                          <div className={`relative p-4 rounded-2xl bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/10 ${item.colorClass}`}>
+                            <FamilyIcon size={28} />
+                          </div>
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-white/10 to-transparent" />
+                      </div>
+
+                      <h3 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-none mb-4">
+                        {item.family}
+                      </h3>
+                      <p className="text-[10px] font-black text-zinc-400 dark:text-white/25 uppercase tracking-[0.3em] mb-4">
+                        35th Anniversary Pillar
+                      </p>
                     </div>
-                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white/90 group-hover:text-(--primary-gold) transition-colors">
-                      {item.family}
-                    </h3>
-                    <div className="h-px flex-1 bg-gradient-to-r from-(--primary-gold)/30 to-transparent" />
-                  </div>
 
-                  {/* Heads Grid (Vertical Cards) */}
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Father Head - Cinematic Portrait */}
-                    <article className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-(--primary-gold)/40 hover:shadow-(--primary-gold)/10">
-                      {/* Background Image / Placeholder */}
-                      <div className="absolute inset-0">
-                        {item.fatherImage ? (
-                          <img
-                            src={item.fatherImage}
-                            alt={item.father}
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-t from-black via-black/40 to-blue-900/40" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
-                      </div>
-
-                      {/* Monogram / Icon Placeholder (if no image) */}
-                      {!item.fatherImage && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-4xl font-serif italic text-white/10 group-hover:text-white/20 transition-all duration-700 group-hover:scale-150">
-                            {item.father.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))?.[0] ?? "F"}
-                          </span>
+                    {/* Right — Portraits */}
+                    <div className="grid grid-cols-2 gap-px h-[450px] md:h-[600px]">
+                      {/* Father Portrait */}
+                      <div className="group/portrait relative overflow-hidden">
+                        <img
+                          src={item.fatherImage}
+                          alt={item.father}
+                          className="h-full w-full object-cover transition-transform duration-1000 group-hover/portrait:scale-110 grayscale-[20%] group-hover/portrait:grayscale-0"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-6 left-6 right-6">
+                          <p className="text-[10px] font-black text-(--primary-gold) uppercase tracking-[0.2em] mb-1">Family Father</p>
+                          <p className="text-lg font-black text-white tracking-tight leading-none">
+                            {item.father.replace("Brother ", "Bro. ")}
+                          </p>
                         </div>
-                      )}
-
-                      {/* Content Overlay */}
-                      <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-2.5 sm:p-4 bg-gradient-to-t from-black via-black/20 to-transparent">
-                        <p className="text-[10px] sm:text-xs font-black text-white uppercase tracking-wide truncate">
-                          Bro {item.father.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))}
-                        </p>
                       </div>
 
-                      {/* Glass Shine Effect */}
-                      <div className="absolute inset-x-0 -top-full h-full bg-gradient-to-b from-white/10 to-transparent skew-y-12 transition-all duration-1000 group-hover:top-full" />
-                    </article>
-
-                    {/* Mother Head - Cinematic Portrait */}
-                    <article className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-rose-500/40 hover:shadow-rose-500/10">
-                      {/* Background Image / Placeholder */}
-                      <div className="absolute inset-0">
-                        {item.motherImage ? (
-                          <img
-                            src={item.motherImage}
-                            alt={item.mother}
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-t from-black via-black/40 to-rose-900/40" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
-                      </div>
-
-                      {/* Monogram / Icon Placeholder (if no image) */}
-                      {!item.motherImage && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-4xl font-serif italic text-white/10 group-hover:text-white/20 transition-all duration-700 group-hover:scale-150">
-                            {item.mother.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))?.[0] ?? "M"}
-                          </span>
+                      {/* Mother Portrait */}
+                      <div className="group/portrait relative overflow-hidden">
+                        <img
+                          src={item.motherImage}
+                          alt={item.mother}
+                          className="h-full w-full object-cover transition-transform duration-1000 group-hover/portrait:scale-110 grayscale-[20%] group-hover/portrait:grayscale-0"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-6 left-6 right-6">
+                          <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-1">Family Mother</p>
+                          <p className="text-lg font-black text-white tracking-tight leading-none">
+                            {item.mother.replace("Sister ", "Sis. ")}
+                          </p>
                         </div>
-                      )}
-
-                      {/* Content Overlay */}
-                      <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-2.5 sm:p-4 bg-gradient-to-t from-black via-black/20 to-transparent">
-                        <p className="text-[10px] sm:text-xs font-black text-white uppercase tracking-wide truncate">
-                          Sis {item.mother.split(" ").find(w => !["Brother", "Sister", "Bro", "Sis"].includes(w))}
-                        </p>
                       </div>
-
-                      {/* Glass Shine Effect */}
-                      <div className="absolute inset-x-0 -top-full h-full bg-gradient-to-b from-white/10 to-transparent skew-y-12 transition-all duration-1000 group-hover:top-full" />
-                    </article>
+                    </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom spacer for scroll clearance */}
+        <div className="h-24" />
+      </section>
+
+      {/* ─── BIRTHDAY CELEBRATIONS ─── */}
+      {birthdayMembers.length > 0 && (
+        <section className="relative w-full overflow-hidden py-16 sm:py-20">
+          {/* Background decoration */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-10 left-[10%] w-32 h-32 rounded-full bg-amber-400/5 blur-3xl" />
+            <div className="absolute bottom-10 right-[15%] w-40 h-40 rounded-full bg-rose-400/5 blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-purple-400/3 blur-[80px]" />
+          </div>
+
+          <div className="relative px-6 sm:px-12 md:px-24 lg:px-32">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-black uppercase tracking-[0.3em] text-amber-600 dark:text-amber-400 mb-4">
+                <Cake size={12} />
+                Today&apos;s Celebrations
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
+                Happy Birthday! 🎉
+              </h2>
+              <p className="text-zinc-500 text-sm mt-3 max-w-lg mx-auto font-medium">
+                Celebrating our beloved family members born on this special day.
+              </p>
+            </div>
+
+            {/* Birthday Cards Grid */}
+            <div className={`grid gap-6 ${birthdayMembers.length === 1 ? 'max-w-sm mx-auto' : birthdayMembers.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+              {birthdayMembers.map((member) => {
+                const dob = new Date(member.date_of_birth);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+                return (
+                  <div
+                    key={member.id}
+                    className="group relative rounded-3xl border border-amber-200/50 dark:border-amber-500/10 bg-gradient-to-br from-white via-amber-50/30 to-white dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-950 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
+                  >
+                    {/* Decorative glow */}
+                    <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-amber-400/10 blur-[60px] pointer-events-none" />
+                    <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-rose-400/8 blur-[50px] pointer-events-none" />
+
+                    {/* Confetti dots decoration */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                      {[...Array(12)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute rounded-full"
+                          style={{
+                            width: `${2 + Math.random() * 4}px`,
+                            height: `${2 + Math.random() * 4}px`,
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#22c55e', '#ec4899'][i % 5],
+                            opacity: 0.15 + Math.random() * 0.1,
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="relative p-6 sm:p-8 flex flex-col items-center text-center">
+                      {/* Photo */}
+                      <div className="relative mb-5">
+                        <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full ring-4 ring-amber-400/25 p-1 bg-white dark:bg-zinc-900">
+                          <div className="h-full w-full rounded-full border-[3px] border-amber-400 overflow-hidden bg-amber-50 dark:bg-zinc-800">
+                            {member.photo_url ? (
+                              <img src={member.photo_url} alt={member.first_name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-2xl font-black text-amber-500">
+                                {member.first_name[0]}{member.last_name[0]}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {/* Age badge */}
+                        <div className="absolute -bottom-1 -right-1 flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white text-xs font-black shadow-lg border-2 border-white dark:border-zinc-900">
+                          +1
+                        </div>
+                        {/* Party emoji */}
+                        <div className="absolute -top-1 -left-1 flex items-center justify-center h-7 w-7 rounded-full bg-rose-500/10 text-sm">
+                          🎂
+                        </div>
+                      </div>
+
+                      {/* Name */}
+                      <h3 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight capitalize">
+                        {member.first_name} {member.last_name}
+                      </h3>
+
+                      {/* Family badge */}
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-(--primary-gold)/10 border border-(--primary-gold)/20 text-xs font-bold text-(--primary-gold)">
+                        Family of {member.family}
+                      </div>
+
+                      {/* Birthday message */}
+                      <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                        Wishing you a wonderful <span className="font-bold text-amber-600 dark:text-amber-400">{age}th</span> birthday filled with love, grace & blessings! 🎉
+                      </p>
+
+                      {/* Gift icon divider */}
+                      <div className="mt-4 flex items-center gap-3 w-full">
+                        <div className="flex-1 h-px bg-amber-200/50 dark:bg-amber-500/10" />
+                        <Gift size={14} className="text-amber-400" />
+                        <div className="flex-1 h-px bg-amber-200/50 dark:bg-amber-500/10" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
+      )}
 
+      <div className="flex w-full flex-col gap-10 px-6 sm:px-12 md:px-24 lg:px-32 py-12">
         {/* Hall of Fame */}
         <section className="rounded-2xl border border-(--primary-gold)/35 p-6 mb-10">
           <div className="flex items-center justify-between gap-3">
