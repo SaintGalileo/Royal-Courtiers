@@ -90,13 +90,13 @@ function getCountdown(now: Date): Countdown {
 function CountdownDigit({ value, label }: { value: number; label: string }) {
   const display = String(value).padStart(2, "0");
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-12 sm:w-16">
       <div className="relative overflow-hidden">
-        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none tabular-nums">
+        <span className="text-3xl sm:text-4xl font-black text-white tracking-tighter leading-none tabular-nums block">
           {display}
         </span>
       </div>
-      <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">
+      <span className="mt-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
         {label}
       </span>
     </div>
@@ -261,8 +261,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ─── COUNTDOWN — pinned bottom-right ─── */}
-        <div className="absolute bottom-8 right-6 sm:right-10 z-40">
+        {/* ─── COUNTDOWN — Centered on mobile, bottom-right on sm+ ─── */}
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 sm:left-auto sm:right-10 sm:translate-x-0 sm:bottom-12 z-40">
           <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-black/40 backdrop-blur-md px-6 py-4 shadow-2xl">
             {/* Gold top accent line */}
             <div className="absolute top-0 left-4 right-4 h-[1.5px] bg-gradient-to-r from-transparent via-(--primary-gold) to-transparent" />
@@ -271,12 +271,12 @@ export default function Home() {
               Countdown
             </p>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-4">
               {countdownBlocks.map((item, i) => (
-                <div key={item.label} className="flex items-center gap-4">
+                <div key={item.label} className="flex items-center gap-2 sm:gap-4">
                   <CountdownDigit value={item.value} label={item.label} />
                   {i < countdownBlocks.length - 1 && (
-                    <span className="text-white/30 text-2xl font-thin mb-3">
+                    <span className="text-white/30 text-xl sm:text-2xl font-thin mb-5 sm:mb-6">
                       :
                     </span>
                   )}
