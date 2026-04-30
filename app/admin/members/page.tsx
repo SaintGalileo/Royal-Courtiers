@@ -2,21 +2,46 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Search, Filter, Loader2, User, Mail, Phone, Calendar, ChevronUp, ChevronDown, Edit2, X, Save, Trash2 } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Loader2,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  ChevronUp,
+  ChevronDown,
+  Edit2,
+  X,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
+import TalentSelector from "@/components/TalentSelector";
 
 type Member = {
   id: string;
   first_name: string;
   last_name: string;
   nick_name: string;
-  email: string;
-  phone_number: string;
+  email: string | null;
+  phone_number: string | null;
   family: string;
   photo_url: string;
   code: string;
   created_at: string;
+  gender: string;
+  date_of_birth: string;
+  date_of_consecration: string;
+  nation_of_origin: string;
+  state_of_origin: string;
+  nation_of_residence: string;
+  state_of_residence: string;
+  shirt_size: string;
+  talents: string[];
+  singing_part: string | null;
 };
 
 export default function AdminMembersPage() {
@@ -24,13 +49,16 @@ export default function AdminMembersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [familyFilter, setFamilyFilter] = useState("All");
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Sorting
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Member; direction: "asc" | "desc" } | null>({
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Member;
+    direction: "asc" | "desc";
+  } | null>({
     key: "created_at",
     direction: "desc",
   });
@@ -51,7 +79,10 @@ export default function AdminMembersPage() {
         .order("created_at", { ascending: false });
 
       if (error) console.error(error);
-      if (data) setMembers(data);
+      if (data) {
+        console.log("Fetched Members Data:", data);
+        setMembers(data);
+      }
       setIsLoading(false);
     }
     fetchMembers();
@@ -61,8 +92,10 @@ export default function AdminMembersPage() {
 
   const filteredMembers = useMemo(() => {
     return members.filter((m) => {
-      const fieldSearch = `${m.first_name} ${m.last_name} ${m.nick_name} ${m.code}`.toLowerCase();
-      const matchesSearch = !search || fieldSearch.includes(search.toLowerCase());
+      const fieldSearch =
+        `${m.first_name} ${m.last_name} ${m.nick_name} ${m.code}`.toLowerCase();
+      const matchesSearch =
+        !search || fieldSearch.includes(search.toLowerCase());
       const matchesFamily = familyFilter === "All" || m.family === familyFilter;
       return matchesSearch && matchesFamily;
     });
@@ -92,8 +125,12 @@ export default function AdminMembersPage() {
 
   const handleDeleteMember = async () => {
     if (!editingMember) return;
-    
-    if (!confirm(`Are you sure you want to delete ${editingMember.first_name} ${editingMember.last_name}? This will also make the access code ${editingMember.code} available again.`)) {
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${editingMember.first_name} ${editingMember.last_name}? This will also make the access code ${editingMember.code} available again.`,
+      )
+    ) {
       return;
     }
 
@@ -138,7 +175,16 @@ export default function AdminMembersPage() {
         nick_name: editingMember.nick_name,
         email: editingMember.email,
         phone_number: editingMember.phone_number,
-        // family is now non-editable
+        gender: editingMember.gender,
+        date_of_birth: editingMember.date_of_birth,
+        date_of_consecration: editingMember.date_of_consecration,
+        nation_of_origin: editingMember.nation_of_origin,
+        state_of_origin: editingMember.state_of_origin,
+        nation_of_residence: editingMember.nation_of_residence,
+        state_of_residence: editingMember.state_of_residence,
+        shirt_size: editingMember.shirt_size,
+        talents: editingMember.talents,
+        singing_part: editingMember.singing_part,
       })
       .eq("id", editingMember.id);
 
@@ -147,7 +193,7 @@ export default function AdminMembersPage() {
     } else {
       toast.success("Member updated successfully!");
       setMembers((prev) =>
-        prev.map((m) => (m.id === editingMember.id ? editingMember : m))
+        prev.map((m) => (m.id === editingMember.id ? editingMember : m)),
       );
       setEditingMember(null);
     }
@@ -176,20 +222,33 @@ export default function AdminMembersPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Portal Members</h1>
-          <p className="mt-1 text-sm text-zinc-500">Managing {members.length} registered members</p>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            Portal Members
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            Managing {members.length} registered members
+          </p>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">Total Members</p>
-          <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">{members.length}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+            Total Members
+          </p>
+          <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+            {members.length}
+          </p>
         </div>
         {families.slice(1).map((fam) => (
-          <div key={fam} className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">{fam} Family</p>
+          <div
+            key={fam}
+            className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900"
+          >
+            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+              {fam} Family
+            </p>
             <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
               {members.filter((m) => m.family === fam).length}
             </p>
@@ -206,8 +265,16 @@ export default function AdminMembersPage() {
             placeholder="Search by name, nickname, or code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-10 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Filter className="h-4 w-4 text-zinc-400" />
@@ -231,64 +298,86 @@ export default function AdminMembersPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th 
+                <th
                   className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
                   onClick={() => handleSort("first_name")}
                 >
                   <div className="flex items-center gap-2">
                     Member
-                    {sortConfig?.key === "first_name" && (
-                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                    )}
+                    {sortConfig?.key === "first_name" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
                   </div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Contact</th>
-                <th 
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  Contact
+                </th>
+                <th
                   className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
                   onClick={() => handleSort("family")}
                 >
                   <div className="flex items-center gap-2">
                     Family
-                    {sortConfig?.key === "family" && (
-                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                    )}
+                    {sortConfig?.key === "family" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
                   onClick={() => handleSort("code")}
                 >
                   <div className="flex items-center gap-2">
                     Access Code
-                    {sortConfig?.key === "code" && (
-                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                    )}
+                    {sortConfig?.key === "code" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
                   onClick={() => handleSort("created_at")}
                 >
                   <div className="flex items-center gap-2">
                     Joined
-                    {sortConfig?.key === "created_at" && (
-                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                    )}
+                    {sortConfig?.key === "created_at" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
                   </div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {paginatedMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-zinc-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-sm text-zinc-500"
+                  >
                     No members found matching your search.
                   </td>
                 </tr>
               ) : (
                 paginatedMembers.map((m) => (
-                  <tr key={m.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <tr
+                    key={m.id}
+                    className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 flex-shrink-0">
@@ -300,7 +389,8 @@ export default function AdminMembersPage() {
                             />
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-sm font-bold text-zinc-400 dark:bg-zinc-800">
-                              {m.first_name[0]}{m.last_name[0]}
+                              {m.first_name[0]}
+                              {m.last_name[0]}
                             </div>
                           )}
                         </div>
@@ -308,7 +398,9 @@ export default function AdminMembersPage() {
                           <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">
                             {m.first_name} {m.last_name}
                           </p>
-                          <p className="text-xs text-zinc-500">@{m.nick_name}</p>
+                          <p className="text-xs text-zinc-500">
+                            @{m.nick_name}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -366,15 +458,17 @@ export default function AdminMembersPage() {
               className="rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 outline-none dark:border-zinc-800 dark:bg-zinc-950"
             >
               {[10, 25, 50, 100].map((v) => (
-                <option key={v} value={v}>{v}</option>
+                <option key={v} value={v}>
+                  {v}
+                </option>
               ))}
             </select>
             <span>per page</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
             >
@@ -384,7 +478,9 @@ export default function AdminMembersPage() {
               {currentPage} / {totalPages}
             </div>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
               disabled={currentPage === totalPages}
               className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-800 dark:hover:bg-zinc-800"
             >
@@ -396,13 +492,15 @@ export default function AdminMembersPage() {
       {/* Member Edit/Detail Modal */}
       {editingMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setEditingMember(null)}
           />
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
-            <header className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-8 py-5 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Member Profile</h2>
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 flex flex-col max-h-[90vh]">
+            <header className="flex shrink-0 items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-8 py-5 dark:border-zinc-800 dark:bg-zinc-900/50">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                Member Profile
+              </h2>
               <button
                 onClick={() => setEditingMember(null)}
                 className="rounded-full p-2 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
@@ -411,108 +509,341 @@ export default function AdminMembersPage() {
               </button>
             </header>
 
-            <form onSubmit={handleSaveMember} className="p-8">
-              <div className="flex flex-col gap-8 md:flex-row">
-                {/* Photo & Identity Section */}
-                <div className="flex flex-col items-center gap-4">
-                  <div className="h-32 w-32 relative group">
-                    {editingMember.photo_url ? (
-                      <img
-                        src={getOptimizedUrl(editingMember.photo_url)}
-                        alt={editingMember.first_name}
-                        className="h-32 w-32 rounded-3xl object-cover ring-4 ring-zinc-50 dark:ring-zinc-900"
-                      />
-                    ) : (
-                      <div className="flex h-32 w-32 items-center justify-center rounded-3xl bg-zinc-100 text-3xl font-black text-zinc-400 dark:bg-zinc-800">
-                        {editingMember.first_name[0]}{editingMember.last_name[0]}
+            <form
+              onSubmit={handleSaveMember}
+              className="flex flex-col flex-1 overflow-hidden"
+            >
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <div className="flex flex-col gap-10 md:flex-row">
+                  {/* Photo & Identity Section */}
+                  <div className="flex flex-col items-center gap-4 shrink-0">
+                    <div className="h-32 w-32 relative group">
+                      {editingMember.photo_url ? (
+                        <img
+                          src={getOptimizedUrl(editingMember.photo_url)}
+                          alt={editingMember.first_name}
+                          className="h-32 w-32 rounded-3xl object-cover ring-4 ring-zinc-50 dark:ring-zinc-900"
+                        />
+                      ) : (
+                        <div className="flex h-32 w-32 items-center justify-center rounded-3xl bg-zinc-100 text-3xl font-black text-zinc-400 dark:bg-zinc-800">
+                          {editingMember.first_name[0]}
+                          {editingMember.last_name[0]}
+                        </div>
+                      )}
+                      <div className="absolute -bottom-2 -right-2 rounded-xl bg-(--primary-gold) p-2 text-white shadow-lg">
+                        <User size={18} />
                       </div>
-                    )}
-                    <div className="absolute -bottom-2 -right-2 rounded-xl bg-(--primary-gold) p-2 text-white shadow-lg">
-                      <User size={18} />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-mono text-sm font-black tracking-widest text-(--primary-gold) uppercase">
+                        {editingMember.code}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500 uppercase font-bold tracking-tighter">
+                        Access Code
+                      </p>
                     </div>
                   </div>
-                  <div className="text-center">
-                    <p className="font-mono text-sm font-black tracking-widest text-(--primary-gold) uppercase">
-                      {editingMember.code}
-                    </p>
-                    <p className="mt-1 text-xs text-zinc-500 uppercase font-bold tracking-tighter">Access Code</p>
-                  </div>
-                </div>
 
-                {/* Form Fields Section */}
-                <div className="flex-1 space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Form Fields Section */}
+                  <div className="flex-1 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.first_name}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              first_name: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.last_name}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              last_name: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Nickname
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.nick_name}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              nick_name: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Family (Non-editable)
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          value={editingMember.family}
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-2.5 text-sm outline-none cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-800/50 text-zinc-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Gender
+                        </label>
+                        <select
+                          value={editingMember.gender}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              gender: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        >
+                          <option value="Brother">Brother</option>
+                          <option value="Sister">Sister</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Shirt Size
+                        </label>
+                        <select
+                          value={editingMember.shirt_size}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              shirt_size: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        >
+                          {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map(
+                            (size) => (
+                              <option key={size} value={size}>
+                                {size}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Date of Birth
+                        </label>
+                        <input
+                          type="date"
+                          value={editingMember.date_of_birth}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              date_of_birth: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900 [color-scheme:light] dark:[color-scheme:dark]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Consecration Date
+                        </label>
+                        <input
+                          type="date"
+                          value={editingMember.date_of_consecration}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              date_of_consecration: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900 [color-scheme:light] dark:[color-scheme:dark]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Nation of Origin
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.nation_of_origin}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              nation_of_origin: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          State of Origin
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.state_of_origin}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              state_of_origin: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Nation of Residence
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.nation_of_residence}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              nation_of_residence: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          State of Residence
+                        </label>
+                        <input
+                          type="text"
+                          value={editingMember.state_of_residence}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              state_of_residence: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          value={editingMember.phone_number || ""}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              phone_number: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                          Singing Part
+                        </label>
+                        <select
+                          value={editingMember.singing_part || ""}
+                          onChange={(e) =>
+                            setEditingMember({
+                              ...editingMember,
+                              singing_part: e.target.value || null,
+                            })
+                          }
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                        >
+                          <option value="">None</option>
+                          <option value="Treble">Treble</option>
+                          <option value="Alto">Alto</option>
+                          <option value="Tenor">Tenor</option>
+                          <option value="Bass">Bass</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">First Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                        Email Address
+                      </label>
                       <input
-                        type="text"
-                        value={editingMember.first_name}
-                        onChange={(e) => setEditingMember({ ...editingMember, first_name: e.target.value })}
+                        type="email"
+                        value={editingMember.email || ""}
+                        onChange={(e) =>
+                          setEditingMember({
+                            ...editingMember,
+                            email: e.target.value,
+                          })
+                        }
                         className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Last Name</label>
-                      <input
-                        type="text"
-                        value={editingMember.last_name}
-                        onChange={(e) => setEditingMember({ ...editingMember, last_name: e.target.value })}
-                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+
+                    <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                        Talents & Gifts
+                      </label>
+                      <TalentSelector
+                        selectedTalents={editingMember.talents || []}
+                        onChange={(talents) =>
+                          setEditingMember({ ...editingMember, talents })
+                        }
                       />
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Nickname</label>
-                      <input
-                        type="text"
-                        value={editingMember.nick_name}
-                        onChange={(e) => setEditingMember({ ...editingMember, nick_name: e.target.value })}
-                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Family (Non-editable)</label>
-                      <input
-                        type="text"
-                        disabled
-                        value={editingMember.family}
-                        className="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-2.5 text-sm outline-none cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-800/50 text-zinc-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Email Address</label>
-                    <input
-                      type="email"
-                      value={editingMember.email}
-                      onChange={(e) => setEditingMember({ ...editingMember, email: e.target.value })}
-                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={editingMember.phone_number}
-                      onChange={(e) => setEditingMember({ ...editingMember, phone_number: e.target.value })}
-                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                    />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-10 flex flex-col gap-3 border-t border-zinc-100 pt-8 dark:border-zinc-800 sm:flex-row">
+              <div className="shrink-0 mt-auto flex flex-col gap-3 border-t border-zinc-100 p-8 dark:border-zinc-800 sm:flex-row bg-white dark:bg-zinc-950">
                 <button
                   type="button"
                   disabled={isSaving || isDeleting}
                   onClick={handleDeleteMember}
                   className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-6 py-3 text-sm font-bold text-red-600 transition-all hover:bg-red-100 active:scale-95 disabled:opacity-50 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400"
                 >
-                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={18} />}
+                  {isDeleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 size={18} />
+                  )}
                   Delete Member
                 </button>
                 <div className="flex flex-1 gap-3">
@@ -526,9 +857,13 @@ export default function AdminMembersPage() {
                   <button
                     type="submit"
                     disabled={isSaving || isDeleting}
-                    className="flex flex-[2] items-center justify-center gap-2 rounded-xl bg-(--primary-gold) py-3 text-sm font-black text-white shadow-lg shadow-(--primary-gold)/20 transition-all hover:bg-(--primary-gold-hover) active:scale-95 disabled:opacity-50"
+                    className="flex flex-2 items-center justify-center gap-2 rounded-xl bg-primary-gold py-3 text-sm font-black text-white shadow-lg shadow-primary-gold/20 transition-all hover:bg-primary-gold active:scale-95 disabled:opacity-50"
                   >
-                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save size={18} />
+                    )}
                     Save Changes
                   </button>
                 </div>

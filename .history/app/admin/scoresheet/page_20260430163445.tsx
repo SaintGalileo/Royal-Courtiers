@@ -39,13 +39,13 @@ const CATEGORIES = {
     "Scrabble",
     "Ludo",
   ],
-  // "Choral Competitions": [
-  //   "Composition Competition",
-  //   "Solo",
-  //   "Duet",
-  //   "Quartet",
-  //   "Singing Competition",
-  // ],
+  "Choral Competitions": [
+    "Composition Competition",
+    "Solo",
+    "Duet",
+    "Quartet",
+    "Singing Competition",
+  ],
   "Extracurricular Competitions": ["Debate", "Essay Writing", "Pageantry"],
 };
 
@@ -93,59 +93,23 @@ export default function AdminScoresheetPage() {
     fetchScores();
   }, [supabase]);
 
-  const getMaxScore = (event: string) => {
-    if (event === "Football") return 100;
-    if (event === "Debate") return 100;
-    if (event === "Pageantry") return 200;
-    return 50;
-  };
-
-  const getPositionFromScore = (score: number, maxScore: number) => {
-    if (!score) return "";
-    if (score >= maxScore) return "1";
-    if (score >= maxScore * 0.8) return "2";
-    if (score >= maxScore * 0.6) return "3";
-    if (score >= maxScore * 0.4) return "4";
-    return "";
-  };
-
-  const handlePositionChange = (
+  const handleScoreChange = (
     category: string,
     event: string,
     family: string,
     value: string,
   ) => {
-    let numValue = 0;
-    const maxScore = getMaxScore(event);
-    
-    if (value === "1") numValue = maxScore;
-    else if (value === "2") numValue = maxScore * 0.8;
-    else if (value === "3") numValue = maxScore * 0.6;
-    else if (value === "4") numValue = maxScore * 0.4;
-    else numValue = 0;
-
-    setScores((prev) => {
-      const currentEventScores = { ...prev[category]?.[event] };
-      
-      if (numValue > 0) {
-        Object.entries(currentEventScores).forEach(([fam, score]) => {
-          if (fam !== family && score === numValue) {
-            currentEventScores[fam] = 0;
-            toast.info(`${fam}'s previous position was cleared to prevent a tie.`);
-          }
-        });
-      }
-      
-      currentEventScores[family] = numValue;
-
-      return {
-        ...prev,
-        [category]: {
-          ...prev[category],
-          [event]: currentEventScores,
+    const numValue = parseInt(value, 10) || 0;
+    setScores((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [event]: {
+          ...prev[category]?.[event],
+          [family]: numValue,
         },
-      };
-    });
+      },
+    }));
   };
 
   const handleSave = async () => {
@@ -306,24 +270,21 @@ export default function AdminScoresheetPage() {
                       </td>
                       {FAMILIES.map((family) => (
                         <td key={family} className="px-6 py-3">
-                          <select
-                            value={getPositionFromScore(scores[category]?.[event]?.[family] ?? 0, getMaxScore(event))}
+                          <input
+                            type="number"
+                            min="0"
+                            value={scores[category]?.[event]?.[family] ?? 0}
                             onChange={(e) =>
-                              handlePositionChange(
+                              handleScoreChange(
                                 category,
                                 event,
                                 family,
                                 e.target.value,
                               )
                             }
-                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-center font-black text-(--primary-gold) outline-none focus:ring-2 focus:ring-(--primary-gold)/50 appearance-none transition-all cursor-pointer"
-                          >
-                            <option value="">-</option>
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                            <option value="4">4th</option>
-                          </select>
+                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-center font-black text-(--primary-gold) outline-none focus:ring-2 focus:ring-(--primary-gold)/50 appearance-none transition-all"
+                            placeholder="0"
+                          />
                         </td>
                       ))}
                     </tr>

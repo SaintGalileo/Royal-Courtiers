@@ -37,11 +37,6 @@ const ITINERARY: ItineraryDay[] = [
         title: "Chess, Scrabble & Ludo",
         location: "26 Mbukpa Holy Chapel",
       },
-      {
-        time: "04:00 PM",
-        title: "Debate Semi-Finals",
-        location: "26 Mbukpa Holy Chapel",
-      },
     ],
   },
   {
@@ -49,9 +44,13 @@ const ITINERARY: ItineraryDay[] = [
     date: "August 11, 2026",
     visibleItems: [
       {
-        time: "11:00 AM",
-        title:
-          "Sports Day (Volleyball, Badminton, Table Tennis, Track Events, etc.)",
+        time: "08:00 AM",
+        title: "Volleyball, Badminton & Table Tennis",
+        location: "Bromco Field",
+      },
+      {
+        time: "01:00 PM",
+        title: "Track Events",
         location: "U.J. Esuene Stadium",
       },
     ],
@@ -82,8 +81,8 @@ const ITINERARY: ItineraryDay[] = [
     date: "August 13, 2026",
     visibleItems: [
       {
-        time: "05:00 AM",
-        title: "Morning Devotion / Super Marching Round",
+        time: "06:00 AM",
+        title: "Super Marching Round",
         location: "The Great Hall",
       },
       {
@@ -92,9 +91,9 @@ const ITINERARY: ItineraryDay[] = [
         location: "Holy Father's Vestry",
       },
       {
-        time: "05:30 PM",
-        title: "Debate 3rd Place Match",
-        location: "Holy Father's Vestry",
+        time: "07:00 PM",
+        title: "Keyboard Competition",
+        location: "26 Mbukpa Holy Chapel",
       },
     ],
   },
@@ -109,8 +108,8 @@ const ITINERARY: ItineraryDay[] = [
       },
       {
         time: "02:00 PM",
-        title: "Choral Competitions",
-        location: "26 Mbukpa Holy Chapel",
+        title: "Tales by Moonlight",
+        location: "26 Mbukpa",
       },
     ],
   },
@@ -119,8 +118,13 @@ const ITINERARY: ItineraryDay[] = [
     date: "August 15, 2026",
     visibleItems: [
       {
+        time: "05:00 PM",
+        title: "Cultural Day 2.0",
+        location: "Auditorium",
+      },
+      {
         time: "07:00 PM",
-        title: "Cultural Day 2.0 / Dinner Night (featuring Pageantry Phase 2)",
+        title: "Pageantry Phase 2.0",
         location: "Auditorium",
       },
     ],
@@ -130,23 +134,23 @@ const ITINERARY: ItineraryDay[] = [
     date: "August 16, 2026",
     visibleItems: [
       {
-        time: "10:00 AM",
+        time: "08:00 AM",
         title: "Grand Finale Service",
         location: "The Great Hall",
       },
       {
-        time: "",
+        time: "11:00 AM",
         title: "Debate Finals",
         location: "The Great Hall",
       },
       {
-        time: "",
+        time: "12:00 PM",
         title: "Choral Champions Performances",
         location: "The Great Hall",
       },
       {
-        time: "",
-        title: "Presentation of Awards & Prize Giving Ceremony",
+        time: "01:00 PM",
+        title: "Rendition of Winning Composition",
         location: "The Great Hall",
       },
     ],

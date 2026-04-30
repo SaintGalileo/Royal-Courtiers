@@ -42,7 +42,7 @@ export default function FlashCard({
         </button>
 
         {/* 3D Card Container */}
-        <div className="perspective-1000 h-[450px] w-full">
+        <div className="perspective-1000 h-[70vh] min-h-[350px] max-h-[550px] w-full">
           <motion.div
             className="relative h-full w-full transition-all duration-300 preserve-3d"
             animate={{ rotateY: isFlipped ? 180 : 0 }}

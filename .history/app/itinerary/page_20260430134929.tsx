@@ -37,11 +37,6 @@ const ITINERARY: ItineraryDay[] = [
         title: "Chess, Scrabble & Ludo",
         location: "26 Mbukpa Holy Chapel",
       },
-      {
-        time: "04:00 PM",
-        title: "Debate Semi-Finals",
-        location: "26 Mbukpa Holy Chapel",
-      },
     ],
   },
   {
@@ -91,11 +86,11 @@ const ITINERARY: ItineraryDay[] = [
         title: "Singing In The Vestry",
         location: "Holy Father's Vestry",
       },
-      {
-        time: "05:30 PM",
-        title: "Debate 3rd Place Match",
-        location: "Holy Father's Vestry",
-      },
+      // {
+      //   time: "07:00 PM",
+      //   title: "Keyboard Competition",
+      //   location: "26 Mbukpa Holy Chapel",
+      // },
     ],
   },
   {
@@ -146,7 +141,7 @@ const ITINERARY: ItineraryDay[] = [
       },
       {
         time: "",
-        title: "Presentation of Awards & Prize Giving Ceremony",
+        title: "Rendition of Winning Composition",
         location: "The Great Hall",
       },
     ],

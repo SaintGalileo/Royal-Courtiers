@@ -14,12 +14,12 @@ const CATEGORIES = {
     "Badminton",
     "Table Tennis (Male)",
     "Table Tennis (Female)",
-    "100m (Male)",
-    "100m (Female)",
-    "200m (Male)",
-    "200m (Female)",
-    "400m (Male)",
-    "400m (Female)",
+    "100m Sprint (Male)",
+    "100m Sprint (Female)",
+    "200m Sprint (Male)",
+    "200m Sprint (Female)",
+    "400m Sprint (Male)",
+    "400m Sprint (Female)",
     "4 × 100m Relay (Male)",
     "4 × 100m Relay (Female)",
     "Sack Race (Junior Male)",
@@ -32,14 +32,18 @@ const CATEGORIES = {
     "Scrabble",
     "Ludo",
   ],
-  // "Choral Competitions": [
-  //   "Composition Competition",
-  //   "Solo",
-  //   "Duet",
-  //   "Quartet",
-  //   "Singing Competition",
-  // ],
-  "Extracurricular Competitions": ["Debate", "Essay Writing", "Pageantry"],
+  "Choral Competitions": [
+    "Composition Competition",
+    "Solo",
+    "Duet",
+    "Quartet",
+    "Singing Competition"
+  ],
+  "Extracurricular Competitions": [
+    "Debate",
+    "Essay Writing",
+    "Pageantry"
+  ],
 };
 
 type ScoresType = Record<string, Record<string, Record<string, number>>>;
@@ -97,21 +101,17 @@ export default function ScoresheetPage() {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel("public:scoresheet")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "scoresheet",
-          filter: "id=eq.current",
-        },
-        (payload) => {
-          if (payload.new && payload.new.data) {
-            setScores(payload.new.data);
-          }
-        },
-      )
+      .channel('public:scoresheet')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'scoresheet', 
+        filter: 'id=eq.current' 
+      }, payload => {
+        if (payload.new && payload.new.data) {
+          setScores(payload.new.data);
+        }
+      })
       .subscribe();
 
     return () => {

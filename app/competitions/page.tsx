@@ -31,13 +31,13 @@ export default function CompetitionsPage() {
     },
     {
       title: "Choral Competitions",
-      description: "Solo, Duet, Quartet, and Keyboard Competitions.",
+      description: "Composition, Solo, Duet, Quartet & Singing Competitions.",
       href: "/choral",
       icon: <Music className="h-6 w-6 text-(--primary-gold)" />,
     },
     {
       title: "Extracurricular Competitions",
-      description: "Debate & Essay Writing Competitions.",
+      description: "Debate, Essay Writing & Pageantry.",
       href: "/extracurricular",
       icon: <Lightbulb className="h-6 w-6 text-(--primary-gold)" />,
     },

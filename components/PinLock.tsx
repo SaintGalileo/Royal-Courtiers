@@ -44,10 +44,23 @@ export default function PinLock({ user, onSuccess, onLogout, onCancel, title }: 
     }
   }, [pin, user.pin, onSuccess]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (/^[0-9]$/.test(e.key)) {
+        handleNumberClick(e.key);
+      } else if (e.key === "Backspace") {
+        handleDelete();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pin]); // re-bind to latest handlers
+
   const initials = user.first_name?.[0]?.toUpperCase() || "U";
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-zinc-50 px-6 py-10 text-zinc-900 transition-colors dark:bg-zinc-950 dark:text-white overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center sm:justify-center bg-zinc-50 px-6 py-10 text-zinc-900 transition-colors dark:bg-zinc-950 dark:text-white overflow-y-auto custom-scrollbar">
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-[20%] -left-[10%] h-[60%] w-[60%] rounded-full bg-(--primary-gold)/10 blur-[120px] dark:bg-(--primary-gold)/10" />

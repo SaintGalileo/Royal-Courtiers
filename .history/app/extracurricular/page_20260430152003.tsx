@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Clock, Shield, AlertCircle } from "lucide-react";
-import { FaComments, FaPenFancy, FaCrown } from "react-icons/fa";
+import { FaComments, FaPenFancy, FaQuestion, FaCrown } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type ExtracurricularTab =
   | "Debate"
   | "Essay Writing"
+  | "Quiz / Spelling Bee"
   | "Pageantry";
 
 interface EventMatch {
@@ -28,6 +29,7 @@ interface EventMatch {
 const extracurricularTabs: ExtracurricularTab[] = [
   "Debate",
   "Essay Writing",
+  "Quiz / Spelling Bee",
   "Pageantry",
 ];
 
@@ -94,12 +96,23 @@ const MOCK_MATCHES: EventMatch[] = [
     info: "Essays to be submitted on or before 10 a.m.",
   },
 
+  // Quiz / Spelling Bee (Graded)
+  {
+    id: "e-quiz",
+    type: "Quiz / Spelling Bee",
+    date: "Aug 12",
+    round: "Pageantry Phase 1",
+    participants: "All Families",
+    time: "01:00 PM",
+    isGraded: true,
+  },
+
   // Pageantry
   {
     id: "e-pageant1",
     type: "Pageantry",
     date: "Aug 12",
-    round: "Phase 1 (Quiz / Spelling Bee)",
+    round: "Phase 1",
     participants: "All Families",
     time: "01:00 PM",
     isGraded: true,
@@ -120,6 +133,7 @@ const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
   if (tab === "Debate") return <FaComments className={cls} />;
   if (tab === "Essay Writing") return <FaPenFancy className={cls} />;
+  if (tab === "Quiz / Spelling Bee") return <FaQuestion className={cls} />;
   if (tab === "Pageantry") return <FaCrown className={cls} />;
   return <FaComments className={cls} />;
 };

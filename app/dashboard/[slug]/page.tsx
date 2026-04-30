@@ -1186,7 +1186,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           />
 
           {/* Modal Content */}
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:bg-zinc-900">
+          <div className="relative w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:bg-zinc-900">
             {/* Header / Close Button */}
             <div className="absolute right-4 top-4 z-10">
               <button
@@ -1197,117 +1197,119 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               </button>
             </div>
 
-            {/* Profile Image View */}
-            <div className="group relative aspect-square w-full bg-zinc-100 dark:bg-zinc-800">
-              {selectedMember.photo_url ? (
-                <img
-                  src={getOptimizedUrl(selectedMember.photo_url)}
-                  alt={`${selectedMember.first_name} ${selectedMember.last_name}`}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-(--primary-gold)/10 text-6xl font-bold text-(--primary-gold)">
-                  {getInitials(`${selectedMember.first_name} ${selectedMember.last_name}`)}
-                </div>
-              )}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {/* Profile Image View */}
+              <div className="group relative aspect-square w-full bg-zinc-100 dark:bg-zinc-800">
+                {selectedMember.photo_url ? (
+                  <img
+                    src={getOptimizedUrl(selectedMember.photo_url)}
+                    alt={`${selectedMember.first_name} ${selectedMember.last_name}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-(--primary-gold)/10 text-6xl font-bold text-(--primary-gold)">
+                    {getInitials(`${selectedMember.first_name} ${selectedMember.last_name}`)}
+                  </div>
+                )}
 
-              {/* Image Overlay Label */}
-              <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 text-white pt-20">
-                <h3 className="text-2xl font-bold">{selectedMember.first_name} {selectedMember.last_name}</h3>
-                <p className="mt-1 text-sm font-medium text-white/80">@{selectedMember.nick_name || selectedMember.first_name.toLowerCase()}</p>
-              </div>
-            </div>
-
-            {/* Content Details */}
-            <div className="p-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Service Duration</p>
-                  <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                    {formatDuration(selectedMember.date_of_consecration)} of service
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Family</p>
-                  <p className="mt-1 text-sm font-bold text-(--primary-gold)">
-                    {selectedMember.family}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Nation of Origin</p>
-                  <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                    {selectedMember.nation_of_origin || "N/A"}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">State of Origin</p>
-                  <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                    {selectedMember.state_of_origin || "N/A"}
-                  </p>
+                {/* Image Overlay Label */}
+                <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 text-white pt-20">
+                  <h3 className="text-2xl font-bold">{selectedMember.first_name} {selectedMember.last_name}</h3>
+                  <p className="mt-1 text-sm font-medium text-white/80">@{selectedMember.nick_name || selectedMember.first_name.toLowerCase()}</p>
                 </div>
               </div>
 
-              {/* Added: Favorite Song in Modal */}
-              {selectedMember.favorite_song && (
-                <div className="mt-4 rounded-2xl border border-green-100 bg-green-50/30 p-4 dark:border-green-900/20 dark:bg-green-900/10">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-sm border border-green-200/50">
-                        <img 
-                          src={selectedMember.favorite_song.albumArt} 
-                          alt={selectedMember.favorite_song.name} 
-                          className="h-full w-full object-cover" 
-                        />
-                        {selectedMember.favorite_song.previewUrl && (
-                          <button
-                            onClick={() => toggleSongPlay(selectedMember.favorite_song.previewUrl, selectedMember.favorite_song.id)}
-                            className="absolute inset-0 flex items-center justify-center bg-black/30 text-white opacity-0 transition-opacity hover:opacity-100"
-                          >
-                            {playingSongId === selectedMember.favorite_song.id ? <Pause size={14} /> : <Play size={14} />}
-                          </button>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100">{selectedMember.favorite_song.name}</p>
-                        <p className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">{selectedMember.favorite_song.artist}</p>
-                      </div>
-                    </div>
-                    <a 
-                      href={selectedMember.favorite_song.spotifyUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="rounded-full bg-green-500/10 p-2 text-green-500 hover:bg-green-500/20 transition-colors"
-                    >
-                      <Music size={14} />
-                    </a>
+              {/* Content Details */}
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Service Duration</p>
+                    <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      {formatDuration(selectedMember.date_of_consecration)} of service
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Family</p>
+                    <p className="mt-1 text-sm font-bold text-(--primary-gold)">
+                      {selectedMember.family}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Nation of Origin</p>
+                    <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      {selectedMember.nation_of_origin || "N/A"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">State of Origin</p>
+                    <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      {selectedMember.state_of_origin || "N/A"}
+                    </p>
                   </div>
                 </div>
-              )}
 
-              {/* Talents section if any */}
-              {selectedMember.talents && selectedMember.talents.length > 0 && (
-                <div className="mt-6">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Talents & Gifts</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMember.talents.map((t) => (
-                      <span
-                        key={t}
-                        className="inline-flex items-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/5 px-3 py-1 text-xs font-medium text-(--primary-gold)"
+                {/* Added: Favorite Song in Modal */}
+                {selectedMember.favorite_song && (
+                  <div className="mt-4 rounded-2xl border border-green-100 bg-green-50/30 p-4 dark:border-green-900/20 dark:bg-green-900/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-sm border border-green-200/50">
+                          <img 
+                            src={selectedMember.favorite_song.albumArt} 
+                            alt={selectedMember.favorite_song.name} 
+                            className="h-full w-full object-cover" 
+                          />
+                          {selectedMember.favorite_song.previewUrl && (
+                            <button
+                              onClick={() => toggleSongPlay(selectedMember.favorite_song.previewUrl, selectedMember.favorite_song.id)}
+                              className="absolute inset-0 flex items-center justify-center bg-black/30 text-white opacity-0 transition-opacity hover:opacity-100"
+                            >
+                              {playingSongId === selectedMember.favorite_song.id ? <Pause size={14} /> : <Play size={14} />}
+                            </button>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100">{selectedMember.favorite_song.name}</p>
+                          <p className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">{selectedMember.favorite_song.artist}</p>
+                        </div>
+                      </div>
+                      <a 
+                        href={selectedMember.favorite_song.spotifyUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="rounded-full bg-green-500/10 p-2 text-green-500 hover:bg-green-500/20 transition-colors"
                       >
-                        {t}
-                      </span>
-                    ))}
+                        <Music size={14} />
+                      </a>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Action Button */}
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="mt-6 w-full btn-primary rounded-xl py-3 font-bold shadow-lg shadow-(--primary-gold)/20 transition-all active:scale-95"
-              >
-                Close Profile
-              </button>
+                {/* Talents section if any */}
+                {selectedMember.talents && selectedMember.talents.length > 0 && (
+                  <div className="mt-6">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Talents & Gifts</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedMember.talents.map((t) => (
+                        <span
+                          key={t}
+                          className="inline-flex items-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/5 px-3 py-1 text-xs font-medium text-(--primary-gold)"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Button */}
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="mt-6 w-full btn-primary rounded-xl py-3 font-bold shadow-lg shadow-(--primary-gold)/20 transition-all active:scale-95"
+                >
+                  Close Profile
+                </button>
+              </div>
             </div>
           </div>
         </div>

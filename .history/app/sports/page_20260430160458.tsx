@@ -68,7 +68,7 @@ const MATCHES: Match[] = [
     id: "fb-sf1-1",
     type: "Football",
     round: "Semi-Final 1 (1st Leg)",
-    date: "July 25",
+    date: "July 24",
     time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
@@ -78,7 +78,7 @@ const MATCHES: Match[] = [
     type: "Football",
     round: "Semi-Final 2 (1st Leg)",
     date: "July 25",
-    time: "05:00 PM",
+    time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -86,7 +86,7 @@ const MATCHES: Match[] = [
     id: "fb-sf1-2",
     type: "Football",
     round: "Semi-Final 1 (2nd Leg)",
-    date: "Aug 4",
+    date: "Aug 3",
     time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
@@ -96,7 +96,7 @@ const MATCHES: Match[] = [
     type: "Football",
     round: "Semi-Final 2 (2nd Leg)",
     date: "Aug 4",
-    time: "05:00 PM",
+    time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -108,14 +108,13 @@ const MATCHES: Match[] = [
     time: "04:00 PM",
     teamA: "Runner Up 1",
     teamB: "Runner Up 2",
-    isFinal: true,
   },
   {
     id: "fb-final",
     type: "Football",
     round: "Grand Final",
     date: "Aug 12",
-    time: "08:00 AM",
+    time: "04:00 PM",
     teamA: "Winner SF1",
     teamB: "Winner SF2",
     isFinal: true,
@@ -246,26 +245,6 @@ const MATCHES: Match[] = [
     time: "",
     teamA: "TBD",
     teamB: "TBD",
-    gender: "female",
-  },
-  {
-    id: "tt-3rd-m",
-    type: "Table Tennis",
-    round: "3rd Place Match",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "male",
-  },
-  {
-    id: "tt-3rd-f",
-    type: "Table Tennis",
-    round: "3rd Place Match",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
     gender: "female",
   },
   {
@@ -464,15 +443,6 @@ const MATCHES: Match[] = [
     teamB: "TBD",
   },
   {
-    id: "ch-3rd",
-    type: "Chess",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
     id: "ch-final",
     type: "Chess",
     round: "Grand Final",
@@ -501,15 +471,6 @@ const MATCHES: Match[] = [
     teamB: "TBD",
   },
   {
-    id: "sc-3rd",
-    type: "Scrabble",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
     id: "sc-final",
     type: "Scrabble",
     round: "Grand Final",
@@ -536,15 +497,6 @@ const MATCHES: Match[] = [
     time: "02:00 PM",
     teamA: "TBD",
     teamB: "TBD",
-  },
-  {
-    id: "lu-3rd",
-    type: "Ludo",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
   },
   {
     id: "lu-final",
@@ -627,7 +579,7 @@ export default function SportsPage() {
             Sports Arena
           </h1>
           <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-2 font-medium">
-            Tournament Preliminaries &amp; Grand Finals
+            Tournament Session &amp; Grand Finals
           </p>
         </header>
 
@@ -680,7 +632,7 @@ export default function SportsPage() {
                     {date} ·{" "}
                     {groupedMatches[date].some((m) => m.isFinal)
                       ? "Finals"
-                      : "Preliminaries"}
+                      : "Sessions"}
                   </span>
                   <div
                     className={`h-px flex-1 ${groupedMatches[date].some((m) => m.isFinal) ? "bg-(--primary-gold)/20" : "bg-zinc-200 dark:bg-zinc-800"}`}

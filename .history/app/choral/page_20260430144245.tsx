@@ -81,6 +81,17 @@ const MATCHES: EventMatch[] = [
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
   },
+
+  // Grand Finale
+  {
+    id: "c-final",
+    type: "Solo",
+    round: "Grand Finale Rendition",
+    date: "Aug 16",
+    participants: "Choral Champions",
+    time: "",
+    isFinal: true,
+  },
 ];
 
 const ChoralIcon = ({ tab }: { tab: ChoralTab }) => {

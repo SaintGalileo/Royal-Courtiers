@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import {
-  Trophy,
-  RefreshCw,
-  Save,
-  Loader2,
-  AlertTriangle,
-  X,
-} from "lucide-react";
+import { Trophy, RefreshCw, Save, Loader2, AlertTriangle, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -21,12 +14,12 @@ const CATEGORIES = {
     "Badminton",
     "Table Tennis (Male)",
     "Table Tennis (Female)",
-    "100m (Male)",
-    "100m (Female)",
-    "200m (Male)",
-    "200m (Female)",
-    "400m (Male)",
-    "400m (Female)",
+    "100m Sprint (Male)",
+    "100m Sprint (Female)",
+    "200m Sprint (Male)",
+    "200m Sprint (Female)",
+    "400m Sprint (Male)",
+    "400m Sprint (Female)",
     "4 × 100m Relay (Male)",
     "4 × 100m Relay (Female)",
     "Sack Race (Junior Male)",
@@ -39,14 +32,18 @@ const CATEGORIES = {
     "Scrabble",
     "Ludo",
   ],
-  // "Choral Competitions": [
-  //   "Composition Competition",
-  //   "Solo",
-  //   "Duet",
-  //   "Quartet",
-  //   "Singing Competition",
-  // ],
-  "Extracurricular Competitions": ["Debate", "Essay Writing", "Pageantry"],
+  "Choral Competitions": [
+    "Composition Competition",
+    "Solo",
+    "Duet",
+    "Quartet",
+    "Singing Competition"
+  ],
+  "Extracurricular Competitions": [
+    "Debate",
+    "Essay Writing",
+    "Pageantry"
+  ],
 };
 
 type ScoresType = Record<string, Record<string, Record<string, number>>>;
@@ -93,76 +90,36 @@ export default function AdminScoresheetPage() {
     fetchScores();
   }, [supabase]);
 
-  const getMaxScore = (event: string) => {
-    if (event === "Football") return 100;
-    if (event === "Debate") return 100;
-    if (event === "Pageantry") return 200;
-    return 50;
-  };
-
-  const getPositionFromScore = (score: number, maxScore: number) => {
-    if (!score) return "";
-    if (score >= maxScore) return "1";
-    if (score >= maxScore * 0.8) return "2";
-    if (score >= maxScore * 0.6) return "3";
-    if (score >= maxScore * 0.4) return "4";
-    return "";
-  };
-
-  const handlePositionChange = (
+  const handleScoreChange = (
     category: string,
     event: string,
     family: string,
     value: string,
   ) => {
-    let numValue = 0;
-    const maxScore = getMaxScore(event);
-    
-    if (value === "1") numValue = maxScore;
-    else if (value === "2") numValue = maxScore * 0.8;
-    else if (value === "3") numValue = maxScore * 0.6;
-    else if (value === "4") numValue = maxScore * 0.4;
-    else numValue = 0;
-
-    setScores((prev) => {
-      const currentEventScores = { ...prev[category]?.[event] };
-      
-      if (numValue > 0) {
-        Object.entries(currentEventScores).forEach(([fam, score]) => {
-          if (fam !== family && score === numValue) {
-            currentEventScores[fam] = 0;
-            toast.info(`${fam}'s previous position was cleared to prevent a tie.`);
-          }
-        });
-      }
-      
-      currentEventScores[family] = numValue;
-
-      return {
-        ...prev,
-        [category]: {
-          ...prev[category],
-          [event]: currentEventScores,
+    const numValue = parseInt(value, 10) || 0;
+    setScores((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [event]: {
+          ...prev[category]?.[event],
+          [family]: numValue,
         },
-      };
-    });
+      },
+    }));
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("scoresheet")
-        .upsert(
-          { id: "current", data: scores, updated_at: new Date().toISOString() },
-          { onConflict: "id" },
-        );
+      const { error } = await supabase.from("scoresheet").upsert(
+        { id: "current", data: scores, updated_at: new Date().toISOString() },
+        { onConflict: "id" }
+      );
 
       if (error) {
         console.error(error);
-        toast.error(
-          "Failed to save scores. Ensure the 'scoresheet' table exists.",
-        );
+        toast.error("Failed to save scores. Ensure the 'scoresheet' table exists.");
       } else {
         toast.success("Scoresheet updated successfully!");
       }
@@ -216,12 +173,8 @@ export default function AdminScoresheetPage() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-            Official Scoresheet
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Update scores for all families and competitions.
-          </p>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Official Scoresheet</h1>
+          <p className="mt-1 text-sm text-zinc-500">Update scores for all families and competitions.</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -236,11 +189,7 @@ export default function AdminScoresheetPage() {
             disabled={isSaving}
             className="flex items-center gap-2 rounded-xl bg-(--primary-gold) px-6 py-2.5 text-sm font-black text-white shadow-lg shadow-(--primary-gold)/20 transition-all hover:bg-(--primary-gold-hover) active:scale-95 disabled:opacity-50"
           >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save size={18} />
-            )}
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
             {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
@@ -306,24 +255,21 @@ export default function AdminScoresheetPage() {
                       </td>
                       {FAMILIES.map((family) => (
                         <td key={family} className="px-6 py-3">
-                          <select
-                            value={getPositionFromScore(scores[category]?.[event]?.[family] ?? 0, getMaxScore(event))}
+                          <input
+                            type="number"
+                            min="0"
+                            value={scores[category]?.[event]?.[family] ?? 0}
                             onChange={(e) =>
-                              handlePositionChange(
+                              handleScoreChange(
                                 category,
                                 event,
                                 family,
                                 e.target.value,
                               )
                             }
-                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-center font-black text-(--primary-gold) outline-none focus:ring-2 focus:ring-(--primary-gold)/50 appearance-none transition-all cursor-pointer"
-                          >
-                            <option value="">-</option>
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                            <option value="4">4th</option>
-                          </select>
+                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-center font-black text-(--primary-gold) outline-none focus:ring-2 focus:ring-(--primary-gold)/50 appearance-none transition-all"
+                            placeholder="0"
+                          />
                         </td>
                       ))}
                     </tr>
@@ -338,8 +284,8 @@ export default function AdminScoresheetPage() {
       {/* Custom Reset Confirmation Modal */}
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md" 
             onClick={() => setShowResetConfirm(false)}
           />
           <div className="relative w-full max-w-md scale-in-center overflow-hidden rounded-3xl border border-zinc-200 bg-white p-8 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
@@ -347,15 +293,11 @@ export default function AdminScoresheetPage() {
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-900/20">
                 <AlertTriangle size={32} />
               </div>
-
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                Reset All Scores?
-              </h2>
+              
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Reset All Scores?</h2>
               <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-                This will set all family scores to zero across all competitions.
-                <span className="block mt-1 font-semibold text-red-500">
-                  This action cannot be undone once saved.
-                </span>
+                This will set all family scores to zero across all competitions. 
+                <span className="block mt-1 font-semibold text-red-500">This action cannot be undone once saved.</span>
               </p>
 
               <div className="mt-8 flex w-full gap-3">

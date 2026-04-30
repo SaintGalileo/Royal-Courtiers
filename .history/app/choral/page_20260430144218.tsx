@@ -81,16 +81,27 @@ const MATCHES: EventMatch[] = [
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
   },
+
+  // Grand Finale
+  {
+    id: "c-final",
+    type: "Solo",
+    round: "Grand Finale Rendition",
+    date: "Aug 16",
+    participants: "Choral Champions",
+    time: "",
+    isFinal: true,
+  },
 ];
 
 const ChoralIcon = ({ tab }: { tab: ChoralTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
   if (tab === "Composition Competition")
-    return <GiMusicalScore className={cls} />;
+    return <GiMusicalNotes className={cls} />;
   if (tab === "Solo") return <PiUserSoundFill className={cls} />;
   if (tab === "Duet") return <PiUsersFill className={cls} />;
   if (tab === "Quartet") return <PiUsersFourFill className={cls} />;
-  if (tab === "Singing Competition") return <GiMusicalNotes className={cls} />;
+  if (tab === "Singing Competition") return <GiMusicalScore className={cls} />;
   return <PiUserSoundFill className={cls} />;
 };
 

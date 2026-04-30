@@ -32,13 +32,13 @@ const CATEGORIES = {
     "Scrabble",
     "Ludo",
   ],
-  // "Choral Competitions": [
-  //   "Composition Competition",
-  //   "Solo",
-  //   "Duet",
-  //   "Quartet",
-  //   "Singing Competition",
-  // ],
+  "Choral Competitions": [
+    "Composition Competition",
+    "Solo",
+    "Duet",
+    "Quartet",
+    "Singing Competition",
+  ],
   "Extracurricular Competitions": ["Debate", "Essay Writing", "Pageantry"],
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ShieldCheck, ChevronRight, Lock, Eye, EyeOff } from "lucide-react";
@@ -25,6 +25,11 @@ export default function SetupPinPage() {
     }
     setUser(JSON.parse(auth));
   }, [router]);
+
+  const stateRef = useRef({ pin, confirmPin, step, isLoading });
+  useEffect(() => {
+    stateRef.current = { pin, confirmPin, step, isLoading };
+  }, [pin, confirmPin, step, isLoading]);
 
   const handleNext = () => {
     if (pin.length !== 4) {
@@ -81,12 +86,34 @@ export default function SetupPinPage() {
     }
   };
 
+  // Keyboard Support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const { pin: currentPinStr, confirmPin: currentConfirmPinStr, step: currentStep, isLoading: currentLoading } = stateRef.current;
+      
+      if (/^[0-9]$/.test(e.key)) {
+        handleNumberClick(e.key);
+      } else if (e.key === "Backspace") {
+        handleDelete();
+      } else if (e.key === "Enter") {
+        const pinValue = currentStep === 1 ? currentPinStr : currentConfirmPinStr;
+        if (pinValue.length === 4 && !currentLoading) {
+          if (currentStep === 1) handleNext();
+          else handleSave();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleNumberClick, handleDelete, handleNext, handleSave]);
+
   if (!user) return null;
 
   const currentPin = step === 1 ? pin : confirmPin;
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-zinc-50 px-4 py-10 transition-colors dark:bg-zinc-950">
+    <main className="flex min-h-screen w-full items-center sm:justify-center bg-zinc-50 px-4 py-10 transition-colors dark:bg-zinc-950 overflow-y-auto custom-scrollbar">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-[20%] -left-[10%] h-[60%] w-[60%] rounded-full bg-(--primary-gold)/10 blur-[120px]" />
         <div className="absolute -bottom-[20%] -right-[10%] h-[60%] w-[60%] rounded-full bg-(--primary-gold)/5 blur-[120px]" />

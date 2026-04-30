@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Search, Filter, Loader2, Key, CheckCircle, Clock, User, UserPlus, Copy, ClipboardCheck, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, Filter, Loader2, Key, CheckCircle, Clock, User, UserPlus, Copy, ClipboardCheck, ChevronUp, ChevronDown, X } from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
 
@@ -194,8 +194,16 @@ export default function AdminAccessCodesPage() {
             placeholder="Search by code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-10 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Filter className="h-4 w-4 text-zinc-400" />

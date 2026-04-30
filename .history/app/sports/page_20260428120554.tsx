@@ -15,7 +15,6 @@ import {
   FaDice,
 } from "react-icons/fa";
 import { GiShuttlecock } from "react-icons/gi";
-import { IoMaleSharp, IoFemaleSharp, IoMaleFemaleSharp } from "react-icons/io5";
 import GlobalNavbar from "@/components/GlobalNavbar";
 import GlobalFooter from "@/components/GlobalFooter";
 import Link from "next/link";
@@ -45,7 +44,6 @@ interface Match {
   teamB?: string;
   participants?: string;
   isGraded?: boolean;
-  gender?: "male" | "female" | "mixed";
 }
 
 const sports: SportTab[] = [
@@ -68,7 +66,7 @@ const MATCHES: Match[] = [
     id: "fb-sf1-1",
     type: "Football",
     round: "Semi-Final 1 (1st Leg)",
-    date: "July 25",
+    date: "July 24",
     time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
@@ -78,7 +76,7 @@ const MATCHES: Match[] = [
     type: "Football",
     round: "Semi-Final 2 (1st Leg)",
     date: "July 25",
-    time: "05:00 PM",
+    time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -86,7 +84,7 @@ const MATCHES: Match[] = [
     id: "fb-sf1-2",
     type: "Football",
     round: "Semi-Final 1 (2nd Leg)",
-    date: "Aug 4",
+    date: "Aug 3",
     time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
@@ -96,7 +94,7 @@ const MATCHES: Match[] = [
     type: "Football",
     round: "Semi-Final 2 (2nd Leg)",
     date: "Aug 4",
-    time: "05:00 PM",
+    time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -108,453 +106,114 @@ const MATCHES: Match[] = [
     time: "04:00 PM",
     teamA: "Runner Up 1",
     teamB: "Runner Up 2",
-    isFinal: true,
   },
   {
     id: "fb-final",
     type: "Football",
     round: "Grand Final",
     date: "Aug 12",
-    time: "08:00 AM",
+    time: "04:00 PM",
     teamA: "Winner SF1",
     teamB: "Winner SF2",
     isFinal: true,
   },
 
-  // Volleyball (Mixed: 3 Male + 3 Female) - Aug 11 (Sports Day)
+  // Junior Games
   {
-    id: "vb-sf1",
-    type: "Volleyball",
-    round: "Semi-Final 1 · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "vb-sf2",
-    type: "Volleyball",
-    round: "Semi-Final 2 · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "vb-3rd",
-    type: "Volleyball",
-    round: "3rd Place Match · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "mixed",
-  },
-  {
-    id: "vb-final",
-    type: "Volleyball",
-    round: "Grand Final · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "mixed",
-  },
-
-  // Badminton (Mixed Doubles) - Aug 11 (Sports Day)
-  {
-    id: "bm-sf1",
-    type: "Badminton",
-    round: "Semi-Final 1 · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "bm-sf2",
-    type: "Badminton",
-    round: "Semi-Final 2 · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "bm-3rd",
-    type: "Badminton",
-    round: "3rd Place Match · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "mixed",
-  },
-  {
-    id: "bm-final",
-    type: "Badminton",
-    round: "Grand Final · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "mixed",
-  },
-
-  // Table Tennis (Singles — Male & Female) - Aug 11 (Sports Day)
-  {
-    id: "tt-sf1-m",
-    type: "Table Tennis",
-    round: "Semi-Final 1",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "male",
-  },
-  {
-    id: "tt-sf2-m",
-    type: "Table Tennis",
-    round: "Semi-Final 2",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "male",
-  },
-  {
-    id: "tt-sf1-f",
-    type: "Table Tennis",
-    round: "Semi-Final 1",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "female",
-  },
-  {
-    id: "tt-sf2-f",
-    type: "Table Tennis",
-    round: "Semi-Final 2",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "female",
-  },
-  {
-    id: "tt-3rd-m",
-    type: "Table Tennis",
-    round: "3rd Place Match",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "male",
-  },
-  {
-    id: "tt-3rd-f",
-    type: "Table Tennis",
-    round: "3rd Place Match",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "female",
-  },
-  {
-    id: "tt-final-m",
-    type: "Table Tennis",
-    round: "Grand Final",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tt-final-f",
-    type: "Table Tennis",
-    round: "Grand Final",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "female",
-  },
-
-  // Track Events - Aug 11 (Sports Day)
-
-  {
-    id: "tr-100m-final-m",
-    type: "Track Events",
-    round: "100m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-100m-final-f",
-    type: "Track Events",
-    round: "100m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-  {
-    id: "tr-200m-final-m",
-    type: "Track Events",
-    round: "200m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-200m-final-f",
-    type: "Track Events",
-    round: "200m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-  {
-    id: "tr-400m-final-m",
-    type: "Track Events",
-    round: "400m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-400m-final-f",
-    type: "Track Events",
-    round: "400m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-  {
-    id: "tr-relay-final-m",
-    type: "Track Events",
-    round: "4 × 100m Relay Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-relay-final-f",
-    type: "Track Events",
-    round: "4 × 100m Relay Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-
-  // Junior Games - Aug 11 (Sports Day)
-  {
-    id: "jr-sack-m",
+    id: "jr-sack",
     type: "Sack Race (Junior)",
-    round: "Male Category",
-    date: "Aug 11",
-    time: "",
+    round: "Performance Session",
+    date: "Aug 1",
+    time: "10:00 AM",
     participants: "All Junior Families",
     isGraded: true,
-    gender: "male",
   },
   {
-    id: "jr-sack-f",
-    type: "Sack Race (Junior)",
-    round: "Female Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "female",
-  },
-  {
-    id: "jr-egg-m",
+    id: "jr-egg",
     type: "Egg Race (Junior)",
-    round: "Male Category",
-    date: "Aug 11",
-    time: "",
+    round: "Performance Session",
+    date: "Aug 1",
+    time: "11:00 AM",
     participants: "All Junior Families",
     isGraded: true,
-    gender: "male",
   },
   {
-    id: "jr-egg-f",
-    type: "Egg Race (Junior)",
-    round: "Female Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "female",
-  },
-  {
-    id: "jr-basket-m",
+    id: "jr-basket",
     type: "Filling the Basket (Junior)",
-    round: "Male Category",
-    date: "Aug 11",
-    time: "",
+    round: "Performance Session",
+    date: "Aug 1",
+    time: "12:00 PM",
     participants: "All Junior Families",
     isGraded: true,
-    gender: "male",
   },
+
+  // Track Events
   {
-    id: "jr-basket-f",
-    type: "Filling the Basket (Junior)",
-    round: "Female Category",
+    id: "tr-session",
+    type: "Track Events",
+    round: "Stadium Session",
     date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
+    time: "01:00 PM",
+    participants: "All Families",
     isGraded: true,
-    gender: "female",
   },
 
   // Indoor Games (Chess, Scrabble, Ludo) - Aug 10
   {
-    id: "ch-sf1",
+    id: "ch-session",
     type: "Chess",
-    round: "Semi-Final 1",
+    round: "Tournament Session",
     date: "Aug 10",
     time: "02:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
   {
-    id: "ch-sf2",
-    type: "Chess",
-    round: "Semi-Final 2",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "ch-3rd",
-    type: "Chess",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
-    id: "ch-final",
-    type: "Chess",
-    round: "Grand Final",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-  },
-  {
-    id: "sc-sf1",
+    id: "sc-session",
     type: "Scrabble",
-    round: "Semi-Final 1",
+    round: "Tournament Session",
     date: "Aug 10",
     time: "02:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
   {
-    id: "sc-sf2",
-    type: "Scrabble",
-    round: "Semi-Final 2",
+    id: "lu-session",
+    type: "Ludo",
+    round: "Tournament Session",
     date: "Aug 10",
     time: "02:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
+
+  // Court Games (Volleyball, Badminton, Table Tennis) - Aug 11
   {
-    id: "sc-3rd",
-    type: "Scrabble",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
-    id: "sc-final",
-    type: "Scrabble",
-    round: "Grand Final",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-  },
-  {
-    id: "lu-sf1",
-    type: "Ludo",
-    round: "Semi-Final 1",
-    date: "Aug 10",
-    time: "02:00 PM",
+    id: "vb-session",
+    type: "Volleyball",
+    round: "Tournament Session",
+    date: "Aug 11",
+    time: "08:00 AM",
     teamA: "TBD",
     teamB: "TBD",
   },
   {
-    id: "lu-sf2",
-    type: "Ludo",
-    round: "Semi-Final 2",
-    date: "Aug 10",
-    time: "02:00 PM",
+    id: "bm-session",
+    type: "Badminton",
+    round: "Tournament Session",
+    date: "Aug 11",
+    time: "08:00 AM",
     teamA: "TBD",
     teamB: "TBD",
   },
   {
-    id: "lu-3rd",
-    type: "Ludo",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
-    id: "lu-final",
-    type: "Ludo",
-    round: "Grand Final",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
+    id: "tt-session",
+    type: "Table Tennis",
+    round: "Tournament Session",
+    date: "Aug 11",
+    time: "08:00 AM",
+    teamA: "TBD",
+    teamB: "TBD",
   },
 ];
 
@@ -605,12 +264,10 @@ export default function SportsPage() {
   );
 
   const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
-    const monthOrder: Record<string, number> = { June: 6, July: 7, Aug: 8 };
-    const parse = (d: string) => {
-      const [m, day] = d.split(" ");
-      return (monthOrder[m] || 0) * 100 + parseInt(day, 10);
-    };
-    return parse(a) - parse(b);
+    // Basic sort for July vs Aug. For a real app, use proper date parsing.
+    if (a.includes("July") && b.includes("Aug")) return -1;
+    if (a.includes("Aug") && b.includes("July")) return 1;
+    return a.localeCompare(b);
   });
 
   if (!isClient || !isAuth) return null;
@@ -627,7 +284,7 @@ export default function SportsPage() {
             Sports Arena
           </h1>
           <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-2 font-medium">
-            Tournament Preliminaries &amp; Grand Finals
+            Tournament Session &amp; Grand Finals
           </p>
         </header>
 
@@ -680,7 +337,7 @@ export default function SportsPage() {
                     {date} ·{" "}
                     {groupedMatches[date].some((m) => m.isFinal)
                       ? "Finals"
-                      : "Preliminaries"}
+                      : "Sessions"}
                   </span>
                   <div
                     className={`h-px flex-1 ${groupedMatches[date].some((m) => m.isFinal) ? "bg-(--primary-gold)/20" : "bg-zinc-200 dark:bg-zinc-800"}`}
@@ -709,18 +366,6 @@ export default function SportsPage() {
 }
 
 function MatchCard({ match }: { match: Match }) {
-  const GenderIcon = () => {
-    if (match.gender === "male")
-      return <IoMaleSharp className="ml-1.5 h-3.5 w-3.5 text-blue-500" />;
-    if (match.gender === "female")
-      return <IoFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-pink-500" />;
-    if (match.gender === "mixed")
-      return (
-        <IoMaleFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-purple-500" />
-      );
-    return null;
-  };
-
   if (match.isGraded) {
     return (
       <Link
@@ -738,10 +383,9 @@ function MatchCard({ match }: { match: Match }) {
         {/* Round label */}
         <div className="flex items-center justify-between mb-4">
           <span
-            className={`flex items-center text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
+            className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
           >
             {match.round}
-            <GenderIcon />
           </span>
           <span className="flex items-center gap-1 text-[10px] font-black text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400 dark:group-hover:text-zinc-500 transition-colors uppercase tracking-widest">
             Details <ChevronRight className="h-3 w-3" />
@@ -784,10 +428,9 @@ function MatchCard({ match }: { match: Match }) {
       {/* Round label */}
       <div className="flex items-center justify-between mb-4">
         <span
-          className={`flex items-center text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
+          className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
         >
           {match.round}
-          <GenderIcon />
         </span>
         <span className="flex items-center gap-1 text-[10px] font-black text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400 dark:group-hover:text-zinc-500 transition-colors uppercase tracking-widest">
           Details <ChevronRight className="h-3 w-3" />

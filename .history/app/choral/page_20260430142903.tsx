@@ -2,16 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Clock, Shield } from "lucide-react";
-import { GiMusicalNotes, GiMusicalScore } from "react-icons/gi";
+import { GiMusicalScore } from "react-icons/gi";
 import { PiUserSoundFill, PiUsersFill, PiUsersFourFill } from "react-icons/pi";
 import { useRouter } from "next/navigation";
 
-type ChoralTab =
-  | "Composition Competition"
-  | "Solo"
-  | "Duet"
-  | "Quartet"
-  | "Singing Competition";
+type ChoralTab = "Solo" | "Duet" | "Quartet" | "Singing Competition";
 
 interface EventMatch {
   id: string;
@@ -24,7 +19,6 @@ interface EventMatch {
 }
 
 const choralTabs: ChoralTab[] = [
-  "Composition Competition",
   "Solo",
   "Duet",
   "Quartet",
@@ -32,17 +26,16 @@ const choralTabs: ChoralTab[] = [
 ];
 
 const MATCHES: EventMatch[] = [
-  // Composition Competition
+  // Solo
   {
     id: "c-comp",
-    type: "Composition Competition",
-    round: "Performance Session",
+    type: "Solo",
+    round: "Composition Submission",
     date: "Aug 14",
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
+    isFinal: true,
   },
-
-  // Solo
   {
     id: "c-solo",
     type: "Solo",
@@ -50,6 +43,7 @@ const MATCHES: EventMatch[] = [
     date: "Aug 14",
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
+    isFinal: true,
   },
 
   // Duet
@@ -60,6 +54,7 @@ const MATCHES: EventMatch[] = [
     date: "Aug 14",
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
+    isFinal: true,
   },
 
   // Quartet
@@ -70,6 +65,7 @@ const MATCHES: EventMatch[] = [
     date: "Aug 14",
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
+    isFinal: true,
   },
 
   // Singing Competition
@@ -80,17 +76,27 @@ const MATCHES: EventMatch[] = [
     date: "Aug 14",
     participants: "Open to All Irrespective of Family",
     time: "02:00 PM",
+    isFinal: true,
+  },
+
+  // Grand Finale
+  {
+    id: "c-final",
+    type: "Solo",
+    round: "Grand Finale Rendition",
+    date: "Aug 16",
+    participants: "Choral Champions",
+    time: "",
+    isFinal: true,
   },
 ];
 
 const ChoralIcon = ({ tab }: { tab: ChoralTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
-  if (tab === "Composition Competition")
-    return <GiMusicalScore className={cls} />;
   if (tab === "Solo") return <PiUserSoundFill className={cls} />;
   if (tab === "Duet") return <PiUsersFill className={cls} />;
   if (tab === "Quartet") return <PiUsersFourFill className={cls} />;
-  if (tab === "Singing Competition") return <GiMusicalNotes className={cls} />;
+  if (tab === "Singing Competition") return <GiMusicalScore className={cls} />;
   return <PiUserSoundFill className={cls} />;
 };
 

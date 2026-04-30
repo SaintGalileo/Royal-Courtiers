@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Shield } from "lucide-react";
-import { GiMusicalNotes, GiMusicalScore } from "react-icons/gi";
-import { PiUserSoundFill, PiUsersFill, PiUsersFourFill } from "react-icons/pi";
+import { Clock, ChevronRight, Shield, AlertCircle } from "lucide-react";
+import { GiMusicalScore } from "react-icons/gi";
+import {
+  PiUserSoundFill,
+  PiUsersFill,
+  PiUsersFourFill,
+  PiPianoKeysFill,
+} from "react-icons/pi";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type ChoralTab =
-  | "Composition Competition"
-  | "Solo"
-  | "Duet"
-  | "Quartet"
-  | "Singing Competition";
+type ChoralTab = "Solo" | "Duet" | "Quartet" | "Keyboard Competition";
 
 interface EventMatch {
   id: string;
@@ -24,73 +25,73 @@ interface EventMatch {
 }
 
 const choralTabs: ChoralTab[] = [
-  "Composition Competition",
   "Solo",
   "Duet",
   "Quartet",
+  // "Keyboard Competition",
   "Singing Competition",
 ];
 
-const MATCHES: EventMatch[] = [
-  // Composition Competition
+const MOCK_MATCHES: EventMatch[] = [
   {
     id: "c-comp",
-    type: "Composition Competition",
-    round: "Performance Session",
-    date: "Aug 14",
-    participants: "Open to All Irrespective of Family",
-    time: "02:00 PM",
+    type: "Solo",
+    round: "Composition Submission",
+    date: "June 20",
+    participants: "All Families",
+    time: "11:59 PM",
   },
-
-  // Solo
   {
     id: "c-solo",
     type: "Solo",
     round: "Performance Session",
-    date: "Aug 14",
-    participants: "Open to All Irrespective of Family",
-    time: "02:00 PM",
+    date: "July 9",
+    participants: "All Families",
+    time: "10:00 AM",
   },
-
-  // Duet
   {
     id: "c-duet",
     type: "Duet",
     round: "Performance Session",
-    date: "Aug 14",
-    participants: "Open to All Irrespective of Family",
-    time: "02:00 PM",
+    date: "July 16",
+    participants: "All Families",
+    time: "10:00 AM",
   },
-
-  // Quartet
   {
     id: "c-quartet",
     type: "Quartet",
     round: "Performance Session",
-    date: "Aug 14",
-    participants: "Open to All Irrespective of Family",
-    time: "02:00 PM",
+    date: "July 23",
+    participants: "All Families",
+    time: "10:00 AM",
   },
-
-  // Singing Competition
   {
-    id: "c-singing",
-    type: "Singing Competition",
+    id: "c-kb",
+    type: "Keyboard Competition",
     round: "Performance Session",
-    date: "Aug 14",
-    participants: "Open to All Irrespective of Family",
-    time: "02:00 PM",
+    date: "Aug 13",
+    participants: "All Families",
+    time: "07:00 PM",
+  },
+  {
+    id: "c-final",
+    type: "Solo",
+    round: "Grand Finale Rendition",
+    date: "Aug 16",
+    participants: "Choral Champions",
+    time: "12:00 PM",
+    isFinal: true,
   },
 ];
 
 const ChoralIcon = ({ tab }: { tab: ChoralTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
-  if (tab === "Composition Competition")
-    return <GiMusicalScore className={cls} />;
   if (tab === "Solo") return <PiUserSoundFill className={cls} />;
   if (tab === "Duet") return <PiUsersFill className={cls} />;
   if (tab === "Quartet") return <PiUsersFourFill className={cls} />;
-  if (tab === "Singing Competition") return <GiMusicalNotes className={cls} />;
+  if (tab === "Singing Competition") return <GiMusicalScore className={cls} />;
+  // if (tab === "Keyboard Competition")
+  // return <PiPianoKeysFill className={cls} />;
   return <PiUserSoundFill className={cls} />;
 };
 
@@ -110,7 +111,7 @@ export default function ChoralPage() {
     setIsAuth(true);
   }, [router]);
 
-  const filteredMatches = MATCHES.filter(
+  const filteredMatches = MOCK_MATCHES.filter(
     (m) => m.type === activeTab || m.isFinal,
   );
 
@@ -142,11 +143,11 @@ export default function ChoralPage() {
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500 mb-2">
             Official Schedule
           </p>
-          <h1 className="text-4xl md:text-5xl font-black tracking-[-0.03em] leading-none">
+          <h1 className="text-4xl md:text-5xl font-black tracking-[-0.03em]  leading-none">
             Choral Competitions
           </h1>
           <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-2 font-medium">
-            Performances &amp; Grand Finals
+            Tournament Session &amp; Grand Finals
           </p>
         </header>
 
@@ -242,14 +243,12 @@ function MatchCard({ match }: { match: EventMatch }) {
           </span>
         </div>
 
-        {match.time && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Clock className="h-3 w-3 text-(--primary-gold)" />
-            <span className="text-xs font-black text-(--primary-gold)">
-              {match.time}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Clock className="h-3 w-3 text-(--primary-gold)" />
+          <span className="text-xs font-black text-(--primary-gold)">
+            {match.time}
+          </span>
+        </div>
       </div>
     </div>
   );

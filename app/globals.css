@@ -40,6 +40,25 @@ body {
   display: none;
 }
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-gold) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: block !important;
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--primary-gold);
+  border-radius: 20px;
+}
+
 /* Add default cursor pointer for all clickable elements (Tailwind v4 removes this for buttons) */
 button,
 [role="button"],

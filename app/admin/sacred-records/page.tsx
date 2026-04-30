@@ -154,8 +154,16 @@ export default function AdminSacredRecordsPage() {
             placeholder="Search titles, categories, or content..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-10 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -237,92 +245,94 @@ export default function AdminSacredRecordsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCloseModal} />
-          <div className="relative w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-8 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="relative w-full max-w-xl flex flex-col max-h-[90vh] overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
             <button
               onClick={handleCloseModal}
-              className="absolute right-6 top-6 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="absolute right-6 top-6 z-10 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               <X size={20} />
             </button>
 
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-              {editingRecord ? "Edit Sacred Record" : "Add New Sacred Record"}
-            </h2>
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
+                {editingRecord ? "Edit Sacred Record" : "Add New Sacred Record"}
+              </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Day Number</label>
+                    <input
+                      type="number"
+                      required
+                      value={formData.day_number}
+                      onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) }))}
+                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Category</label>
+                    <select
+                      required
+                      value={formData.category}
+                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                    >
+                      <option value="THE FOUNDATION (1954-2001)">THE FOUNDATION (1954-2001)</option>
+                      <option value="THE FAMILY LOVE BUILT (1991-PRESENT)">THE FAMILY LOVE BUILT (1991-PRESENT)</option>
+                      <option value="ADMINISTRATION & ACCOMPLISMENTS">ADMINISTRATION & ACCOMPLISMENTS</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Day Number</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Title</label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    value={formData.day_number}
-                    onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) }))}
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter a title for this record..."
                     className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
                   />
                 </div>
+
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Category</label>
-                  <select
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Content</label>
+                  <textarea
                     required
-                    value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    rows={8}
+                    value={formData.content}
+                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                    placeholder="Enter the main spiritual content..."
                     className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                  >
-                    <option value="THE FOUNDATION (1954-2001)">THE FOUNDATION (1954-2001)</option>
-                    <option value="THE FAMILY LOVE BUILT (1991-PRESENT)">THE FAMILY LOVE BUILT (1991-PRESENT)</option>
-                    <option value="ADMINISTRATION & ACCOMPLISMENTS">ADMINISTRATION & ACCOMPLISMENTS</option>
-                  </select>
+                  />
                 </div>
-              </div>
 
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Title</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter a title for this record..."
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Content</label>
-                <textarea
-                  required
-                  rows={8}
-                  value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Enter the main spiritual content..."
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="flex-1 rounded-xl border border-zinc-200 py-3 text-sm font-bold text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="flex flex-[2] items-center justify-center gap-2 rounded-xl bg-(--primary-gold) py-3.5 text-sm font-black text-white shadow-lg shadow-(--primary-gold)/30 transition-all hover:bg-(--primary-gold-hover) hover:shadow-(--primary-gold)/40 active:scale-[0.98] disabled:opacity-50"
-                >
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : editingRecord ? (
-                    "Save"
-                  ) : (
-                    "Create Record"
-                  )}
-                </button>
-              </div>
-            </form>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="flex-1 rounded-xl border border-zinc-200 py-3 text-sm font-bold text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="flex flex-[2] items-center justify-center gap-2 rounded-xl bg-(--primary-gold) py-3.5 text-sm font-black text-white shadow-lg shadow-(--primary-gold)/30 transition-all hover:bg-(--primary-gold-hover) hover:shadow-(--primary-gold)/40 active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : editingRecord ? (
+                      "Save"
+                    ) : (
+                      "Create Record"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -6,13 +6,14 @@ import { CreditCard, Landmark, User } from "lucide-react";
 
 export default function DonatePage() {
   const bankDetails = {
-    accountNumber: "1100096048",
-    accountName: "144,000 Virgins Welfare Account 2",
-    bankName: "First Royal Microfinance Bank",
+    accountNumber: "4014651931",
+    accountName: "144,000 Virgins",
+    bankName: "9 Payment Service Bank",
   };
 
   return (
     <main className="min-h-screen w-full bg-background text-foreground flex flex-col pt-24 font-[family-name:var(--font-libre)]">
+
       <div className="flex-1 px-4 py-16 md:py-24 max-w-4xl mx-auto w-full">
         {/* Header Section */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -24,13 +25,10 @@ export default function DonatePage() {
         {/* 35th Anniversary Description */}
         <div className="mb-12 p-8 rounded-2xl border border-(--primary-gold)/20 bg-(--primary-gold)/5 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
           <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
-            <span className="text-(--primary-gold)">35th</span> Anniversary
-            Celebration
+            <span className="text-(--primary-gold)">35th</span> Anniversary Celebration
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            As we celebrate our **35th Anniversary**, your donations will go
-            directly toward funding our commemorative events, outreach programs,
-            and the continued development of The 144,000 Virgins Body.
+            As we celebrate our **35th Anniversary**, your donations will go directly toward funding our commemorative events, outreach programs, and the continued development of The 144,000 Virgins Body.
           </p>
         </div>
 
@@ -50,12 +48,8 @@ export default function DonatePage() {
                   <User className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">
-                    Account Name
-                  </p>
-                  <p className="text-xl md:text-2xl font-bold text-zinc-800 dark:text-zinc-200">
-                    {bankDetails.accountName}
-                  </p>
+                  <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Account Name</p>
+                  <p className="text-xl md:text-2xl font-bold text-zinc-800 dark:text-zinc-200">{bankDetails.accountName}</p>
                 </div>
               </div>
 
@@ -64,9 +58,7 @@ export default function DonatePage() {
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">
-                    Account Number
-                  </p>
+                  <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Account Number</p>
                   <p className="text-3xl md:text-4xl font-mono font-bold text-(--primary-gold) tracking-tighter">
                     {bankDetails.accountNumber}
                   </p>
@@ -78,12 +70,8 @@ export default function DonatePage() {
                   <Landmark className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">
-                    Bank Name
-                  </p>
-                  <p className="text-xl md:text-2xl font-bold text-zinc-800 dark:text-zinc-200">
-                    {bankDetails.bankName}
-                  </p>
+                  <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Bank Name</p>
+                  <p className="text-xl md:text-2xl font-bold text-zinc-800 dark:text-zinc-200">{bankDetails.bankName}</p>
                 </div>
               </div>
             </div>

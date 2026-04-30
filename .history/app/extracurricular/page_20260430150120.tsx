@@ -2,14 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Clock, Shield, AlertCircle } from "lucide-react";
-import { FaComments, FaPenFancy, FaCrown } from "react-icons/fa";
+import { FaComments, FaPenFancy, FaQuestion, FaCrown } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type ExtracurricularTab =
-  | "Debate"
-  | "Essay Writing"
-  | "Pageantry";
+type ExtracurricularTab = "Debate" | "Essay Writing" | "Quiz / Spelling Bee" | "Pageantry";
 
 interface EventMatch {
   id: string;
@@ -28,98 +25,34 @@ interface EventMatch {
 const extracurricularTabs: ExtracurricularTab[] = [
   "Debate",
   "Essay Writing",
+  "Quiz / Spelling Bee",
   "Pageantry",
 ];
 
 const MOCK_MATCHES: EventMatch[] = [
   // Debate (Matchup)
-  {
-    id: "e-sf1-debate",
-    type: "Debate",
-    date: "Aug 10",
-    round: "Semi-Final 1",
-    teamA: "TBD",
-    teamB: "TBD",
-    time: "04:00 PM",
-  },
-  {
-    id: "e-sf2-debate",
-    type: "Debate",
-    date: "Aug 10",
-    round: "Semi-Final 2",
-    teamA: "TBD",
-    teamB: "TBD",
-    time: "05:00 PM",
-  },
-  {
-    id: "e-3rd-debate",
-    type: "Debate",
-    date: "Aug 13",
-    round: "3rd Place Match",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    time: "05:30 PM",
-    info: "Holy Father's Vestry",
-  },
-  {
-    id: "e-final-debate",
-    type: "Debate",
-    date: "Aug 16",
-    round: "Grand Final",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    time: "",
-    isFinal: true,
-  },
+  { id: "e-sf1-debate", type: "Debate", date: "Aug 10", round: "Semi-Final 1", teamA: "TBD", teamB: "TBD", time: "04:00 PM" },
+  { id: "e-sf2-debate", type: "Debate", date: "Aug 10", round: "Semi-Final 2", teamA: "TBD", teamB: "TBD", time: "05:00 PM" },
+  { id: "e-3rd-debate", type: "Debate", date: "Aug 13", round: "3rd Place Match", teamA: "Runner Up 1", teamB: "Runner Up 2", time: "05:30 PM", info: "Holy Father's Vestry" },
+  { id: "e-final-debate", type: "Debate", date: "Aug 16", round: "Grand Final", teamA: "Winner SF1", teamB: "Winner SF2", time: "11:00 AM", isFinal: true },
 
   // Essay Writing (Graded)
-  {
-    id: "e-topic-essay",
-    type: "Essay Writing",
-    date: "Aug 10",
-    round: "Topic Announcement",
-    participants: "All Families",
-    time: "11:30 AM",
-    isGraded: true,
-    info: "Topic announced after Morning Devotion",
-  },
-  {
-    id: "e-submit-essay",
-    type: "Essay Writing",
-    date: "Aug 12",
-    round: "Submission Deadline",
-    participants: "All Families",
-    time: "10:00 AM",
-    isGraded: true,
-    info: "Essays to be submitted on or before 10 a.m.",
-  },
+  { id: "e-topic-essay", type: "Essay Writing", date: "Aug 10", round: "Topic Announcement", participants: "All Families", time: "11:30 AM", isGraded: true, info: "Topic announced after Morning Devotion" },
+  { id: "e-submit-essay", type: "Essay Writing", date: "Aug 12", round: "Submission Deadline", participants: "All Families", time: "10:00 AM", isGraded: true, info: "Essays to be submitted on or before 10 a.m." },
+
+  // Quiz / Spelling Bee (Graded)
+  { id: "e-quiz", type: "Quiz / Spelling Bee", date: "Aug 12", round: "Pageantry Phase 1", participants: "All Families", time: "01:00 PM", isGraded: true },
 
   // Pageantry
-  {
-    id: "e-pageant1",
-    type: "Pageantry",
-    date: "Aug 12",
-    round: "Phase 1 (Quiz / Spelling Bee)",
-    participants: "All Families",
-    time: "01:00 PM",
-    isGraded: true,
-  },
-  {
-    id: "e-pageant2",
-    type: "Pageantry",
-    date: "Aug 15",
-    round: "Phase 2 (Cultural Day)",
-    participants: "All Families",
-    time: "07:00 PM",
-    isGraded: true,
-    isFinal: true,
-  },
+  { id: "e-pageant1", type: "Pageantry", date: "Aug 12", round: "Phase 1", participants: "All Families", time: "01:00 PM", isGraded: true },
+  { id: "e-pageant2", type: "Pageantry", date: "Aug 15", round: "Phase 2 (Cultural Day)", participants: "All Families", time: "07:00 PM", isGraded: true, isFinal: true },
 ];
 
 const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
   if (tab === "Debate") return <FaComments className={cls} />;
   if (tab === "Essay Writing") return <FaPenFancy className={cls} />;
+  if (tab === "Quiz / Spelling Bee") return <FaQuestion className={cls} />;
   if (tab === "Pageantry") return <FaCrown className={cls} />;
   return <FaComments className={cls} />;
 };
@@ -143,19 +76,16 @@ export default function ExtracurricularPage() {
   const filteredMatches = MOCK_MATCHES.filter((m) => m.type === activeTab);
 
   // Group matches by date
-  const groupedMatches = filteredMatches.reduce(
-    (acc, match) => {
-      if (!acc[match.date]) acc[match.date] = [];
-      acc[match.date].push(match);
-      return acc;
-    },
-    {} as Record<string, EventMatch[]>,
-  );
+  const groupedMatches = filteredMatches.reduce((acc, match) => {
+    if (!acc[match.date]) acc[match.date] = [];
+    acc[match.date].push(match);
+    return acc;
+  }, {} as Record<string, EventMatch[]>);
 
   const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
     const months = ["July", "Aug"];
-    const aMonth = months.findIndex((m) => a.includes(m));
-    const bMonth = months.findIndex((m) => b.includes(m));
+    const aMonth = months.findIndex(m => a.includes(m));
+    const bMonth = months.findIndex(m => b.includes(m));
     if (aMonth !== bMonth) return aMonth - bMonth;
     return a.localeCompare(b);
   });
@@ -216,17 +146,10 @@ export default function ExtracurricularPage() {
             sortedDates.map((date) => (
               <section key={date}>
                 <div className="flex items-center gap-3 mb-5">
-                  <span
-                    className={`text-[10px] font-black uppercase tracking-[0.18em] ${groupedMatches[date].some((m) => m.isFinal) ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
-                  >
-                    {date} ·{" "}
-                    {groupedMatches[date].some((m) => m.isFinal)
-                      ? "Finals"
-                      : "Sessions"}
+                  <span className={`text-[10px] font-black uppercase tracking-[0.18em] ${groupedMatches[date].some(m => m.isFinal) ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}>
+                    {date} · {groupedMatches[date].some(m => m.isFinal) ? "Finals" : "Sessions"}
                   </span>
-                  <div
-                    className={`h-px flex-1 ${groupedMatches[date].some((m) => m.isFinal) ? "bg-(--primary-gold)/20" : "bg-zinc-200 dark:bg-zinc-800"}`}
-                  />
+                  <div className={`h-px flex-1 ${groupedMatches[date].some(m => m.isFinal) ? "bg-(--primary-gold)/20" : "bg-zinc-200 dark:bg-zinc-800"}`} />
                 </div>
                 <div className="grid gap-3">
                   {groupedMatches[date].map((match) => (
