@@ -334,7 +334,7 @@ export default function Home() {
               Event Families
             </h2>
             <p className="text-zinc-500 text-sm mt-2 max-w-lg font-medium">
-              Scroll to discover the families leading the 35th Anniversary
+              Scroll to discover the families anchoring the 35th Anniversary
               celebration.
             </p>
           </div>
