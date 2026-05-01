@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function WallOfFamePage() {
+export default function hallOfFamePage() {
   const row = Array.from({ length: 8 }, (_, i) => i + 1);
 
   return (
@@ -12,9 +12,8 @@ export default function WallOfFamePage() {
             Hall of <span className="text-(--primary-gold)">Fame</span>
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-            A tribute to greatness; immortalising our most esteemed Virgins who
-            served diligently. Inductees of the maiden version of the Virgin's
-            Hall of Fame.
+            A tribute to greatness; immortalising the esteemed inductees of the
+            maiden version of the Virgin's Hall of Fame.
           </p>
         </div>
 
@@ -26,9 +25,9 @@ export default function WallOfFamePage() {
               {[...row, ...row].map((item, idx) => (
                 <div
                   key={`top-${item}-${idx}`}
-                  className="wall-frame wall-frame-portrait group relative flex h-60 w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-(--primary-gold)/30 shadow-md transition-transform hover:scale-105 p-2"
+                  className="hall-frame hall-frame-portrait group relative flex h-60 w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-(--primary-gold)/30 shadow-md transition-transform hover:scale-105 p-2"
                 >
-                  <div className="wall-frame-inner flex h-full w-full items-center justify-center rounded-xl border border-(--primary-gold)/45 bg-black/5 dark:bg-white/5">
+                  <div className="hall-frame-inner flex h-full w-full items-center justify-center rounded-xl border border-(--primary-gold)/45 bg-black/5 dark:bg-white/5">
                     <span className="text-6xl font-bold text-(--primary-gold)">
                       ?
                     </span>
@@ -43,9 +42,9 @@ export default function WallOfFamePage() {
               {[...row, ...row].map((item, idx) => (
                 <div
                   key={`bottom-${item}-${idx}`}
-                  className="wall-frame wall-frame-portrait group relative flex h-60 w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-(--primary-gold)/30 shadow-md transition-transform hover:scale-105 p-2"
+                  className="hall-frame hall-frame-portrait group relative flex h-60 w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-(--primary-gold)/30 shadow-md transition-transform hover:scale-105 p-2"
                 >
-                  <div className="wall-frame-inner flex h-full w-full items-center justify-center rounded-xl border border-(--primary-gold)/45 bg-black/5 dark:bg-white/5">
+                  <div className="hall-frame-inner flex h-full w-full items-center justify-center rounded-xl border border-(--primary-gold)/45 bg-black/5 dark:bg-white/5">
                     <span className="text-6xl font-bold text-(--primary-gold)">
                       ?
                     </span>

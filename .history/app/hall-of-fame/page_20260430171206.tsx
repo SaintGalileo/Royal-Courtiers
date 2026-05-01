@@ -12,9 +12,8 @@ export default function WallOfFamePage() {
             Hall of <span className="text-(--primary-gold)">Fame</span>
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-            A tribute to greatness; immortalising our most esteemed Virgins who
-            served diligently. Inductees of the maiden version of the Virgin's
-            Hall of Fame.
+            A tribute to greatness; immortalising the esteemed inductees of the
+            maiden version of the Virgin's Hall of Fame.
           </p>
         </div>
 

@@ -49,11 +49,6 @@ const ITINERARY: ItineraryDay[] = [
     date: "August 11, 2026",
     visibleItems: [
       {
-        time: "05:00 AM",
-        title: "Morning Devotion",
-        location: "The Great Hall",
-      },
-      {
         time: "11:00 AM",
         title:
           "Sports Day (Volleyball, Badminton, Table Tennis, Track Events, etc.)",
@@ -65,11 +60,6 @@ const ITINERARY: ItineraryDay[] = [
     day: "Wednesday",
     date: "August 12, 2026",
     visibleItems: [
-      {
-        time: "05:00 AM",
-        title: "Morning Devotion",
-        location: "The Great Hall",
-      },
       {
         time: "08:00 AM",
         title: "Football Finals",
@@ -114,7 +104,7 @@ const ITINERARY: ItineraryDay[] = [
     visibleItems: [
       {
         time: "05:00 AM",
-        title: "Morning Devotion / Creation Day Celebration",
+        title: "Creation Day Celebration",
         location: "The Great Hall",
       },
       {
@@ -128,11 +118,6 @@ const ITINERARY: ItineraryDay[] = [
     day: "Saturday",
     date: "August 15, 2026",
     visibleItems: [
-      {
-        time: "05:00 AM",
-        title: "Morning Devotion",
-        location: "The Great Hall",
-      },
       {
         time: "07:00 PM",
         title: "Cultural Day 2.0 / Dinner Night (featuring Pageantry Phase 2)",
