@@ -100,7 +100,7 @@ function CountdownDigit({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center w-12 sm:w-16">
       <div className="relative overflow-hidden">
-        <span className="text-3xl sm:text-4xl font-black text-white tracking-tighter leading-none tabular-nums block">
+        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-none tabular-nums block">
           {display}
         </span>
       </div>

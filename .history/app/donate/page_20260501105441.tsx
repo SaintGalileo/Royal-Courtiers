@@ -28,7 +28,7 @@ export default function DonatePage() {
             Celebration
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            As we celebrate our 35th Anniversary, your donations will go
+            As we celebrate our **35th Anniversary**, your donations will go
             directly toward funding our commemorative events, outreach programs,
             and the continued development of The 144,000 Virgins Body.
           </p>

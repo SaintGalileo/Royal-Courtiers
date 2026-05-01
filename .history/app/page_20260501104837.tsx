@@ -333,8 +333,8 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
               Event Families
             </h2>
-            <p className="text-zinc-500 text-sm mt-2 max-w-lg font-medium">
-              Scroll to discover the families leading the 35th Anniversary
+            <p className="text-zinc-500 text-sm mt-2 max-w-xl font-medium">
+              Scroll to discover the families anchoring the 35th Anniversary
               celebration.
             </p>
           </div>
@@ -426,7 +426,7 @@ export default function Home() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
                         <div className="absolute bottom-6 left-6 right-6">
-                          <p className="text-[10px] font-black text-primary-gold uppercase tracking-[0.2em] mb-1">
+                          <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-1">
                             Family Mother
                           </p>
                           <p className="text-lg font-black text-white tracking-tight leading-none">
@@ -557,11 +557,8 @@ export default function Home() {
 
                       {/* Birthday message */}
                       <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                        Wishing you a wonderful{" "}
-                        <span className="font-bold text-amber-600 dark:text-amber-400">
-                          {age}th
-                        </span>{" "}
-                        birthday filled with love, grace & blessings! 🎉
+                        Wishing you a wonderful birthday filled with love, grace
+                        & blessings! 🎉
                       </p>
 
                       {/* Gift icon divider */}

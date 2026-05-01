@@ -333,8 +333,8 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
               Event Families
             </h2>
-            <p className="text-zinc-500 text-sm mt-2 max-w-lg font-medium">
-              Scroll to discover the families leading the 35th Anniversary
+            <p className="text-zinc-500 text-sm mt-2 max-w-xl font-medium">
+              Scroll to discover the families anchoring the 35th Anniversary
               celebration.
             </p>
           </div>
@@ -557,11 +557,8 @@ export default function Home() {
 
                       {/* Birthday message */}
                       <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                        Wishing you a wonderful{" "}
-                        <span className="font-bold text-amber-600 dark:text-amber-400">
-                          {age}th
-                        </span>{" "}
-                        birthday filled with love, grace & blessings! 🎉
+                        Wishing you a wonderful birthday filled with love, grace
+                        & blessings! 🎉
                       </p>
 
                       {/* Gift icon divider */}

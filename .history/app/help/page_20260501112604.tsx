@@ -174,7 +174,7 @@ export default function HelpPage() {
             <Users className="w-6 h-6 text-(--primary-gold)" />
             <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">
               Contact the{" "}
-              <span className="text-(--primary-gold)">Event Directorate</span>
+              <span className="text-(--primary-gold)">Directorate</span>
             </h2>
           </div>
 
@@ -234,7 +234,7 @@ export default function HelpPage() {
             </a>
           </div>
           <p className="mt-6 text-sm text-zinc-400 dark:text-zinc-500">
-            We typically respond within minutes.
+            We typically respond within 24 hours.
           </p>
         </div>
       </div>

@@ -29,10 +29,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Divine Edosomwan",
     icon: GiWingedScepter,
     colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934848/photo_2026-04-23_10-00-57_rhas9s.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1776936363/i4qhipfe3zwgnerymcdn.jpg",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934848/photo_2026-04-23_10-00-57_rhas9s.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1776936363/i4qhipfe3zwgnerymcdn.jpg"
   },
   {
     family: "Family of Light",
@@ -40,10 +38,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Sarah Cyril",
     icon: GiPolarStar,
     colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775139477/wdzbv3jvdvsjabzlprev.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775129139/nkxr8dc5iyredtlgyazu.png",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775139477/wdzbv3jvdvsjabzlprev.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775129139/nkxr8dc5iyredtlgyazu.png"
   },
   {
     family: "Family of Power",
@@ -51,10 +47,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Fortune Umoh",
     icon: FaBolt,
     colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934875/photo_2026-04-23_10-01-33_fer1th.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1775042678/zjyanfopnubxuumxi050.jpg",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934875/photo_2026-04-23_10-01-33_fer1th.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1775042678/zjyanfopnubxuumxi050.jpg"
   },
   {
     family: "Family of Virtue",
@@ -62,10 +56,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Mercy Alexander",
     icon: GiFruitTree,
     colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775128274/wwjphkfky1iuyvuqfe9q.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775300787/mptvkengmiciz6bawipr.jpg",
+    fatherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775128274/wwjphkfky1iuyvuqfe9q.jpg",
+    motherImage: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775300787/mptvkengmiciz6bawipr.jpg"
   },
 ];
 
@@ -213,9 +205,8 @@ export default function Home() {
         {HERO_IMAGES.map((src, idx) => (
           <div
             key={src}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
             style={{
               backgroundImage: `url(${src})`,
               backgroundSize: "cover",
@@ -282,10 +273,7 @@ export default function Home() {
 
             <div className="flex items-center justify-center gap-2 sm:gap-4">
               {countdownBlocks.map((item, i) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 sm:gap-4"
-                >
+                <div key={item.label} className="flex items-center gap-2 sm:gap-4">
                   <CountdownDigit value={item.value} label={item.label} />
                   {i < countdownBlocks.length - 1 && (
                     <span className="text-white/30 text-xl sm:text-2xl font-thin mb-5 sm:mb-6">
@@ -307,11 +295,10 @@ export default function Home() {
             <button
               key={idx}
               onClick={() => goToSlide(() => idx)}
-              className={`rounded-full transition-all duration-500 ${
-                idx === currentSlide
-                  ? "h-10 w-1.5 bg-(--primary-gold)"
-                  : "h-3 w-1.5 bg-white/30 hover:bg-white/60"
-              }`}
+              className={`rounded-full transition-all duration-500 ${idx === currentSlide
+                ? "h-10 w-1.5 bg-(--primary-gold)"
+                : "h-3 w-1.5 bg-white/30 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
@@ -334,8 +321,7 @@ export default function Home() {
               Event Families
             </h2>
             <p className="text-zinc-500 text-sm mt-2 max-w-lg font-medium">
-              Scroll to discover the families leading the 35th Anniversary
-              celebration.
+              Scroll to discover the families leading the 35th Anniversary celebration.
             </p>
           </div>
         </div>
@@ -344,13 +330,7 @@ export default function Home() {
         <div className="relative px-6 sm:px-12 md:px-24 lg:px-32">
           {EVENT_FAMILIES.map((item, idx) => {
             const FamilyIcon = item.icon;
-            const bgColor = item.colorClass.includes("purple")
-              ? "bg-purple-500"
-              : item.colorClass.includes("yellow")
-                ? "bg-yellow-500"
-                : item.colorClass.includes("red")
-                  ? "bg-red-500"
-                  : "bg-green-500";
+            const bgColor = item.colorClass.includes("purple") ? "bg-purple-500" : item.colorClass.includes("yellow") ? "bg-yellow-500" : item.colorClass.includes("red") ? "bg-red-500" : "bg-green-500";
             return (
               <div
                 key={item.family}
@@ -364,12 +344,8 @@ export default function Home() {
                   }}
                 >
                   {/* Decorative glow */}
-                  <div
-                    className={`absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[100px] opacity-15 pointer-events-none ${bgColor}`}
-                  />
-                  <div
-                    className={`absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-[80px] opacity-10 pointer-events-none ${bgColor}`}
-                  />
+                  <div className={`absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[100px] opacity-15 pointer-events-none ${bgColor}`} />
+                  <div className={`absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-[80px] opacity-10 pointer-events-none ${bgColor}`} />
 
                   <div className="relative grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-0 h-full">
                     {/* Left — Info Panel */}
@@ -377,12 +353,8 @@ export default function Home() {
                       {/* Pillar Icon */}
                       <div className="flex items-center gap-4 mb-6">
                         <div className="relative">
-                          <div
-                            className={`absolute inset-0 blur-xl opacity-30 dark:opacity-50 ${bgColor}`}
-                          />
-                          <div
-                            className={`relative p-4 rounded-2xl bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/10 ${item.colorClass}`}
-                          >
+                          <div className={`absolute inset-0 blur-xl opacity-30 dark:opacity-50 ${bgColor}`} />
+                          <div className={`relative p-4 rounded-2xl bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/10 ${item.colorClass}`}>
                             <FamilyIcon size={28} />
                           </div>
                         </div>
@@ -408,9 +380,7 @@ export default function Home() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
                         <div className="absolute bottom-6 left-6 right-6">
-                          <p className="text-[10px] font-black text-(--primary-gold) uppercase tracking-[0.2em] mb-1">
-                            Family Father
-                          </p>
+                          <p className="text-[10px] font-black text-(--primary-gold) uppercase tracking-[0.2em] mb-1">Family Father</p>
                           <p className="text-lg font-black text-white tracking-tight leading-none">
                             {item.father.replace("Brother ", "Bro. ")}
                           </p>
@@ -426,9 +396,7 @@ export default function Home() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
                         <div className="absolute bottom-6 left-6 right-6">
-                          <p className="text-[10px] font-black text-primary-gold uppercase tracking-[0.2em] mb-1">
-                            Family Mother
-                          </p>
+                          <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-1">Family Mother</p>
                           <p className="text-lg font-black text-white tracking-tight leading-none">
                             {item.mother.replace("Sister ", "Sis. ")}
                           </p>
@@ -472,16 +440,13 @@ export default function Home() {
             </div>
 
             {/* Birthday Cards Grid */}
-            <div
-              className={`grid gap-6 ${birthdayMembers.length === 1 ? "max-w-sm mx-auto" : birthdayMembers.length === 2 ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}
-            >
+            <div className={`grid gap-6 ${birthdayMembers.length === 1 ? 'max-w-sm mx-auto' : birthdayMembers.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
               {birthdayMembers.map((member) => {
                 const dob = new Date(member.date_of_birth);
                 const today = new Date();
                 let age = today.getFullYear() - dob.getFullYear();
                 const m = today.getMonth() - dob.getMonth();
-                if (m < 0 || (m === 0 && today.getDate() < dob.getDate()))
-                  age--;
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
 
                 return (
                   <div
@@ -503,13 +468,7 @@ export default function Home() {
                             height: `${2 + Math.random() * 4}px`,
                             top: `${Math.random() * 100}%`,
                             left: `${Math.random() * 100}%`,
-                            backgroundColor: [
-                              "#f59e0b",
-                              "#ef4444",
-                              "#8b5cf6",
-                              "#22c55e",
-                              "#ec4899",
-                            ][i % 5],
+                            backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#22c55e', '#ec4899'][i % 5],
                             opacity: 0.15 + Math.random() * 0.1,
                           }}
                         />
@@ -522,15 +481,10 @@ export default function Home() {
                         <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full ring-4 ring-amber-400/25 p-1 bg-white dark:bg-zinc-900">
                           <div className="h-full w-full rounded-full border-[3px] border-amber-400 overflow-hidden bg-amber-50 dark:bg-zinc-800">
                             {member.photo_url ? (
-                              <img
-                                src={member.photo_url}
-                                alt={member.first_name}
-                                className="h-full w-full object-cover"
-                              />
+                              <img src={member.photo_url} alt={member.first_name} className="h-full w-full object-cover" />
                             ) : (
                               <div className="h-full w-full flex items-center justify-center text-2xl font-black text-amber-500">
-                                {member.first_name[0]}
-                                {member.last_name[0]}
+                                {member.first_name[0]}{member.last_name[0]}
                               </div>
                             )}
                           </div>
@@ -557,11 +511,7 @@ export default function Home() {
 
                       {/* Birthday message */}
                       <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                        Wishing you a wonderful{" "}
-                        <span className="font-bold text-amber-600 dark:text-amber-400">
-                          {age}th
-                        </span>{" "}
-                        birthday filled with love, grace & blessings! 🎉
+                        Wishing you a wonderful <span className="font-bold text-amber-600 dark:text-amber-400">{age}th</span> birthday filled with love, grace & blessings! 🎉
                       </p>
 
                       {/* Gift icon divider */}

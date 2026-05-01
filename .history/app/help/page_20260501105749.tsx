@@ -15,64 +15,9 @@ import { useState } from "react";
 
 const faqs = [
   {
-    question: "What is the Event Theme and Slogan?",
+    question: "What is the event theme and Slogan?",
     answer:
-      "The Family Love Built; Bearers of the Seal of the Universal Monarch.",
-  },
-  {
-    question: "What are the Event Families?",
-    answer:
-      "There are four event families anchoring the 35th Anniversary: Family of Dominion, Family of Light, Family of Power, and Family of Virtue. Each participant belongs to one of these families to foster unity and healthy competition.",
-  },
-  {
-    question: "How do I log into my Dashboard?",
-    answer:
-      "You can log into your personalized dashboard using your Unique Access Code. Keep this code secure as it grants access to your profile, family tree, event schedules, and more. Note that the dashboard is exclusively for consecrated 144s,000 Virgins.",
-  },
-  {
-    question: "Can I change my assigned family?",
-    answer:
-      "No. Families are automatically assigned by an intelligent algorithm designed by the Event Directorate to ensure balanced participation across all events and competitions.",
-  },
-  {
-    question: "How many times can I edit my profile details?",
-    answer:
-      "While most fields can be edited multiple times, some key profile details like your Date of Birth can only be edited once, and others like your Date of Consecration is uneditable. Please double-check your entries before saving, and reach out to the Event Directorate should you need to make any changes.",
-  },
-  {
-    question: "What kinds of competitions are held during the anniversary?",
-    answer:
-      "The celebration features a wide array of activities including Sports (Football, Volleyball, Track Events, etc.), Choral Competitions (Solo, Duet, Quartet, etc.), and Extracurricular Events (Debate, Pageantry, etc.).",
-  },
-  {
-    question: "How is the leaderboard scored?",
-    answer:
-      "Competitions are scored on a point system based on position. For example, 1st place earns 100%, 2nd place 80%, 3rd place 60%, and 4th place 40% of the maximum points allotted for that event category.",
-  },
-  {
-    question: "When are the sports events taking place?",
-    answer:
-      "The majority of the sports preliminaries happen in July and early August, with the Grand Finals and Sports Day taking place around August 10th to 12th. See the 'Competitions' page for more details.",
-  },
-  {
-    question: "Are there activities for younger participants?",
-    answer:
-      "Yes! The Junior Games category includes fun and competitive events like the Sack Race, Egg Race, and Filling the Basket.",
-  },
-  {
-    question: "How do I get the official 35th Anniversary T-Shirt?",
-    answer:
-      "You can specify your shirt size and view a 3D preview of the official merchandise directly from your dashboard. Distribution details will be communicated by your Family Heads.",
-  },
-  {
-    question: "How can I support or donate to the anniversary?",
-    answer:
-      "Yes, you can! Simply visit the 'Donate' page on this website to get the account details and make your contributions.",
-  },
-  {
-    question: "Who do I contact if I have an issue or suggestion to make?",
-    answer:
-      "You can reach out to any member of the Event Directorate using the phone numbers and contact details provided below.",
+      "The Family Love Built; Bearers of the Seal of the Universal Monarch",
   },
 ];
 
@@ -123,9 +68,9 @@ export default function HelpPage() {
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-zinc-900 dark:text-zinc-100">
             How can we <span className="text-(--primary-gold)">Help</span> you?
           </h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto">
-            Find answers to common questions or reach out to the Event
-            Directorate directly.
+          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
+            Find answers to common questions or reach out to our event
+            directorate directly.
           </p>
         </div>
 
@@ -174,7 +119,7 @@ export default function HelpPage() {
             <Users className="w-6 h-6 text-(--primary-gold)" />
             <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">
               Contact the{" "}
-              <span className="text-(--primary-gold)">Event Directorate</span>
+              <span className="text-(--primary-gold)">Directorate</span>
             </h2>
           </div>
 
@@ -234,7 +179,7 @@ export default function HelpPage() {
             </a>
           </div>
           <p className="mt-6 text-sm text-zinc-400 dark:text-zinc-500">
-            We typically respond within minutes.
+            We typically respond within 24 hours.
           </p>
         </div>
       </div>

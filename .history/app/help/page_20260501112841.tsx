@@ -234,7 +234,7 @@ export default function HelpPage() {
             </a>
           </div>
           <p className="mt-6 text-sm text-zinc-400 dark:text-zinc-500">
-            We typically respond within minutes.
+            We typically respond within 24 hours.
           </p>
         </div>
       </div>

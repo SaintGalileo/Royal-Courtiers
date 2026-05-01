@@ -1,20 +1,12 @@
 "use client";
 
 import React from "react";
-import {
-  GiPolarStar,
-  GiWingedScepter,
-  GiFruitTree,
-  GiDove,
-} from "react-icons/gi";
+import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import type { ComponentType } from "react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 
-type IconType = ComponentType<{
-  className?: string;
-  style?: React.CSSProperties;
-}>;
+type IconType = ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
 const familyStyles: Record<
   string,
@@ -128,13 +120,8 @@ export default function BirthdayCard({
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
                 backgroundColor: [
-                  "#f59e0b",
-                  "#ef4444",
-                  "#8b5cf6",
-                  "#22c55e",
-                  "#ec4899",
-                  "#3b82f6",
-                  "#f97316",
+                  "#f59e0b", "#ef4444", "#8b5cf6", "#22c55e",
+                  "#ec4899", "#3b82f6", "#f97316",
                 ][i % 7],
                 opacity: 0.12 + Math.random() * 0.15,
               }}
@@ -159,34 +146,30 @@ export default function BirthdayCard({
         </div>
 
         {/* Royal borders */}
-        <div className="absolute inset-[2.5%] border border-(--primary-gold)/25 rounded-lg pointer-events-none z-1" />
-        <div className="absolute inset-[3.5%] border-2 border-(--primary-gold)/10 rounded-sm pointer-events-none z-1" />
+        <div className="absolute inset-[2.5%] border border-(--primary-gold)/25 rounded-lg pointer-events-none z-[1]" />
+        <div className="absolute inset-[3.5%] border-2 border-(--primary-gold)/10 rounded-sm pointer-events-none z-[1]" />
 
         {/* All content */}
         <div className="absolute inset-[5%] z-10 flex flex-col items-center justify-between py-[4%] px-[3%] overflow-hidden">
+
           {/* ── Header ── */}
           <div className="flex flex-col items-center gap-1">
             <p
-              className="font-bold uppercase text-primary-gold whitespace-nowrap tracking-[0.25em]"
+              className="font-bold uppercase text-(--primary-gold) whitespace-nowrap tracking-[0.25em]"
               style={{ fontSize: "clamp(6px, 1.8vw, 9px)" }}
             >
               🎂 Happy Birthday 🎂
             </p>
-            <div
-              className="h-px bg-primary-gold/40"
-              style={{ width: "clamp(28px, 8%, 56px)" }}
-            />
+            <div className="h-px bg-(--primary-gold)/40" style={{ width: "clamp(28px, 8%, 56px)" }} />
           </div>
 
           {/* ── Photo + Age Badge ── */}
-          <div
-            className="flex flex-col items-center shrink-0 w-full"
-            style={{ gap: "clamp(5px, 1.5%, 12px)" }}
-          >
+          <div className="flex flex-col items-center flex-shrink-0 w-full" style={{ gap: "clamp(5px, 1.5%, 12px)" }}>
+
             {/* Triple-ring photo with birthday glow */}
             <div className="relative">
               <div
-                className={`rounded-full ring-[clamp(3.5px,1vw,7px)] ring-amber-400/30 flex items-center justify-center shrink-0 aspect-square`}
+                className={`rounded-full ring-[clamp(3.5px,1vw,7px)] ring-amber-400/30 flex items-center justify-center flex-shrink-0 aspect-square`}
                 style={{
                   width: "clamp(80px, 26vw, 140px)",
                   height: "clamp(80px, 26vw, 140px)",
@@ -196,7 +179,7 @@ export default function BirthdayCard({
                   className={`w-full h-full rounded-full border-[clamp(2px,0.6vw,4.5px)] border-amber-400 p-[clamp(2.5px,0.8vw,5px)] bg-white dark:bg-zinc-950 flex items-center justify-center overflow-hidden`}
                 >
                   <div
-                    className={`w-full h-full rounded-full border-[clamp(1.5px,0.4vw,3.5px)] border-primary-gold overflow-hidden bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center font-black text-primary-gold shrink-0`}
+                    className={`w-full h-full rounded-full border-[clamp(1.5px,0.4vw,3.5px)] border-(--primary-gold) overflow-hidden bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center font-black text-(--primary-gold) flex-shrink-0`}
                     style={{ fontSize: "clamp(18px, 6vw, 36px)" }}
                   >
                     {photoUrl ? (
@@ -204,10 +187,7 @@ export default function BirthdayCard({
                         src={getOptimizedUrl(photoUrl)}
                         alt="Profile"
                         className="w-full h-full object-cover"
-                        style={{
-                          objectPosition: "center center",
-                          display: "block",
-                        }}
+                        style={{ objectPosition: "center center", display: "block" }}
                       />
                     ) : (
                       initials
@@ -230,10 +210,7 @@ export default function BirthdayCard({
             </div>
 
             {/* Family pill */}
-            <div
-              className="flex flex-col items-center w-full"
-              style={{ gap: "clamp(2px, 0.5%, 5px)" }}
-            >
+            <div className="flex flex-col items-center w-full" style={{ gap: "clamp(2px, 0.5%, 5px)" }}>
               <p
                 className="font-bold mt-3 mb-1 uppercase text-zinc-400 dark:text-zinc-600 tracking-[0.25em]"
                 style={{ fontSize: "clamp(5.5px, 1.3vw, 8px)" }}
@@ -241,10 +218,7 @@ export default function BirthdayCard({
                 From the Family of
               </p>
 
-              <div
-                className="flex items-center w-[90%]"
-                style={{ gap: "clamp(4px, 1%, 10px)" }}
-              >
+              <div className="flex items-center w-[90%]" style={{ gap: "clamp(4px, 1%, 10px)" }}>
                 <div className={`flex-1 h-px ${styleObj.lineColor}`} />
                 <div
                   className={`inline-flex items-center rounded-full ${styleObj.bgColor} ${styleObj.textColor} border-[1.5px] ${styleObj.borderColor} font-black whitespace-nowrap`}
@@ -254,13 +228,7 @@ export default function BirthdayCard({
                     fontSize: "clamp(6.5px, 1.6vw, 11px)",
                   }}
                 >
-                  <Icon
-                    style={{
-                      width: "clamp(8px, 1.8%, 13px)",
-                      height: "clamp(8px, 1.8%, 13px)",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <Icon style={{ width: "clamp(8px, 1.8%, 13px)", height: "clamp(8px, 1.8%, 13px)", flexShrink: 0 }} />
                   {family}
                 </div>
                 <div className={`flex-1 h-px ${styleObj.lineColor}`} />
@@ -279,25 +247,20 @@ export default function BirthdayCard({
           </div>
 
           {/* ── Birthday Message ── */}
-          <div
-            className="flex flex-col items-center"
-            style={{ gap: "clamp(2px, 0.5%, 3px)" }}
-          >
+          <div className="flex flex-col items-center" style={{ gap: "clamp(2px, 0.5%, 3px)" }}>
             <p
               className="font-medium text-zinc-500 dark:text-zinc-400 text-center leading-tight"
               style={{ fontSize: "clamp(6px, 1.6vw, 11px)" }}
             >
-              Wishing you a{" "}
-              <span className="font-bold text-(--primary-gold)">
-                blessed & wonderful
-              </span>{" "}
+              Wishing you a blessed &{" "}
+              <span className="font-bold text-(--primary-gold)">wonderful</span>{" "}
               birthday!
             </p>
             <p
               className="font-bold text-zinc-400 dark:text-zinc-600 text-center"
               style={{ fontSize: "clamp(6px, 1.5vw, 10px)" }}
             >
-              🎉 May this new year of life bring you joy, grace & fulfilment! 🎉
+              🎉 May this new year of life bring you joy, grace & fulfilment 🎉
             </p>
             <p
               className="font-bold uppercase text-zinc-300 dark:text-zinc-700 tracking-[0.2em] mt-1"

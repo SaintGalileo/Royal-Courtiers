@@ -12,8 +12,8 @@ export default function DonatePage() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-background text-foreground flex flex-col py-18 font-[family-name:var(--font-libre)]">
-      <div className="flex-1 px-4 max-w-4xl mx-auto w-full">
+    <main className="min-h-screen w-full bg-background text-foreground flex flex-col pt-24 font-[family-name:var(--font-libre)]">
+      <div className="flex-1 px-4 py-16 md:py-24 max-w-4xl mx-auto w-full">
         {/* Header Section */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-zinc-900 dark:text-zinc-100">
@@ -28,7 +28,7 @@ export default function DonatePage() {
             Celebration
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            As we celebrate our 35th Anniversary, your donations will go
+            As we celebrate our **35th Anniversary**, your donations will go
             directly toward funding our commemorative events, outreach programs,
             and the continued development of The 144,000 Virgins Body.
           </p>
