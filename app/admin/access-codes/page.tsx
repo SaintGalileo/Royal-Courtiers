@@ -255,7 +255,7 @@ export default function AdminAccessCodesPage() {
                 >
                   <div className="flex items-center gap-2">
                     Used By
-                    {sortConfig?.key as string === "used_by" && (
+                    {sortConfig && (sortConfig.key as string) === "used_by" && (
                       sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
                     )}
                   </div>

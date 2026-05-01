@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, Music, X, Play, Pause, Check } from "lucide-react";
+import { useState } from "react";
+import { Search, Music, X } from "lucide-react";
 import { toast } from "sonner";
 
 export interface SpotifyTrack {
@@ -23,8 +23,6 @@ export default function SpotifySearch({ onSelect, onClose }: SpotifySearchProps)
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SpotifyTrack[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [playingId, setPlayingId] = useState<string | null>(null);
-    const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,32 +41,6 @@ export default function SpotifySearch({ onSelect, onClose }: SpotifySearchProps)
             setIsLoading(false);
         }
     };
-
-    const togglePlay = (track: SpotifyTrack) => {
-        console.log("Spotify Track Debug:", track);
-        if (!track.previewUrl) {
-            toast.error("Spotify hasn't provided a preview for this song.");
-            return;
-        }
-
-        if (playingId === track.id) {
-            audio?.pause();
-            setPlayingId(null);
-        } else {
-            audio?.pause();
-            const newAudio = new Audio(track.previewUrl);
-            newAudio.play().catch(() => toast.error("Unable to play preview."));
-            newAudio.onended = () => setPlayingId(null);
-            setAudio(newAudio);
-            setPlayingId(track.id);
-        }
-    };
-
-    useEffect(() => {
-        return () => {
-            audio?.pause();
-        };
-    }, [audio]);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -118,12 +90,6 @@ export default function SpotifySearch({ onSelect, onClose }: SpotifySearchProps)
                                     <div className="flex items-center gap-3 min-w-0">
                                         <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
                                             <img src={track.albumArt} alt={track.name} className="h-full w-full object-cover" />
-                                            <button
-                                                onClick={() => togglePlay(track)}
-                                                className={`absolute inset-0 flex items-center justify-center bg-black/40 text-white transition-opacity ${playingId === track.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-                                            >
-                                                {playingId === track.id ? <Pause size={16} /> : <Play size={16} />}
-                                            </button>
                                         </div>
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">{track.name}</p>
