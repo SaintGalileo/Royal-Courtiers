@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import WelcomePopup from "@/components/WelcomePopup";
 import {
   GiPolarStar,
@@ -69,10 +69,131 @@ const EVENT_FAMILIES = [
   },
 ];
 
-const HERO_IMAGES = [
-  "/virgins/three.jpg",
-  "/virgins/one.jpg",
-  "/virgins/two.jpg",
+const PORTRAIT_IMAGES = [
+  "/virgins/portrait/prime.jpg",
+  "/virgins/portrait/1.jpg",
+  "/virgins/portrait/2.jpg",
+  "/virgins/portrait/3.jpg",
+  "/virgins/portrait/4.jpg",
+  "/virgins/portrait/5.jpg",
+  "/virgins/portrait/6.jpg",
+  "/virgins/portrait/IMG-20220820-WA0032.jpg",
+  "/virgins/portrait/IMG-20220820-WA0034.jpg",
+  "/virgins/portrait/IMG_1333.jpeg",
+  "/virgins/portrait/IMG_3746-1.jpeg",
+  "/virgins/portrait/IMG_3770.jpeg",
+  "/virgins/portrait/IMG_7640.jpg",
+  "/virgins/portrait/IMG_8164.jpeg",
+  "/virgins/portrait/IMG_8186.jpeg",
+  "/virgins/portrait/image_2026-05-22_20-05-59.png",
+  "/virgins/portrait/image_2026-05-22_20-09-13.png",
+  "/virgins/portrait/image_2026-05-22_20-11-09.png",
+  "/virgins/portrait/image_2026-05-22_20-11-32.png",
+  "/virgins/portrait/image_2026-05-22_20-11-55.png",
+  "/virgins/portrait/image_2026-05-22_20-12-05.png",
+  "/virgins/portrait/image_2026-05-22_20-12-17.png",
+  "/virgins/portrait/image_2026-05-22_20-12-27.png",
+  "/virgins/portrait/image_2026-05-22_20-12-42.png",
+  "/virgins/portrait/image_2026-05-22_20-12-51.png",
+  "/virgins/portrait/image_2026-05-22_20-12-58.png",
+  "/virgins/portrait/image_2026-05-22_20-40-45.png",
+  "/virgins/portrait/image_2026-05-22_20-41-42.png",
+  "/virgins/portrait/image_2026-05-22_22-28-02.png",
+  "/virgins/portrait/image_2026-05-22_22-28-11.png",
+  "/virgins/portrait/image_2026-05-22_22-28-25.png",
+  "/virgins/portrait/one.jpg",
+  "/virgins/portrait/photo_2026-05-22_17-48-33.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-02-29.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-02-37.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-02-40.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-02-49.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-02-51.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-03-06.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-03-07.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-03-09.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-03-12.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-39-41.jpg",
+  "/virgins/portrait/photo_2026-05-22_18-40-07.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-40-04.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-54-00.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-54-02.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-54-08.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-54-12.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-54-15.jpg",
+  "/virgins/portrait/photo_2026-05-22_20-54-17.jpg",
+  "/virgins/portrait/three.jpg",
+  "/virgins/portrait/two.jpg",
+];
+
+const LANDSCAPE_IMAGES = [
+  "/virgins/landscape/prime.JPG",
+  "/virgins/landscape/1.JPG",
+  "/virgins/landscape/2.JPG",
+  "/virgins/landscape/3.JPG",
+  "/virgins/landscape/4.JPG",
+  "/virgins/landscape/5.png",
+  "/virgins/landscape/IMG-20240331-WA0032.jpg",
+  "/virgins/landscape/IMG-20250810-WA0096.jpg",
+  "/virgins/landscape/IMG-20260210-WA0004.jpg",
+  "/virgins/landscape/IMG-20260304-WA0006.jpg",
+  "/virgins/landscape/IMG_1336.jpeg",
+  "/virgins/landscape/IMG_4714.jpg",
+  "/virgins/landscape/IMG_4720.jpg",
+  "/virgins/landscape/IMG_7582.jpg",
+  "/virgins/landscape/IMG_7586.jpg",
+  "/virgins/landscape/IMG_8097.jpeg",
+  "/virgins/landscape/IMG_8120.jpeg",
+  "/virgins/landscape/IMG_8122.jpeg",
+  "/virgins/landscape/IMG_8137.jpeg",
+  "/virgins/landscape/image_2026-05-22_20-04-49.png",
+  "/virgins/landscape/image_2026-05-22_20-05-16.png",
+  "/virgins/landscape/image_2026-05-22_20-06-39.png",
+  "/virgins/landscape/image_2026-05-22_20-08-08.png",
+  "/virgins/landscape/image_2026-05-22_20-08-31.png",
+  "/virgins/landscape/image_2026-05-22_20-09-38.png",
+  "/virgins/landscape/image_2026-05-22_20-10-02.png",
+  "/virgins/landscape/image_2026-05-22_20-10-36.png",
+  "/virgins/landscape/image_2026-05-22_20-14-25.png",
+  "/virgins/landscape/photo_2026-05-22_17-45-15.jpg",
+  "/virgins/landscape/photo_2026-05-22_17-46-06.jpg",
+  "/virgins/landscape/photo_2026-05-22_17-46-12.jpg",
+  "/virgins/landscape/photo_2026-05-22_17-46-29.jpg",
+  "/virgins/landscape/photo_2026-05-22_17-47-11.jpg",
+  "/virgins/landscape/photo_2026-05-22_17-47-54.jpg",
+  "/virgins/landscape/photo_2026-05-22_17-48-03.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-39-56.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-02.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-04.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-09.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-15.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-17.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-25.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-30.jpg",
+  "/virgins/landscape/photo_2026-05-22_18-40-32.jpg",
+  "/virgins/landscape/photo_2026-05-22_20-40-00.jpg",
+  "/virgins/landscape/photo_2026-05-22_20-40-11.jpg",
+  "/virgins/landscape/photo_2026-05-22_20-40-14.jpg",
+  "/virgins/landscape/photo_2026-05-22_20-54-21.jpg",
+  "/virgins/landscape/photo_2026-05-22_20-54-25.jpg",
+];
+
+const FIXED_PORTRAIT = [
+  "/virgins/portrait/prime.jpg",
+  "/virgins/portrait/1.jpg",
+  "/virgins/portrait/2.jpg",
+  "/virgins/portrait/3.jpg",
+  "/virgins/portrait/4.jpg",
+  "/virgins/portrait/5.jpg",
+  "/virgins/portrait/6.jpg",
+];
+
+const FIXED_LANDSCAPE = [
+  "/virgins/landscape/prime.JPG",
+  "/virgins/landscape/1.JPG",
+  "/virgins/landscape/2.JPG",
+  "/virgins/landscape/3.JPG",
+  "/virgins/landscape/4.JPG",
+  "/virgins/landscape/5.png",
 ];
 
 const WALL_PREVIEW_FRAMES = [
@@ -93,6 +214,48 @@ function getCountdown(now: Date): Countdown {
     minutes: Math.floor((distance / (1000 * 60)) % 60),
     seconds: Math.floor((distance / 1000) % 60),
   };
+}
+
+function shuffleImages(images: string[], fixed: string[]) {
+  const remaining = images.filter((img) => !fixed.includes(img));
+  const shuffled = [...remaining];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return [...fixed, ...shuffled];
+}
+
+function toRomanNumeral(value: number): string {
+  if (value <= 0) return "";
+  const numerals: [number, string][] = [
+    [1000, "M"],
+    [900, "CM"],
+    [500, "D"],
+    [400, "CD"],
+    [100, "C"],
+    [90, "XC"],
+    [50, "L"],
+    [40, "XL"],
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"],
+  ];
+  let n = value;
+  let result = "";
+  for (const [num, sym] of numerals) {
+    while (n >= num) {
+      result += sym;
+      n -= num;
+    }
+  }
+  return result;
+}
+
+function formatCarouselCounter(value: number, landscape: boolean): string {
+  return landscape ? toRomanNumeral(value) : String(value).padStart(2, "0");
 }
 
 function CountdownDigit({ value, label }: { value: number; label: string }) {
@@ -130,6 +293,19 @@ export default function Home() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [birthdayMembers, setBirthdayMembers] = useState<BirthdayMember[]>([]);
   const supabase = useMemo(() => createClient(), []);
+  const [isPortrait, setIsPortrait] = useState(true);
+  const [shuffledPortrait, setShuffledPortrait] = useState<string[]>([]);
+  const [shuffledLandscape, setShuffledLandscape] = useState<string[]>([]);
+  const [hasMounted, setHasMounted] = useState(false);
+  const preloadedImages = useRef<Set<string>>(new Set());
+
+  const preloadImage = useCallback((src: string) => {
+    if (preloadedImages.current.has(src)) return;
+    const img = new Image();
+    img.onload = () => preloadedImages.current.add(src);
+    img.onerror = () => preloadedImages.current.add(src);
+    img.src = src;
+  }, []);
 
   // Countdown tick
   useEffect(() => {
@@ -140,15 +316,91 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // Auto-advance carousel
+  // Detect orientation on mount and resize, and set up dynamic randomized image arrays
   useEffect(() => {
+    const checkOrientation = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    };
+    checkOrientation();
+    window.addEventListener("resize", checkOrientation);
+
+    setShuffledPortrait(shuffleImages(PORTRAIT_IMAGES, FIXED_PORTRAIT));
+    setShuffledLandscape(shuffleImages(LANDSCAPE_IMAGES, FIXED_LANDSCAPE));
+
+    // Eagerly preload the fixed sequence images for the active orientation
+    const isLandscape = window.innerWidth > window.innerHeight;
+    const fixedToPreload = isLandscape ? FIXED_LANDSCAPE : FIXED_PORTRAIT;
+    fixedToPreload.forEach(preloadImage);
+
+    setHasMounted(true);
+
+    return () => window.removeEventListener("resize", checkOrientation);
+  }, [preloadImage]);
+
+  const activeImages = !hasMounted
+    ? []
+    : isPortrait
+      ? shuffledPortrait.length > 0
+        ? shuffledPortrait
+        : PORTRAIT_IMAGES
+      : shuffledLandscape.length > 0
+        ? shuffledLandscape
+        : LANDSCAPE_IMAGES;
+
+  // Clamps/resets currentSlide if out of bounds on orientation changes
+  useEffect(() => {
+    setCurrentSlide((prev) => {
+      if (prev >= activeImages.length) {
+        return 0;
+      }
+      return prev;
+    });
+  }, [activeImages.length]);
+
+  // Preload current + upcoming images (errors still marked ready so we never stall)
+  useEffect(() => {
+    if (activeImages.length === 0) return;
+    preloadImage(activeImages[currentSlide]);
+    const PRELOAD_COUNT = 3;
+    for (let offset = 1; offset <= PRELOAD_COUNT; offset++) {
+      const idx = (currentSlide + offset) % activeImages.length;
+      preloadImage(activeImages[idx]);
+    }
+  }, [currentSlide, activeImages, preloadImage]);
+
+  // Auto-advance carousel with 3.0s interval
+  useEffect(() => {
+    if (activeImages.length === 0) return;
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
-      goToSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 5000);
+      setCurrentSlide((prev) => {
+        const next = (prev + 1) % activeImages.length;
+        setPrevSlide(prev);
+        setIsFading(true);
+        setTimeout(() => {
+          setIsFading(false);
+          setPrevSlide(null);
+        }, 1400);
+        return next;
+      });
+    }, 3000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [activeImages]);
+
+  const goToSlide = (nextFn: (prev: number) => number) => {
+    setCurrentSlide((prev) => {
+      const next = nextFn(prev);
+      setPrevSlide(prev);
+      setIsFading(true);
+      setTimeout(() => {
+        setIsFading(false);
+        setPrevSlide(null);
+      }, 1400);
+      return next;
+    });
+  };
 
   // Fetch today's birthday members
   useEffect(() => {
@@ -180,19 +432,6 @@ export default function Home() {
     fetchBirthdays();
   }, [supabase]);
 
-  const goToSlide = (nextFn: (prev: number) => number) => {
-    setCurrentSlide((prev) => {
-      const next = nextFn(prev);
-      setPrevSlide(prev);
-      setIsFading(true);
-      setTimeout(() => {
-        setIsFading(false);
-        setPrevSlide(null);
-      }, 900);
-      return next;
-    });
-  };
-
   const countdownBlocks = useMemo(
     () => [
       { label: "Days", value: countdown.days },
@@ -210,23 +449,44 @@ export default function Home() {
       {/* ─── HERO ─── */}
       <section className="relative w-full h-screen overflow-hidden">
         {/* Slide images */}
-        {HERO_IMAGES.map((src, idx) => (
-          <div
-            key={src}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
-            style={{
-              backgroundImage: `url(${src})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              animation:
-                idx === currentSlide
-                  ? "kenBurns 10s ease-in-out infinite alternate"
-                  : "none",
-            }}
-          />
-        ))}
+        {activeImages.map((src, idx) => {
+          const isCurrent = idx === currentSlide;
+          const isPrev = idx === prevSlide;
+          const isNext = idx === (currentSlide + 1) % activeImages.length;
+          const isPrevAdjacent =
+            idx ===
+            (currentSlide - 1 + activeImages.length) % activeImages.length;
+
+          if (!isCurrent && !isPrev && !isNext && !isPrevAdjacent) return null;
+
+          return (
+            <div
+              key={src}
+              className="absolute inset-0"
+              style={{
+                opacity: isCurrent ? 1 : 0,
+                zIndex: isCurrent ? 10 : isPrev ? 5 : 0,
+                transition: "opacity 1500ms ease-in-out",
+                pointerEvents: isCurrent ? "auto" : "none",
+              }}
+            >
+              {/* Fully fullscreen crisp image with cover to fit all screens */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${src})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  animation:
+                    isCurrent || isPrev
+                      ? `${isPortrait ? "kenBurnsPortrait" : "kenBurnsLandscape"} 10s ease-in-out infinite alternate`
+                      : "none",
+                }}
+              />
+            </div>
+          );
+        })}
 
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/90 via-black/50 to-transparent md:via-black/30" />
@@ -301,19 +561,30 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Carousel dots */}
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-3">
-          {HERO_IMAGES.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => goToSlide(() => idx)}
-              className={`rounded-full transition-all duration-500 ${
-                idx === currentSlide
-                  ? "h-10 w-1.5 bg-(--primary-gold)"
-                  : "h-3 w-1.5 bg-white/30 hover:bg-white/60"
-              }`}
+        {/* Carousel indicators — hidden on mobile */}
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col items-center gap-4">
+          <div className="text-[10px] font-black text-(--primary-gold) tracking-widest my-2 select-none">
+            {formatCarouselCounter(currentSlide + 1, !isPortrait)}
+          </div>
+          <div className="relative h-48 w-[2px] bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="absolute top-0 left-0 w-full bg-(--primary-gold) rounded-full transition-all duration-300"
+              style={{
+                height: `${100 / Math.max(activeImages.length, 1)}%`,
+                transform: `translateY(${currentSlide * 100}%)`,
+              }}
             />
-          ))}
+          </div>
+          <div className="text-[10px] font-black text-white/30 tracking-widest my-2 select-none">
+            {formatCarouselCounter(
+              hasMounted
+                ? activeImages.length
+                : isPortrait
+                  ? PORTRAIT_IMAGES.length
+                  : LANDSCAPE_IMAGES.length,
+              !isPortrait,
+            )}
+          </div>
         </div>
 
         {/* Scroll cue */}
