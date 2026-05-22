@@ -105,8 +105,8 @@ const otherExcos = [
   },
   { role: "Provost 1", name: "Brother Emeka Ike", img: null },
   { role: "Provost 2", name: "Sister Victoria Nwobodo", img: null },
-  { role: "Caretaker 1", name: "Brother Micheal Emmanuel", img: null },
-  { role: "Caretaker 2", name: "Brother Gabriel George", img: null },
+  { role: "Caretaker 1", name: "Brother Gabriel George", img: null },
+  { role: "Caretaker 2", name: "Brother Asu Ojong", img: null },
   {
     role: "Stationers Coordinator",
     name: "Brother Ime Akwaowo",
