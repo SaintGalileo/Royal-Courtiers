@@ -166,7 +166,6 @@ const LANDSCAPE_IMAGES = [
   "/virgins/landscape/photo_2026-05-22_18-40-04.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-09.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-15.jpg",
-  "/virgins/landscape/photo_2026-05-22_18-40-17.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-25.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-30.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-32.jpg",
