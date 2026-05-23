@@ -77,6 +77,7 @@ const PORTRAIT_IMAGES = [
   "/virgins/portrait/4.jpg",
   "/virgins/portrait/5.jpg",
   "/virgins/portrait/6.jpg",
+  "/virgins/portrait/7.jpg",
   "/virgins/portrait/IMG-20220820-WA0032.jpg",
   "/virgins/portrait/IMG-20220820-WA0034.jpg",
   "/virgins/portrait/IMG_1333.jpeg",
@@ -121,7 +122,6 @@ const PORTRAIT_IMAGES = [
   "/virgins/portrait/photo_2026-05-22_20-54-12.jpg",
   "/virgins/portrait/photo_2026-05-22_20-54-15.jpg",
   "/virgins/portrait/photo_2026-05-22_20-54-17.jpg",
-  "/virgins/portrait/three.jpg",
   "/virgins/portrait/two.jpg",
 ];
 
@@ -154,6 +154,7 @@ const LANDSCAPE_IMAGES = [
   "/virgins/landscape/image_2026-05-22_20-10-02.png",
   "/virgins/landscape/image_2026-05-22_20-10-36.png",
   "/virgins/landscape/image_2026-05-22_20-14-25.png",
+  "/virgins/landscape/image_2026-05-23_15-10-49.png",
   "/virgins/landscape/photo_2026-05-22_17-45-15.jpg",
   "/virgins/landscape/photo_2026-05-22_17-46-06.jpg",
   "/virgins/landscape/photo_2026-05-22_17-46-12.jpg",
@@ -166,7 +167,6 @@ const LANDSCAPE_IMAGES = [
   "/virgins/landscape/photo_2026-05-22_18-40-04.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-09.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-15.jpg",
-  "/virgins/landscape/photo_2026-05-22_18-40-17.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-25.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-30.jpg",
   "/virgins/landscape/photo_2026-05-22_18-40-32.jpg",
@@ -185,6 +185,7 @@ const FIXED_PORTRAIT = [
   "/virgins/portrait/4.jpg",
   "/virgins/portrait/5.jpg",
   "/virgins/portrait/6.jpg",
+  "/virgins/portrait/7.jpg",
 ];
 
 const FIXED_LANDSCAPE = [
