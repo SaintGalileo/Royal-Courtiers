@@ -31,8 +31,7 @@ const EVENT_FAMILIES = [
     colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]",
     fatherImage:
       "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934848/photo_2026-04-23_10-00-57_rhas9s.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1776936363/i4qhipfe3zwgnerymcdn.jpg",
+    motherImage: "/family-heads/divine.png",
   },
   {
     family: "Family of Light",
@@ -40,10 +39,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Sarah Cyril",
     icon: GiPolarStar,
     colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775139477/wdzbv3jvdvsjabzlprev.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775129139/nkxr8dc5iyredtlgyazu.png",
+    fatherImage: "/family-heads/linho.png",
+    motherImage: "/family-heads/ayrah.png",
   },
   {
     family: "Family of Power",
@@ -51,10 +48,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Fortune Umoh",
     icon: FaBolt,
     colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934875/photo_2026-04-23_10-01-33_fer1th.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1775042678/zjyanfopnubxuumxi050.jpg",
+    fatherImage: "/family-heads/bassey.png",
+    motherImage: "/family-heads/fortune.png",
   },
   {
     family: "Family of Virtue",
@@ -62,10 +57,8 @@ const EVENT_FAMILIES = [
     mother: "Sister Mercy Alexander",
     icon: GiFruitTree,
     colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775128274/wwjphkfky1iuyvuqfe9q.jpg",
-    motherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775300787/mptvkengmiciz6bawipr.jpg",
+    fatherImage: "/family-heads/henry.png",
+    motherImage: "/family-heads/malexa.jpg",
   },
 ];
 

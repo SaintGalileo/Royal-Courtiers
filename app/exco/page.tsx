@@ -96,7 +96,7 @@ const otherExcos = [
   {
     role: "Younger Ones' Coordinator",
     name: "Sister Divine Edosomwan",
-    img: null,
+    img: "/family-heads/divine.png",
   },
   {
     role: "Welfare Officer",
