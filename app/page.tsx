@@ -77,6 +77,7 @@ const PORTRAIT_IMAGES = [
   "/virgins/portrait/IMG_3746-1.jpeg",
   "/virgins/portrait/IMG_3770.jpeg",
   "/virgins/portrait/IMG_7640.jpg",
+  "/virgins/portrait/IMG_7675.jpg",
   "/virgins/portrait/IMG_8164.jpeg",
   "/virgins/portrait/IMG_8186.jpeg",
   "/virgins/portrait/image_2026-05-22_20-05-59.png",
@@ -119,6 +120,7 @@ const PORTRAIT_IMAGES = [
   "/virgins/portrait/FB_IMG_1507888524333.jpg",
   "/virgins/portrait/FB_IMG_1520297335824.jpg",
   "/virgins/portrait/IMG_20240331_160057.jpg",
+  "/virgins/portrait/IMG-20180814-WA0027.jpg",
   "/virgins/portrait/IMG-20181224-WA0010.jpg",
   "/virgins/portrait/IMG-20190814-WA0012.jpg",
 ];
@@ -180,6 +182,7 @@ const LANDSCAPE_IMAGES = [
   "/virgins/landscape/FB_IMG_1590083208446.jpg",
   "/virgins/landscape/FB_IMG_1698508837938.jpg",
   "/virgins/landscape/IMG_20181230_182706.jpg",
+  "/virgins/landscape/IMG-20170427-WA0029.jpg",
   "/virgins/landscape/IMG-20171004-WA0007.jpg",
   "/virgins/landscape/IMG-20180816-WA0011.jpg",
   "/virgins/landscape/IMG-20180816-WA0014.jpg",
