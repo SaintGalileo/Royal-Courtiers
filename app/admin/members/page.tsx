@@ -16,10 +16,13 @@ import {
   X,
   Save,
   Trash2,
+  Download,
 } from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
 import TalentSelector from "@/components/TalentSelector";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type Member = {
   id: string;
@@ -49,6 +52,8 @@ export default function AdminMembersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [familyFilter, setFamilyFilter] = useState("All");
+  const [singingPartFilter, setSingingPartFilter] = useState("All");
+  const [homeBasedFilter, setHomeBasedFilter] = useState("All");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,9 +102,16 @@ export default function AdminMembersPage() {
       const matchesSearch =
         !search || fieldSearch.includes(search.toLowerCase());
       const matchesFamily = familyFilter === "All" || m.family === familyFilter;
-      return matchesSearch && matchesFamily;
+      const matchesSingingPart =
+        singingPartFilter === "All" || m.singing_part === singingPartFilter;
+      const matchesHomeBased =
+        homeBasedFilter === "All" ||
+        (homeBasedFilter === "Home Based"
+          ? m.state_of_origin === "Cross River"
+          : m.state_of_origin !== "Cross River");
+      return matchesSearch && matchesFamily && matchesSingingPart && matchesHomeBased;
     });
-  }, [members, search, familyFilter]);
+  }, [members, search, familyFilter, singingPartFilter, homeBasedFilter]);
 
   const sortedMembers = useMemo(() => {
     if (!sortConfig) return filteredMembers;
@@ -199,6 +211,47 @@ export default function AdminMembersPage() {
     }
     setIsSaving(false);
   };
+  
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Portal Members List", 14, 20);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    
+    const filterInfo = [];
+    if (familyFilter !== "All") filterInfo.push(`Family: ${familyFilter}`);
+    if (singingPartFilter !== "All") filterInfo.push(`Singing Part: ${singingPartFilter}`);
+    if (homeBasedFilter !== "All") filterInfo.push(`Status: ${homeBasedFilter}`);
+    if (search) filterInfo.push(`Search: ${search}`);
+    
+    if (filterInfo.length > 0) {
+      doc.text(`Filters: ${filterInfo.join(", ")}`, 14, 30);
+    }
+    
+    const tableData = sortedMembers.map((m, index) => [
+      index + 1,
+      m.first_name,
+      m.last_name,
+      m.singing_part || "N/A",
+      m.family,
+      m.state_of_origin === "Cross River" ? "Home Based" : "Not Home Based",
+      m.code
+    ]);
+
+    autoTable(doc, {
+      startY: filterInfo.length > 0 ? 35 : 25,
+      head: [["S/N", "First Name", "Last Name", "Singing Part", "Family", "Status", "Code"]],
+      body: tableData,
+      theme: "striped",
+      headStyles: { fillColor: [212, 175, 55] }, // Gold color
+    });
+
+    doc.save(`portal-members-${new Date().toISOString().split("T")[0]}.pdf`);
+    toast.success("PDF exported successfully!");
+  };
 
   const totalPages = Math.ceil(sortedMembers.length / itemsPerPage);
   const paginatedMembers = useMemo(() => {
@@ -208,7 +261,7 @@ export default function AdminMembersPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, familyFilter]);
+  }, [search, familyFilter, singingPartFilter, homeBasedFilter]);
 
   if (isLoading) {
     return (
@@ -229,6 +282,13 @@ export default function AdminMembersPage() {
             Managing {members.length} registered members
           </p>
         </div>
+        <button
+          onClick={handleExportPDF}
+          className="flex items-center gap-2 rounded-xl bg-(--primary-gold) px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-(--primary-gold)/20 transition-all hover:scale-105 active:scale-95"
+        >
+          <Download size={18} />
+          Export PDF
+        </button>
       </div>
 
       {/* Stats Cards */}
@@ -289,6 +349,26 @@ export default function AdminMembersPage() {
               </option>
             ))}
           </select>
+          <select
+            value={singingPartFilter}
+            onChange={(e) => setSingingPartFilter(e.target.value)}
+            className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
+          >
+            <option value="All">All Parts</option>
+            <option value="Treble">Treble</option>
+            <option value="Alto">Alto</option>
+            <option value="Tenor">Tenor</option>
+            <option value="Bass">Bass</option>
+          </select>
+          <select
+            value={homeBasedFilter}
+            onChange={(e) => setHomeBasedFilter(e.target.value)}
+            className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-950"
+          >
+            <option value="All">All Status</option>
+            <option value="Home Based">Home Based</option>
+            <option value="Not Home Based">Not Home Based</option>
+          </select>
         </div>
       </div>
 
@@ -298,6 +378,9 @@ export default function AdminMembersPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/50">
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  S/N
+                </th>
                 <th
                   className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 cursor-pointer hover:bg-zinc-100/50 dark:hover:bg-zinc-800 transition-colors"
                   onClick={() => handleSort("first_name")}
@@ -373,11 +456,14 @@ export default function AdminMembersPage() {
                   </td>
                 </tr>
               ) : (
-                paginatedMembers.map((m) => (
+                paginatedMembers.map((m, index) => (
                   <tr
                     key={m.id}
                     className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                   >
+                    <td className="px-6 py-4 text-xs font-bold text-zinc-400">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 flex-shrink-0">

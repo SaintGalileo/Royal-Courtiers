@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
-import { FaBolt } from "react-icons/fa";
+import { FaBolt, FaWhatsapp } from "react-icons/fa";
 import type { ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
@@ -14,7 +14,7 @@ import BirthdayCard from "@/components/BirthdayCard";
 import BirthdayConfetti from "@/components/BirthdayConfetti";
 import { toPng } from "html-to-image";
 import { useRef } from "react";
-import { Download, Share2, Edit2, X, Camera, Cake, Gift, Music, ArrowLeft, Copy, Check, Star, Moon, Sun } from "lucide-react";
+import { Download, Share2, Edit2, X, Camera, Cake, Gift, Music, ArrowLeft, Copy, Check, Star, Moon, Sun, Play, Pause } from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import ImageCropper from "@/components/ImageCropper";
 import TalentSelector from "@/components/TalentSelector";
@@ -35,12 +35,12 @@ type IconType = ComponentType<{ className?: string }>;
 
 const familyStyles: Record<
   string,
-  { color: string; className: string; icon: IconType }
+  { color: string; className: string; icon: IconType; whatsapp?: string }
 > = {
-  Light: { color: "Gold", className: "text-yellow-500", icon: GiPolarStar },
-  Power: { color: "Red", className: "text-red-500", icon: FaBolt },
-  Dominion: { color: "Purple", className: "text-purple-500", icon: GiWingedScepter },
-  Virtue: { color: "Green", className: "text-green-500", icon: GiFruitTree },
+  Light: { color: "Gold", className: "text-yellow-500", icon: GiPolarStar, whatsapp: "https://chat.whatsapp.com/CTvPv2hRFYMHWEpnvB4xIR" },
+  Power: { color: "Red", className: "text-red-500", icon: FaBolt, whatsapp: "https://chat.whatsapp.com/DqQOrFH7Ly632ugZcztGB6?mode=gi_t" },
+  Dominion: { color: "Purple", className: "text-purple-500", icon: GiWingedScepter, whatsapp: "https://chat.whatsapp.com/HH5CsLRZhMV1i2Ic7QNo9Z?mode=gi_t" },
+  Virtue: { color: "Green", className: "text-green-500", icon: GiFruitTree, whatsapp: "https://chat.whatsapp.com/IlE58HqgW2nGJu4G9kil5H?mode=gi_t" },
   Seraphs: { color: "Cyan", className: "text-cyan-500", icon: GiDove },
 };
 
@@ -727,6 +727,17 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   <span className="inline-flex items-center gap-1 rounded-full bg-(--primary-gold)/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-(--primary-gold) border border-(--primary-gold)/20">
                     {user.family}
                   </span>
+                  {styleObj.whatsapp && (
+                    <a
+                      href={styleObj.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-green-600 dark:text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-all active:scale-95 shadow-sm"
+                    >
+                      <FaWhatsapp className="h-3 w-3" />
+                      Join Group
+                    </a>
+                  )}
                   {HEAD_CODES.includes(user.code) && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20">
                       Head
@@ -1125,58 +1136,70 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               </div>
 
               {/* Parents hierarchy */}
-              {parents && (
-                <div className="flex flex-col items-center">
-                  <div className="flex w-full max-w-xs sm:max-w-sm items-center justify-between gap-2 sm:gap-4">
-                    {/* Father */}
-                    <div className="flex flex-col items-center text-center gap-2">
-                      <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/10 shadow-sm transition-transform hover:scale-105">
-                        <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">{getInitials(parents.father)}</span>
+              <div className="flex flex-col items-center gap-6">
+                {parents ? (
+                  <div className="flex flex-col items-center">
+                    <div className="flex w-full max-w-xs sm:max-w-sm items-center justify-between gap-2 sm:gap-4">
+                      {/* Father */}
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/10 shadow-sm transition-transform hover:scale-105">
+                          <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">{getInitials(parents.father)}</span>
+                        </div>
+                        <div>
+                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">Father</p>
+                          <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">{parents.father}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">Father</p>
-                        <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">{parents.father}</p>
+
+                      {/* Connector */}
+                      <div className="h-px flex-1 bg-(--primary-gold)/30 -mt-8 sm:-mt-10" />
+
+                      {/* Mother */}
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/10 shadow-sm transition-transform hover:scale-105">
+                          <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">{getInitials(parents.mother)}</span>
+                        </div>
+                        <div>
+                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">Mother</p>
+                          <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">{parents.mother}</p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Connector */}
-                    <div className="h-px flex-1 bg-(--primary-gold)/30 -mt-8 sm:-mt-10" />
+                    {/* Vertical stem */}
+                    <div className="h-8 sm:h-10 w-px bg-(--primary-gold)/30" />
 
-                    {/* Mother */}
-                    <div className="flex flex-col items-center text-center gap-2">
-                      <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/10 shadow-sm transition-transform hover:scale-105">
-                        <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">{getInitials(parents.mother)}</span>
-                      </div>
-                      <div>
-                        <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">Mother</p>
-                        <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">{parents.mother}</p>
-                      </div>
+                    {/* Family label */}
+                    <div className="rounded-full border border-(--primary-gold)/30 bg-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm dark:bg-zinc-950">
+                      <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-(--primary-gold)">
+                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        {user.family}
+                      </span>
                     </div>
                   </div>
-
-                  {/* Vertical stem */}
-                  <div className="h-8 sm:h-10 w-px bg-(--primary-gold)/30" />
-
-                  {/* Family label */}
-                  <div className="rounded-full border border-(--primary-gold)/30 bg-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm dark:bg-zinc-950">
-                    <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-(--primary-gold)">
-                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      {user.family}
-                    </span>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <div className="rounded-full border border-(--primary-gold)/30 bg-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm dark:bg-zinc-950">
+                      <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-(--primary-gold)">
+                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        {user.family}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!parents && (
-                <div className="flex flex-col items-center">
-                  <div className="rounded-full border border-(--primary-gold)/30 bg-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm dark:bg-zinc-950">
-                    <span className="text-xs sm:text-sm font-bold flex items-center gap-2 text-(--primary-gold)">
-                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      {user.family}
-                    </span>
-                  </div>
-                </div>
-              )}
+                {styleObj.whatsapp && (
+                  <a
+                    href={styleObj.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-green-500/20 hover:shadow-green-500/40 hover:scale-105 transition-all active:scale-95"
+                  >
+                    <FaWhatsapp size={16} />
+                    Join {user.family} WhatsApp Group
+                  </a>
+                )}
+              </div>
 
               {/* Members grid */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -1396,14 +1419,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                             alt={selectedMember.favorite_song.name} 
                             className="h-full w-full object-cover" 
                           />
-                          {selectedMember.favorite_song.previewUrl && (
-                            <button
-                              onClick={() => toggleSongPlay(selectedMember.favorite_song.previewUrl, selectedMember.favorite_song.id)}
-                              className="absolute inset-0 flex items-center justify-center bg-black/30 text-white opacity-0 transition-opacity hover:opacity-100"
-                            >
-                              {playingSongId === selectedMember.favorite_song.id ? <Pause size={14} /> : <Play size={14} />}
-                            </button>
-                          )}
+
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100">{selectedMember.favorite_song.name}</p>
