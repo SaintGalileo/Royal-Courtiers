@@ -20,6 +20,7 @@ import {
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
 import TalentSelector from "@/components/TalentSelector";
+import { FAMILY_OPTIONS } from "@/lib/family-roster";
 
 type Member = {
   id: string;
@@ -42,6 +43,49 @@ type Member = {
   shirt_size: string;
   talents: string[];
   singing_part: string | null;
+};
+
+const familyStyles: Record<
+  string,
+  { bgColor: string; borderColor: string; textColor: string; dotColor: string }
+> = {
+  Light: {
+    bgColor: "bg-yellow-500/10",
+    borderColor: "border-yellow-500/30",
+    textColor: "text-yellow-700 dark:text-yellow-400",
+    dotColor: "bg-yellow-500",
+  },
+  Dominion: {
+    bgColor: "bg-purple-500/10",
+    borderColor: "border-purple-500/30",
+    textColor: "text-purple-700 dark:text-purple-400",
+    dotColor: "bg-purple-500",
+  },
+  Power: {
+    bgColor: "bg-red-500/10",
+    borderColor: "border-red-500/30",
+    textColor: "text-red-700 dark:text-red-400",
+    dotColor: "bg-red-500",
+  },
+  Virtue: {
+    bgColor: "bg-green-500/10",
+    borderColor: "border-green-500/30",
+    textColor: "text-green-700 dark:text-green-400",
+    dotColor: "bg-green-500",
+  },
+  Seraphs: {
+    bgColor: "bg-cyan-500/10",
+    borderColor: "border-cyan-500/30",
+    textColor: "text-cyan-700 dark:text-cyan-400",
+    dotColor: "bg-cyan-500",
+  },
+};
+
+const defaultFamilyStyle = {
+  bgColor: "bg-zinc-100 dark:bg-zinc-800",
+  borderColor: "border-zinc-200 dark:border-zinc-700",
+  textColor: "text-zinc-600 dark:text-zinc-400",
+  dotColor: "bg-zinc-400",
 };
 
 export default function AdminMembersPage() {
@@ -88,7 +132,7 @@ export default function AdminMembersPage() {
     fetchMembers();
   }, [supabase]);
 
-  const families = ["All", "Light", "Dominion", "Virtue", "Power", "Seraphs"];
+  const families = ["All", ...FAMILY_OPTIONS];
 
   const filteredMembers = useMemo(() => {
     return members.filter((m) => {
@@ -232,25 +276,36 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-            Total Members
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="col-span-2 rounded-2xl border border-(--primary-gold)/30 bg-(--primary-gold)/5 p-5 shadow-xs sm:col-span-1 lg:col-span-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-(--primary-gold)">
+            Total
           </p>
           <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
             {members.length}
           </p>
+          <p className="mt-1 text-xs text-zinc-500">All families</p>
         </div>
-        {families.slice(1).map((fam) => (
+        {FAMILY_OPTIONS.map((family) => (
           <div
-            key={fam}
-            className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900"
+            key={family}
+            className={`rounded-2xl border p-5 shadow-xs ${
+              familyFilter === family
+                ? `${familyStyles[family].borderColor} ${familyStyles[family].bgColor}`
+                : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+            }`}
           >
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-              {fam} Family
+            <p
+              className={`text-xs font-bold uppercase tracking-wider ${
+                familyFilter === family
+                  ? familyStyles[family].textColor
+                  : "text-zinc-500"
+              }`}
+            >
+              {family}
             </p>
-            <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-              {members.filter((m) => m.family === fam).length}
+            <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              {members.filter((m) => m.family === family).length}
             </p>
           </div>
         ))}
@@ -373,7 +428,10 @@ export default function AdminMembersPage() {
                   </td>
                 </tr>
               ) : (
-                paginatedMembers.map((m) => (
+                paginatedMembers.map((m) => {
+                  const familyStyle =
+                    familyStyles[m.family] ?? defaultFamilyStyle;
+                  return (
                   <tr
                     key={m.id}
                     className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
@@ -417,9 +475,13 @@ export default function AdminMembersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-(--primary-gold)/10 px-2.5 py-1 text-xs font-bold text-(--primary-gold)">
-                        <span className="h-1.5 w-1.5 rounded-full bg-(--primary-gold)" />
-                        {m.family}
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold ${familyStyle.bgColor} ${familyStyle.borderColor} ${familyStyle.textColor}`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${familyStyle.dotColor}`}
+                        />
+                        {m.family || "—"}
                       </span>
                     </td>
                     <td className="px-6 py-4 font-mono text-sm font-bold tracking-wider text-zinc-900 dark:text-zinc-100 uppercase">
@@ -441,7 +503,8 @@ export default function AdminMembersPage() {
                       </button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
