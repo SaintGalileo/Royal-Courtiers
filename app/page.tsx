@@ -845,8 +845,11 @@ export default function Home() {
 
                       {/* Birthday message */}
                       <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                        Wishing you a wonderful birthday filled with love, grace
-                        & blessings! 🎉
+                        Wishing you a wonderful{" "}
+                        <span className="font-bold text-amber-600 dark:text-amber-400">
+                          +1
+                        </span>{" "}
+                        birthday filled with love, grace & blessings! 🎉
                       </p>
 
                       {/* Gift icon divider */}

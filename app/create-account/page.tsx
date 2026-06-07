@@ -45,6 +45,12 @@ const COUNTRY_STATES: Record<string, string[]> = {
   Kenya: ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu"],
   "South Africa": ["Gauteng", "KwaZulu-Natal", "Western Cape", "Eastern Cape", "Limpopo"],
   "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+  USA: [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+  ],
+  Liberia: [
+    "Bomi", "Bong", "Gbarpolu", "Grand Bassa", "Grand Cape Mount", "Grand Gedeh", "Grand Kru", "Lofa", "Margibi", "Maryland", "Montserrado", "Nimba", "Rivercess", "River Gee", "Sinoe"
+  ],
 };
 
 type FormData = {
@@ -303,7 +309,7 @@ export default function CreateAccountPage() {
     const code = formData.pin.toUpperCase().trim();
 
     // Special Group: Seraphs
-    const seraphCodes = ["35AAAA", "35AAAB", "35AAAC", "35AAAD", "35AAAE", "35AAAF"];
+    const seraphCodes = ["35AAAA", "35AAAB", "35AAAC", "35AAAD", "35AAAE", "35AAAF", "35AAST", "35AASU"];
     if (seraphCodes.includes(code)) return "Seraphs";
 
     // Family Heads
@@ -571,13 +577,13 @@ export default function CreateAccountPage() {
                   onChange={(e) => update("countryCode", e.target.value)}
                   className="absolute left-0 top-0 h-full w-[80px] bg-transparent pl-3 pr-2 text-sm font-bold border-r border-zinc-400 dark:border-zinc-700 outline-none cursor-pointer appearance-none"
                 >
-                  {COUNTRIES.sort((a,b) => a.name.localeCompare(b.name)).map(c => (
+                  {COUNTRIES.sort((a, b) => a.name.localeCompare(b.name)).map(c => (
                     <option key={c.code} value={c.dial_code} className="dark:bg-zinc-900">
                       {c.code} {c.dial_code}
                     </option>
                   ))}
                 </select>
-                
+
                 {/* Phone Input */}
                 <input
                   type="tel"
