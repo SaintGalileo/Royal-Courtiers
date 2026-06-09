@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Columns2,
   Download,
   FileText,
   Filter,
@@ -27,8 +28,11 @@ import { FaBolt } from "react-icons/fa";
 import type { ComponentType } from "react";
 import { toast } from "sonner";
 import {
+  DEFAULT_EXPORT_COLUMNS,
+  EXPORT_COLUMN_OPTIONS,
   FAMILY_OPTIONS,
   SHIRT_SIZES,
+  type ExportColumn,
   type Family,
   type MemberSeed,
   type RosterRow,
@@ -42,6 +46,7 @@ import {
   downloadRosterPdf,
   filterAllRostersByNations,
   filterRowsForDisplay,
+  formatExportColumnsLabel,
   formatFamilyDisplayName,
   formatNationFilterLabel,
   loadSession,
@@ -127,7 +132,11 @@ export default function AdminTShirtsPage() {
     resolveAllFamilyRosters([]),
   );
   const [selectedNations, setSelectedNations] = useState<string[]>([]);
+  const [exportColumns, setExportColumns] = useState<ExportColumn[]>([
+    ...DEFAULT_EXPORT_COLUMNS,
+  ]);
   const [showNationFilter, setShowNationFilter] = useState(false);
+  const [showExportColumns, setShowExportColumns] = useState(false);
   const [activeFamilyIndex, setActiveFamilyIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -148,6 +157,17 @@ export default function AdminTShirtsPage() {
     selectedNations,
     allNations,
   );
+  const exportColumnsLabel = formatExportColumnsLabel(exportColumns);
+  const exportOptions = useMemo(
+    () => ({
+      nationFilterLabel,
+      exportColumns,
+    }),
+    [nationFilterLabel, exportColumns],
+  );
+  const isExportColumnsCustom =
+    exportColumns.length !== DEFAULT_EXPORT_COLUMNS.length ||
+    DEFAULT_EXPORT_COLUMNS.some((column) => !exportColumns.includes(column));
 
   const filteredRosters = useMemo(
     () => filterAllRostersByNations(rosters, selectedNations, allNations),
@@ -187,7 +207,7 @@ export default function AdminTShirtsPage() {
   );
 
   const isNationFilterActive =
-    selectedNations.length > 0 && selectedNations.length < allNations.length;
+    allNations.length > 0 && selectedNations.length < allNations.length;
   const totalTeeCount = useMemo(
     () =>
       FAMILY_OPTIONS.reduce(
@@ -211,10 +231,15 @@ export default function AdminTShirtsPage() {
   );
 
   const persistSession = useCallback(
-    (nextRosters: Record<Family, RosterRow[]>, nations: string[]) => {
+    (
+      nextRosters: Record<Family, RosterRow[]>,
+      nations: string[],
+      columns: ExportColumn[],
+    ) => {
       const saved = saveSession({
         rosters: nextRosters,
         selectedNations: nations,
+        exportColumns: columns,
       });
       if (!saved) {
         toast.error(
@@ -252,13 +277,19 @@ export default function AdminTShirtsPage() {
         const nations = session.selectedNations?.length
           ? session.selectedNations
           : collectNations(merged);
+        const columns = session.exportColumns?.length
+          ? session.exportColumns
+          : [...DEFAULT_EXPORT_COLUMNS];
         setRosters(merged);
         setSelectedNations(nations);
+        setExportColumns(columns);
       } else {
         const nations = collectNations(defaults);
+        const columns = [...DEFAULT_EXPORT_COLUMNS];
         setRosters(defaults);
         setSelectedNations(nations);
-        persistSession(defaults, nations);
+        setExportColumns(columns);
+        persistSession(defaults, nations, columns);
       }
 
       setIsLoading(false);
@@ -270,11 +301,11 @@ export default function AdminTShirtsPage() {
     (updater: (prev: Record<Family, RosterRow[]>) => Record<Family, RosterRow[]>) => {
       setRosters((prev) => {
         const next = updater(prev);
-        persistSession(next, selectedNations);
+        persistSession(next, selectedNations, exportColumns);
         return next;
       });
     },
-    [persistSession, selectedNations],
+    [persistSession, selectedNations, exportColumns],
   );
 
   const updateFamilyRow = useCallback(
@@ -359,11 +390,22 @@ export default function AdminTShirtsPage() {
     (next: string[]) => {
       setSelectedNations(next);
       setRosters((current) => {
-        persistSession(current, next);
+        persistSession(current, next, exportColumns);
         return current;
       });
     },
-    [persistSession],
+    [persistSession, exportColumns],
+  );
+
+  const persistExportColumnSelection = useCallback(
+    (next: ExportColumn[]) => {
+      setExportColumns(next);
+      setRosters((current) => {
+        persistSession(current, selectedNations, next);
+        return current;
+      });
+    },
+    [persistSession, selectedNations],
   );
 
   const toggleNation = (nation: string) => {
@@ -381,11 +423,29 @@ export default function AdminTShirtsPage() {
     persistNationSelection([]);
   };
 
+  const toggleExportColumn = (column: ExportColumn) => {
+    const isSelected = exportColumns.includes(column);
+    if (isSelected && exportColumns.length === 1) {
+      toast.error("At least one export column must stay selected");
+      return;
+    }
+    const next = isSelected
+      ? exportColumns.filter((col) => col !== column)
+      : [...exportColumns, column];
+    persistExportColumnSelection(next);
+  };
+
+  const selectAllExportColumns = () => {
+    persistExportColumnSelection([...DEFAULT_EXPORT_COLUMNS]);
+  };
+
   const confirmUndoAllEdits = () => {
     const nations = collectNations(defaultRosters);
+    const columns = [...DEFAULT_EXPORT_COLUMNS];
     clearSession();
     setRosters(defaultRosters);
     setSelectedNations(nations);
+    setExportColumns(columns);
     setSortConfig(DEFAULT_ROSTER_SORT);
     setShowUndoConfirm(false);
     toast.success("All session edits cleared — restored from member data");
@@ -426,14 +486,14 @@ export default function AdminTShirtsPage() {
     const rows = exportRosters[activeFamily] ?? [];
     downloadCsv(
       `anniversary-tshirts-${slug}.csv`,
-      rosterToCsv(activeFamily, rows, nationFilterLabel),
+      rosterToCsv(activeFamily, rows, exportOptions),
     );
     toast.success("CSV downloaded");
   };
 
   const exportFamilyPdf = () => {
     const rows = exportRosters[activeFamily] ?? [];
-    downloadRosterPdf(activeFamily, rows, nationFilterLabel);
+    downloadRosterPdf(activeFamily, rows, exportOptions);
     toast.success("PDF downloaded");
   };
 
@@ -473,7 +533,7 @@ export default function AdminTShirtsPage() {
             title="Filter by nation of residence"
             aria-label="Filter by nation of residence"
             className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs transition ${
-              showNationFilter
+              showNationFilter || isNationFilterActive
                 ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
                 : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             }`}
@@ -481,8 +541,20 @@ export default function AdminTShirtsPage() {
             <Filter size={16} />
           </button>
           <button
+            onClick={() => setShowExportColumns((v) => !v)}
+            title="Choose export columns"
+            aria-label="Choose export columns"
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs transition ${
+              showExportColumns || isExportColumnsCustom
+                ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
+                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            }`}
+          >
+            <Columns2 size={16} />
+          </button>
+          <button
             onClick={() => {
-              downloadAllFamiliesCsv(exportRosters, nationFilterLabel);
+              downloadAllFamiliesCsv(exportRosters, exportOptions);
               toast.success("All families CSV downloaded");
             }}
             className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-xs transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -492,7 +564,7 @@ export default function AdminTShirtsPage() {
           </button>
           <button
             onClick={() => {
-              downloadAllFamiliesPdf(exportRosters, nationFilterLabel);
+              downloadAllFamiliesPdf(exportRosters, exportOptions);
               toast.success("All families PDF downloaded");
             }}
             className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-(--primary-gold) px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-(--primary-gold)/20 transition hover:opacity-90"
@@ -542,6 +614,54 @@ export default function AdminTShirtsPage() {
           </div>
         ))}
       </div>
+
+      {showExportColumns && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Export Columns
+              </h3>
+              <p className="text-xs text-zinc-500">
+                Choose which fields appear in CSV and PDF exports. The table
+                always shows every column. Currently: {exportColumnsLabel}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={selectAllExportColumns}
+                className="rounded-lg px-3 py-1.5 text-xs font-semibold text-(--primary-gold) hover:bg-(--primary-gold)/10"
+              >
+                Select All
+              </button>
+              <button
+                onClick={() => setShowExportColumns(false)}
+                className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {EXPORT_COLUMN_OPTIONS.map((option) => {
+              const checked = exportColumns.includes(option.key);
+              return (
+                <button
+                  key={option.key}
+                  onClick={() => toggleExportColumn(option.key)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                    checked
+                      ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {showNationFilter && (
         <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">

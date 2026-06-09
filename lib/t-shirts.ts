@@ -44,9 +44,43 @@ export type RosterRow = {
   defaultNation?: string;
 };
 
+export const EXPORT_COLUMN_OPTIONS = [
+  {
+    key: "nick_name",
+    label: "Nickname",
+    csvHeader: "Nickname",
+    pdfHeader: "Nickname",
+  },
+  {
+    key: "age",
+    label: "Age",
+    csvHeader: "Age",
+    pdfHeader: "Age",
+  },
+  {
+    key: "shirt_size",
+    label: "T-Shirt Size",
+    csvHeader: "T-Shirt Size",
+    pdfHeader: "T-Shirt Size",
+  },
+  {
+    key: "nation_of_residence",
+    label: "Nation of Residence",
+    csvHeader: "Nation of Residence",
+    pdfHeader: "Nation",
+  },
+] as const;
+
+export type ExportColumn = (typeof EXPORT_COLUMN_OPTIONS)[number]["key"];
+
+export const DEFAULT_EXPORT_COLUMNS: ExportColumn[] = EXPORT_COLUMN_OPTIONS.map(
+  (option) => option.key,
+);
+
 export type RosterSession = {
   rosters: Record<Family, RosterRow[]>;
   selectedNations: string[];
+  exportColumns?: ExportColumn[];
 };
 
 export type RosterSortKey =
@@ -262,26 +296,76 @@ export function buildSummary(family: string, rows: RosterRow[]) {
   return { total: rows.length, breakdown, text, displayName };
 }
 
+export function resolveExportColumns(
+  exportColumns?: ExportColumn[],
+): ExportColumn[] {
+  if (!exportColumns?.length) return [...DEFAULT_EXPORT_COLUMNS];
+  const valid = new Set(DEFAULT_EXPORT_COLUMNS);
+  const resolved = exportColumns.filter((col) => valid.has(col));
+  return resolved.length > 0 ? resolved : [...DEFAULT_EXPORT_COLUMNS];
+}
+
+export function formatExportColumnsLabel(exportColumns: ExportColumn[]): string {
+  const columns = resolveExportColumns(exportColumns);
+  return EXPORT_COLUMN_OPTIONS.filter((option) =>
+    columns.includes(option.key),
+  )
+    .map((option) => option.label)
+    .join(", ");
+}
+
+function exportCellValue(row: RosterRow, column: ExportColumn): string {
+  switch (column) {
+    case "nick_name":
+      return row.nick_name;
+    case "age":
+      return row.age !== null ? String(row.age) : "";
+    case "shirt_size":
+      return row.shirt_size;
+    case "nation_of_residence":
+      return row.nation_of_residence;
+  }
+}
+
+export type RosterExportOptions = {
+  nationFilterLabel?: string;
+  exportColumns?: ExportColumn[];
+};
+
 export function rosterToCsv(
   family: string,
   rows: RosterRow[],
-  nationFilterLabel?: string,
+  options: RosterExportOptions = {},
 ): string {
   const { displayName, total, breakdown } = buildSummary(family, rows);
   const breakdownLine = SHIRT_SIZES.filter((s) => breakdown[s] > 0)
     .map((s) => `${s}=${breakdown[s]}`)
     .join(", ");
+  const columns = resolveExportColumns(options.exportColumns);
+  const columnMeta = EXPORT_COLUMN_OPTIONS.filter((option) =>
+    columns.includes(option.key),
+  );
+  const columnsLabel = formatExportColumnsLabel(columns);
 
   const lines = [
     displayName,
     `Total Strength: ${total}`,
     `Size Breakdown: ${breakdownLine || "None"}`,
-    ...(nationFilterLabel ? [`Nations: ${nationFilterLabel}`] : []),
+    ...(options.nationFilterLabel
+      ? [`Nations: ${options.nationFilterLabel}`]
+      : []),
+    `Columns: ${columnsLabel}`,
     "",
-    "Nickname,Age,T-Shirt Size,Nation of Residence",
-    ...rows.map(
-      (r) =>
-        `"${r.nick_name.replace(/"/g, '""')}",${r.age ?? ""},${r.shirt_size},"${r.nation_of_residence.replace(/"/g, '""')}"`,
+    columnMeta.map((option) => option.csvHeader).join(","),
+    ...rows.map((row) =>
+      columnMeta
+        .map((option) => {
+          const value = exportCellValue(row, option.key);
+          return value.includes(",") || value.includes('"')
+            ? `"${value.replace(/"/g, '""')}"`
+            : value;
+        })
+        .join(","),
     ),
   ];
   return lines.join("\n");
@@ -299,10 +383,10 @@ export function downloadCsv(filename: string, content: string) {
 
 export function downloadAllFamiliesCsv(
   rosters: Record<Family, RosterRow[]>,
-  nationFilterLabel?: string,
+  options: RosterExportOptions = {},
 ): void {
   const sections = FAMILY_OPTIONS.map((family) =>
-    rosterToCsv(family, rosters[family] ?? [], nationFilterLabel),
+    rosterToCsv(family, rosters[family] ?? [], options),
   );
   downloadCsv("anniversary-tshirts-all-families.csv", sections.join("\n\n"));
 }
@@ -311,11 +395,16 @@ function addFamilyToPdf(
   doc: jsPDF,
   family: string,
   rows: RosterRow[],
-  nationFilterLabel?: string,
+  options: RosterExportOptions = {},
   startY = 20,
 ): number {
   const { displayName, text, total } = buildSummary(family, rows);
   const pageWidth = doc.internal.pageSize.getWidth();
+  const columns = resolveExportColumns(options.exportColumns);
+  const columnMeta = EXPORT_COLUMN_OPTIONS.filter((option) =>
+    columns.includes(option.key),
+  );
+  const columnsLabel = formatExportColumnsLabel(columns);
 
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
@@ -323,23 +412,22 @@ function addFamilyToPdf(
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  const summaryText = nationFilterLabel
-    ? `${text}\nNations: ${nationFilterLabel}`
-    : text;
-  const summaryLines = doc.splitTextToSize(summaryText, pageWidth - 28);
+  const summaryParts = [text];
+  if (options.nationFilterLabel) {
+    summaryParts.push(`Nations: ${options.nationFilterLabel}`);
+  }
+  summaryParts.push(`Columns: ${columnsLabel}`);
+  const summaryLines = doc.splitTextToSize(summaryParts.join("\n"), pageWidth - 28);
   doc.text(summaryLines, 14, startY + 10);
 
   const tableStartY = startY + 10 + summaryLines.length * 5 + 4;
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [["#", "Nickname", "Age", "T-Shirt Size", "Nation"]],
+    head: [["#", ...columnMeta.map((option) => option.pdfHeader)]],
     body: rows.map((row, idx) => [
       String(idx + 1),
-      row.nick_name,
-      row.age !== null ? String(row.age) : "",
-      row.shirt_size,
-      row.nation_of_residence,
+      ...columnMeta.map((option) => exportCellValue(row, option.key)),
     ]),
     theme: "striped",
     headStyles: { fillColor: [180, 140, 50] },
@@ -365,23 +453,23 @@ function addFamilyToPdf(
 export function downloadRosterPdf(
   family: string,
   rows: RosterRow[],
-  nationFilterLabel?: string,
+  options: RosterExportOptions = {},
 ): void {
   const doc = new jsPDF();
-  addFamilyToPdf(doc, family, rows, nationFilterLabel);
+  addFamilyToPdf(doc, family, rows, options);
   const slug = family.toLowerCase().replace(/\s+/g, "-");
   doc.save(`anniversary-tshirts-${slug}.pdf`);
 }
 
 export function downloadAllFamiliesPdf(
   rosters: Record<Family, RosterRow[]>,
-  nationFilterLabel?: string,
+  options: RosterExportOptions = {},
 ): void {
   const doc = new jsPDF();
 
   FAMILY_OPTIONS.forEach((family, index) => {
     if (index > 0) doc.addPage();
-    addFamilyToPdf(doc, family, rosters[family] ?? [], nationFilterLabel, 20);
+    addFamilyToPdf(doc, family, rosters[family] ?? [], options, 20);
   });
 
   doc.save("anniversary-tshirts-all-families.pdf");
