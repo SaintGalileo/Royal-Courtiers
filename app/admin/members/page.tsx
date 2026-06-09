@@ -21,7 +21,7 @@ import {
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
 import TalentSelector from "@/components/TalentSelector";
-import { FAMILY_OPTIONS } from "@/lib/family-roster";
+import { FAMILY_OPTIONS } from "@/lib/t-shirts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 

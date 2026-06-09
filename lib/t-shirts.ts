@@ -13,7 +13,12 @@ export type Family = (typeof FAMILY_OPTIONS)[number];
 
 export const SHIRT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
 
-export const SESSION_STORAGE_KEY = "family-roster-session-v1";
+export const SESSION_STORAGE_KEY = "admin-t-shirts-session-v1";
+
+const LEGACY_SESSION_KEYS = [
+  "family-roster-session-v1",
+  "family-roster-session-v2",
+];
 
 export type MemberSeed = {
   id: string;
@@ -43,6 +48,31 @@ export type RosterSession = {
   rosters: Record<Family, RosterRow[]>;
   selectedNations: string[];
 };
+
+export type RosterSortKey =
+  | "nick_name"
+  | "age"
+  | "shirt_size"
+  | "nation_of_residence";
+
+export type SortDirection = "asc" | "desc";
+
+export type RosterSortConfig = {
+  key: RosterSortKey;
+  direction: SortDirection;
+} | null;
+
+function createRowKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `manual-${crypto.randomUUID()}`;
+  }
+  return `manual-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function shirtSizeOrder(size: string): number {
+  const idx = SHIRT_SIZES.indexOf(size as (typeof SHIRT_SIZES)[number]);
+  return idx === -1 ? SHIRT_SIZES.length : idx;
+}
 
 export function calculateAge(dob: string | null): number | null {
   if (!dob) return null;
@@ -113,12 +143,39 @@ export function sortByShirtSize(rows: RosterRow[]): RosterRow[] {
   });
 }
 
-/** Manual rows stay at the top; member rows sort by shirt size below. */
-export function organizeFamilyRows(rows: RosterRow[]): RosterRow[] {
-  const manual = rows.filter((r) => r.source === "manual");
-  const members = sortByShirtSize(rows.filter((r) => r.source === "member"));
-  return [...manual, ...members];
+export function sortRosterRows(
+  rows: RosterRow[],
+  sortConfig: RosterSortConfig,
+): RosterRow[] {
+  if (!sortConfig) return [...rows];
+
+  const { key, direction } = sortConfig;
+  const factor = direction === "asc" ? 1 : -1;
+
+  return [...rows].sort((a, b) => {
+    if (key === "shirt_size") {
+      const diff = shirtSizeOrder(a.shirt_size) - shirtSizeOrder(b.shirt_size);
+      if (diff !== 0) return diff * factor;
+      return a.nick_name.localeCompare(b.nick_name) * factor;
+    }
+
+    if (key === "age") {
+      const aAge = a.age ?? -1;
+      const bAge = b.age ?? -1;
+      if (aAge !== bAge) return (aAge - bAge) * factor;
+      return a.nick_name.localeCompare(b.nick_name) * factor;
+    }
+
+    const aVal = (a[key] ?? "").toString().toLowerCase();
+    const bVal = (b[key] ?? "").toString().toLowerCase();
+    return aVal.localeCompare(bVal) * factor;
+  });
 }
+
+export const DEFAULT_ROSTER_SORT: RosterSortConfig = {
+  key: "shirt_size",
+  direction: "asc",
+};
 
 export function collectNations(
   rosters: Record<Family, RosterRow[]>,
@@ -140,8 +197,14 @@ export function filterRowsByNations(
 ): RosterRow[] {
   if (selectedNations.length === 0) return [];
   if (selectedNations.length === allNations.length) return rows;
-  const selected = new Set(selectedNations);
-  return rows.filter((row) => selected.has(row.nation_of_residence));
+  const selected = new Set(
+    selectedNations.map((n) => n.trim().toLowerCase()).filter(Boolean),
+  );
+  return rows.filter((row) => {
+    const nation = row.nation_of_residence.trim().toLowerCase();
+    if (!nation) return row.source === "manual";
+    return selected.has(nation);
+  });
 }
 
 export function filterAllRostersByNations(
@@ -160,6 +223,21 @@ export function filterAllRostersByNations(
     },
     {} as Record<Family, RosterRow[]>,
   );
+}
+
+/** Nation filter for display — keeps a focused row visible while editing. */
+export function filterRowsForDisplay(
+  rows: RosterRow[],
+  selectedNations: string[],
+  allNations: string[],
+  pinnedRowKey?: string | null,
+): RosterRow[] {
+  const filtered = filterRowsByNations(rows, selectedNations, allNations);
+  if (!pinnedRowKey || filtered.some((r) => r.rowKey === pinnedRowKey)) {
+    return filtered;
+  }
+  const pinned = rows.find((r) => r.rowKey === pinnedRowKey);
+  return pinned ? [...filtered, pinned] : filtered;
 }
 
 export function buildSizeBreakdown(
@@ -321,13 +399,42 @@ export function rowDiffersFromDefault(row: RosterRow): boolean {
 
 export function createManualRow(): RosterRow {
   return {
-    rowKey: `manual-${crypto.randomUUID()}`,
+    rowKey: createRowKey(),
     source: "manual",
     nick_name: "",
     age: null,
     shirt_size: "",
     nation_of_residence: "",
   };
+}
+
+export function mergeSessionRosters(
+  defaults: Record<Family, RosterRow[]>,
+  sessionRosters: Record<Family, RosterRow[]>,
+): Record<Family, RosterRow[]> {
+  return FAMILY_OPTIONS.reduce(
+    (acc, family) => {
+      const defaultRows = defaults[family] ?? [];
+      const sessionRows = sessionRosters[family] ?? [];
+      const sessionByMemberId = new Map(
+        sessionRows
+          .filter((r) => r.memberId)
+          .map((r) => [r.memberId as string, r]),
+      );
+      const manualRows = sessionRows.filter((r) => r.source === "manual");
+
+      const memberRows = defaultRows.map((row) => {
+        const override = row.memberId
+          ? sessionByMemberId.get(row.memberId)
+          : undefined;
+        return override ?? row;
+      });
+
+      acc[family] = [...manualRows, ...memberRows];
+      return acc;
+    },
+    {} as Record<Family, RosterRow[]>,
+  );
 }
 
 export function loadSession(): RosterSession | null {
@@ -341,9 +448,44 @@ export function loadSession(): RosterSession | null {
   }
 }
 
-export function saveSession(session: RosterSession): void {
+export function saveSession(session: RosterSession): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearSession(): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  try {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    for (const key of LEGACY_SESSION_KEYS) {
+      sessionStorage.removeItem(key);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function rostersHaveEdits(
+  rosters: Record<Family, RosterRow[]>,
+  defaults: Record<Family, RosterRow[]>,
+): boolean {
+  for (const family of FAMILY_OPTIONS) {
+    const current = rosters[family] ?? [];
+    const defaultRows = defaults[family] ?? [];
+
+    if (current.some((r) => r.source === "manual")) return true;
+    if (current.length !== defaultRows.length) return true;
+
+    for (const row of current) {
+      if (row.source === "member" && rowDiffersFromDefault(row)) return true;
+    }
+  }
+  return false;
 }
 
 export function formatNationFilterLabel(

@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Download,
   FileText,
   Filter,
@@ -12,6 +14,7 @@ import {
   Plus,
   RotateCcw,
   Trash2,
+  Undo2,
   X,
 } from "lucide-react";
 import {
@@ -30,6 +33,7 @@ import {
   type MemberSeed,
   type RosterRow,
   buildSummary,
+  clearSession,
   collectNations,
   createManualRow,
   downloadAllFamiliesCsv,
@@ -37,16 +41,22 @@ import {
   downloadCsv,
   downloadRosterPdf,
   filterAllRostersByNations,
+  filterRowsForDisplay,
   formatFamilyDisplayName,
   formatNationFilterLabel,
   loadSession,
   memberToDefaultRow,
+  DEFAULT_ROSTER_SORT,
+  mergeSessionRosters,
   resolveAllFamilyRosters,
   rosterToCsv,
+  rostersHaveEdits,
   rowDiffersFromDefault,
   saveSession,
-  organizeFamilyRows,
-} from "@/lib/family-roster";
+  sortRosterRows,
+  type RosterSortConfig,
+  type RosterSortKey,
+} from "@/lib/t-shirts";
 
 type IconType = ComponentType<{ className?: string; size?: number }>;
 
@@ -86,7 +96,32 @@ const familyStyles: Record<
   },
 };
 
-export default function AdminFamilyRostersPage() {
+function renderSortHeader(
+  label: string,
+  sortKey: RosterSortKey,
+  sortConfig: RosterSortConfig,
+  onSort: (key: RosterSortKey) => void,
+  className = "",
+) {
+  return (
+    <th
+      className={`cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500 transition hover:bg-zinc-100/50 dark:hover:bg-zinc-800 ${className}`}
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center gap-1">
+        {label}
+        {sortConfig?.key === sortKey &&
+          (sortConfig.direction === "asc" ? (
+            <ChevronUp size={14} />
+          ) : (
+            <ChevronDown size={14} />
+          ))}
+      </div>
+    </th>
+  );
+}
+
+export default function AdminTShirtsPage() {
   const [members, setMembers] = useState<MemberSeed[]>([]);
   const [rosters, setRosters] = useState<Record<Family, RosterRow[]>>(() =>
     resolveAllFamilyRosters([]),
@@ -99,7 +134,12 @@ export default function AdminFamilyRostersPage() {
     family: Family;
     row: RosterRow;
   } | null>(null);
+  const [showUndoConfirm, setShowUndoConfirm] = useState(false);
+  const [sortConfig, setSortConfig] =
+    useState<RosterSortConfig>(DEFAULT_ROSTER_SORT);
+  const [focusedRowKey, setFocusedRowKey] = useState<string | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
   const activeFamily = FAMILY_OPTIONS[activeFamilyIndex];
@@ -114,7 +154,40 @@ export default function AdminFamilyRostersPage() {
     [rosters, selectedNations, allNations],
   );
 
-  const activeRows = filteredRosters[activeFamily] ?? [];
+  const exportRosters = useMemo(() => {
+    const result = {} as Record<Family, RosterRow[]>;
+    for (const family of FAMILY_OPTIONS) {
+      const filtered = filteredRosters[family] ?? [];
+      result[family] = sortRosterRows(filtered, sortConfig);
+    }
+    return result;
+  }, [filteredRosters, sortConfig]);
+
+  const familyRows = rosters[activeFamily] ?? [];
+  const filteredFamilyRows = filteredRosters[activeFamily] ?? [];
+
+  const activeRows = useMemo(
+    () =>
+      sortRosterRows(
+        filterRowsForDisplay(
+          familyRows,
+          selectedNations,
+          allNations,
+          focusedRowKey,
+        ),
+        sortConfig,
+      ),
+    [
+      familyRows,
+      selectedNations,
+      allNations,
+      focusedRowKey,
+      sortConfig,
+    ],
+  );
+
+  const isNationFilterActive =
+    selectedNations.length > 0 && selectedNations.length < allNations.length;
   const totalTeeCount = useMemo(
     () =>
       FAMILY_OPTIONS.reduce(
@@ -123,13 +196,31 @@ export default function AdminFamilyRostersPage() {
       ),
     [filteredRosters],
   );
-  const summary = buildSummary(activeFamily, activeRows);
+  const summary = buildSummary(activeFamily, filteredFamilyRows);
   const style = familyStyles[activeFamily];
   const FamilyIcon = style?.icon ?? GiPolarStar;
 
+  const defaultRosters = useMemo(
+    () => resolveAllFamilyRosters(members),
+    [members],
+  );
+
+  const hasEdits = useMemo(
+    () => rostersHaveEdits(rosters, defaultRosters),
+    [rosters, defaultRosters],
+  );
+
   const persistSession = useCallback(
     (nextRosters: Record<Family, RosterRow[]>, nations: string[]) => {
-      saveSession({ rosters: nextRosters, selectedNations: nations });
+      const saved = saveSession({
+        rosters: nextRosters,
+        selectedNations: nations,
+      });
+      if (!saved) {
+        toast.error(
+          "Could not save session changes. Edits work until you refresh.",
+        );
+      }
     },
     [],
   );
@@ -157,12 +248,12 @@ export default function AdminFamilyRostersPage() {
       const session = loadSession();
 
       if (session?.rosters) {
-        setRosters(session.rosters);
-        setSelectedNations(
-          session.selectedNations?.length
-            ? session.selectedNations
-            : collectNations(session.rosters),
-        );
+        const merged = mergeSessionRosters(defaults, session.rosters);
+        const nations = session.selectedNations?.length
+          ? session.selectedNations
+          : collectNations(merged);
+        setRosters(merged);
+        setSelectedNations(nations);
       } else {
         const nations = collectNations(defaults);
         setRosters(defaults);
@@ -175,17 +266,32 @@ export default function AdminFamilyRostersPage() {
     fetchData();
   }, [supabase, persistSession]);
 
-  const updateRosters = (next: Record<Family, RosterRow[]>) => {
-    setRosters(next);
-    persistSession(next, selectedNations);
-  };
+  const updateRosters = useCallback(
+    (updater: (prev: Record<Family, RosterRow[]>) => Record<Family, RosterRow[]>) => {
+      setRosters((prev) => {
+        const next = updater(prev);
+        persistSession(next, selectedNations);
+        return next;
+      });
+    },
+    [persistSession, selectedNations],
+  );
 
-  const updateFamilyRows = (family: Family, rows: RosterRow[]) => {
-    updateRosters({
-      ...rosters,
-      [family]: organizeFamilyRows(rows),
-    });
-  };
+  const updateFamilyRow = useCallback(
+  (
+    family: Family,
+    rowKey: string,
+    updater: (row: RosterRow) => RosterRow,
+  ) => {
+    updateRosters((prev) => ({
+      ...prev,
+      [family]: (prev[family] ?? []).map((r) =>
+        r.rowKey === rowKey ? updater(r) : r,
+      ),
+    }));
+  },
+  [updateRosters],
+);
 
   const handleFieldChange = (
     family: Family,
@@ -196,16 +302,22 @@ export default function AdminFamilyRostersPage() {
     >,
     value: string,
   ) => {
-    const rows = rosters[family] ?? [];
-    const updated = rows.map((r) => {
-      if (r.rowKey !== rowKey) return r;
+    updateFamilyRow(family, rowKey, (r) => {
       if (field === "age") {
         const parsed = value === "" ? null : parseInt(value, 10);
         return { ...r, age: Number.isNaN(parsed) ? null : parsed };
       }
       return { ...r, [field]: value };
     });
-    updateFamilyRows(family, updated);
+  };
+
+  const handleSort = (key: RosterSortKey) => {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
   };
 
   const handleRevert = (family: Family, row: RosterRow) => {
@@ -213,54 +325,83 @@ export default function AdminFamilyRostersPage() {
     const member = members.find((m) => m.id === row.memberId);
     if (!member) return;
     const defaults = memberToDefaultRow(member);
-    updateFamilyRows(
-      family,
-      (rosters[family] ?? []).map((r) =>
+    updateRosters((prev) => ({
+      ...prev,
+      [family]: (prev[family] ?? []).map((r) =>
         r.rowKey === row.rowKey ? defaults : r,
       ),
-    );
+    }));
     toast.success("Reverted to member defaults");
   };
 
   const handleAddRow = (family: Family) => {
     const newRow = createManualRow();
-    const current = rosters[family] ?? [];
-    const manual = [newRow, ...current.filter((r) => r.source === "manual")];
-    const members = current.filter((r) => r.source === "member");
-    updateFamilyRows(family, [...manual, ...members]);
-    toast.success("Manual row added (session only)");
+    setSortConfig(null);
+    updateRosters((prev) => ({
+      ...prev,
+      [family]: [newRow, ...(prev[family] ?? [])],
+    }));
+    toast.success("Manual row added at top");
   };
 
   const confirmDeleteManual = () => {
     if (!deleteTarget) return;
     const { family, row } = deleteTarget;
-    updateFamilyRows(
-      family,
-      (rosters[family] ?? []).filter((r) => r.rowKey !== row.rowKey),
-    );
+    updateRosters((prev) => ({
+      ...prev,
+      [family]: (prev[family] ?? []).filter((r) => r.rowKey !== row.rowKey),
+    }));
     setDeleteTarget(null);
     toast.success("Row removed");
   };
+
+  const persistNationSelection = useCallback(
+    (next: string[]) => {
+      setSelectedNations(next);
+      setRosters((current) => {
+        persistSession(current, next);
+        return current;
+      });
+    },
+    [persistSession],
+  );
 
   const toggleNation = (nation: string) => {
     const next = selectedNations.includes(nation)
       ? selectedNations.filter((n) => n !== nation)
       : [...selectedNations, nation];
-    setSelectedNations(next);
-    persistSession(rosters, next);
+    persistNationSelection(next);
   };
 
   const selectAllNations = () => {
-    setSelectedNations(allNations);
-    persistSession(rosters, allNations);
+    persistNationSelection(allNations);
   };
 
   const clearNationFilter = () => {
-    setSelectedNations([]);
-    persistSession(rosters, []);
+    persistNationSelection([]);
+  };
+
+  const confirmUndoAllEdits = () => {
+    const nations = collectNations(defaultRosters);
+    clearSession();
+    setRosters(defaultRosters);
+    setSelectedNations(nations);
+    setSortConfig(DEFAULT_ROSTER_SORT);
+    setShowUndoConfirm(false);
+    toast.success("All session edits cleared — restored from member data");
+  };
+
+  const handleRowFocus = (rowKey: string) => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    setFocusedRowKey(rowKey);
+  };
+
+  const handleRowBlur = () => {
+    blurTimeoutRef.current = setTimeout(() => setFocusedRowKey(null), 150);
   };
 
   const goToFamily = (index: number) => {
+    setFocusedRowKey(null);
     setActiveFamilyIndex(
       ((index % FAMILY_OPTIONS.length) + FAMILY_OPTIONS.length) %
         FAMILY_OPTIONS.length,
@@ -282,15 +423,17 @@ export default function AdminFamilyRostersPage() {
 
   const exportFamilyCsv = () => {
     const slug = activeFamily.toLowerCase();
+    const rows = exportRosters[activeFamily] ?? [];
     downloadCsv(
       `anniversary-tshirts-${slug}.csv`,
-      rosterToCsv(activeFamily, activeRows, nationFilterLabel),
+      rosterToCsv(activeFamily, rows, nationFilterLabel),
     );
     toast.success("CSV downloaded");
   };
 
   const exportFamilyPdf = () => {
-    downloadRosterPdf(activeFamily, activeRows, nationFilterLabel);
+    const rows = exportRosters[activeFamily] ?? [];
+    downloadRosterPdf(activeFamily, rows, nationFilterLabel);
     toast.success("PDF downloaded");
   };
 
@@ -317,6 +460,15 @@ export default function AdminFamilyRostersPage() {
         </div>
         <div className="flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto">
           <button
+            onClick={() => setShowUndoConfirm(true)}
+            disabled={!hasEdits}
+            title="Undo all session edits"
+            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-xs transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            <Undo2 size={16} />
+            Undo All
+          </button>
+          <button
             onClick={() => setShowNationFilter((v) => !v)}
             title="Filter by nation of residence"
             aria-label="Filter by nation of residence"
@@ -330,7 +482,7 @@ export default function AdminFamilyRostersPage() {
           </button>
           <button
             onClick={() => {
-              downloadAllFamiliesCsv(filteredRosters, nationFilterLabel);
+              downloadAllFamiliesCsv(exportRosters, nationFilterLabel);
               toast.success("All families CSV downloaded");
             }}
             className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-xs transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -340,7 +492,7 @@ export default function AdminFamilyRostersPage() {
           </button>
           <button
             onClick={() => {
-              downloadAllFamiliesPdf(filteredRosters, nationFilterLabel);
+              downloadAllFamiliesPdf(exportRosters, nationFilterLabel);
               toast.success("All families PDF downloaded");
             }}
             className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-(--primary-gold) px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-(--primary-gold)/20 transition hover:opacity-90"
@@ -399,7 +551,7 @@ export default function AdminFamilyRostersPage() {
                 Filter by Nation of Residence
               </h3>
               <p className="text-xs text-zinc-500">
-                Applies to the table view and all exports. Currently:{" "}
+                Applies to the table, totals, and exports. Currently:{" "}
                 {nationFilterLabel}
               </p>
             </div>
@@ -519,12 +671,12 @@ export default function AdminFamilyRostersPage() {
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                   {summary.text}
                 </p>
-                {selectedNations.length > 0 &&
-                  selectedNations.length < allNations.length && (
-                    <p className="mt-1 text-xs text-zinc-500">
-                      Filtered nations: {nationFilterLabel}
-                    </p>
-                  )}
+                {isNationFilterActive && (
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Showing {filteredFamilyRows.length} of {familyRows.length}{" "}
+                    · Nations: {nationFilterLabel}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
@@ -560,18 +712,26 @@ export default function AdminFamilyRostersPage() {
                 <th className="w-12 px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
                   #
                 </th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  Nickname
-                </th>
-                <th className="w-24 px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  Age
-                </th>
-                <th className="w-32 px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  T-Shirt Size
-                </th>
-                <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  Nation of Residence
-                </th>
+                {renderSortHeader(
+                  "Nickname",
+                  "nick_name",
+                  sortConfig,
+                  handleSort,
+                )}
+                {renderSortHeader("Age", "age", sortConfig, handleSort, "w-24")}
+                {renderSortHeader(
+                  "T-Shirt Size",
+                  "shirt_size",
+                  sortConfig,
+                  handleSort,
+                  "w-32",
+                )}
+                {renderSortHeader(
+                  "Nation of Residence",
+                  "nation_of_residence",
+                  sortConfig,
+                  handleSort,
+                )}
                 <th className="w-28 px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
                   Actions
                 </th>
@@ -584,8 +744,9 @@ export default function AdminFamilyRostersPage() {
                     colSpan={6}
                     className="px-4 py-12 text-center text-sm text-zinc-500"
                   >
-                    No members match the current nation filter. Adjust the
-                    filter or use Add Row for manual entries.
+                    {familyRows.length === 0
+                      ? "No members in this family yet. Use Add Row for manual entries."
+                      : "No members match the current nation filter. Adjust the filter or add a manual row."}
                   </td>
                 </tr>
               ) : (
@@ -613,6 +774,8 @@ export default function AdminFamilyRostersPage() {
                                 e.target.value,
                               )
                             }
+                            onFocus={() => handleRowFocus(row.rowKey)}
+                            onBlur={handleRowBlur}
                             className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950"
                             placeholder="Nickname"
                           />
@@ -642,6 +805,8 @@ export default function AdminFamilyRostersPage() {
                               e.target.value,
                             )
                           }
+                          onFocus={() => handleRowFocus(row.rowKey)}
+                          onBlur={handleRowBlur}
                           className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950"
                           placeholder="—"
                         />
@@ -657,6 +822,8 @@ export default function AdminFamilyRostersPage() {
                               e.target.value,
                             )
                           }
+                          onFocus={() => handleRowFocus(row.rowKey)}
+                          onBlur={handleRowBlur}
                           className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950"
                         >
                           <option value="">—</option>
@@ -686,6 +853,8 @@ export default function AdminFamilyRostersPage() {
                               e.target.value,
                             )
                           }
+                          onFocus={() => handleRowFocus(row.rowKey)}
+                          onBlur={handleRowBlur}
                           className="w-full min-w-[120px] rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950"
                           placeholder="Nation"
                         />
@@ -722,6 +891,41 @@ export default function AdminFamilyRostersPage() {
           </table>
         </div>
       </div>
+
+      {showUndoConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowUndoConfirm(false)}
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
+              <Undo2 size={22} />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              Undo all edits?
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+              This clears every manual row and export-only change in this
+              browser session. Member records in the database are not affected.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setShowUndoConfirm(false)}
+                className="flex-1 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUndoAllEdits}
+                className="flex-1 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+              >
+                Undo All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
