@@ -131,3 +131,38 @@ export async function deleteSacredRecord(id: string) {
   if (error) throw error;
   return { success: true };
 }
+
+export function sortSacredRecords(records: SacredRecord[]): SacredRecord[] {
+  return [...records].sort((a, b) => a.day_number - b.day_number);
+}
+
+export function getNextDayNumber(records: SacredRecord[]): number {
+  if (records.length === 0) return 1;
+  return Math.max(...records.map((record) => record.day_number)) + 1;
+}
+
+export async function reorderSacredRecords(orderedIds: string[]) {
+  const supabase = createClient();
+  const tempOffset = 100_000;
+
+  // Two-phase update avoids unique-constraint collisions while swapping positions.
+  for (let index = 0; index < orderedIds.length; index++) {
+    const { error } = await supabase
+      .from("sacred_records")
+      .update({ day_number: tempOffset + index })
+      .eq("id", orderedIds[index]);
+
+    if (error) throw error;
+  }
+
+  for (let index = 0; index < orderedIds.length; index++) {
+    const { error } = await supabase
+      .from("sacred_records")
+      .update({ day_number: index + 1 })
+      .eq("id", orderedIds[index]);
+
+    if (error) throw error;
+  }
+
+  return { success: true };
+}

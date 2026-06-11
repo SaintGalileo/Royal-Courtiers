@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getSacredRecords,
   createSacredRecord,
   updateSacredRecord,
   deleteSacredRecord,
-  SacredRecord
+  getNextDayNumber,
+  reorderSacredRecords,
+  sortSacredRecords,
+  type SacredRecord,
 } from "@/services/sacred-records";
 import {
   Plus,
@@ -15,13 +18,15 @@ import {
   Loader2,
   Search,
   X,
-  AlertCircle
+  GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminSacredRecordsPage() {
   const [records, setRecords] = useState<SacredRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReordering, setIsReordering] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [search, setSearch] = useState("");
 
   // Modal State
@@ -31,11 +36,17 @@ export default function AdminSacredRecordsPage() {
 
   // Form State
   const [formData, setFormData] = useState({
-    day_number: 1,
     title: "",
     category: "THE FOUNDATION (1954-2001)",
-    content: ""
+    content: "",
   });
+
+  const orderedRecords = useMemo(() => sortSacredRecords(records), [records]);
+  const positionById = useMemo(
+    () => new Map(orderedRecords.map((record, index) => [record.id, index + 1])),
+    [orderedRecords],
+  );
+  const canReorder = !search.trim() && !isReordering;
 
   useEffect(() => {
     fetchRecords();
@@ -58,18 +69,16 @@ export default function AdminSacredRecordsPage() {
     if (record) {
       setEditingRecord(record);
       setFormData({
-        day_number: record.day_number,
         title: record.title,
         category: record.category,
-        content: record.content
+        content: record.content,
       });
     } else {
       setEditingRecord(null);
       setFormData({
-        day_number: records.length + 1,
         title: "",
         category: "THE FOUNDATION (1954-2001)",
-        content: ""
+        content: "",
       });
     }
     setIsModalOpen(true);
@@ -78,7 +87,11 @@ export default function AdminSacredRecordsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingRecord(null);
-    setFormData({ day_number: 1, title: "", category: "THE FOUNDATION (1954-2001)", content: "" });
+    setFormData({
+      title: "",
+      category: "THE FOUNDATION (1954-2001)",
+      content: "",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +102,10 @@ export default function AdminSacredRecordsPage() {
         await updateSacredRecord(editingRecord.id, formData);
         toast.success("Record updated successfully");
       } else {
-        await createSacredRecord(formData);
+        await createSacredRecord({
+          ...formData,
+          day_number: getNextDayNumber(records),
+        });
         toast.success("Record created successfully");
       }
       fetchRecords();
@@ -107,6 +123,10 @@ export default function AdminSacredRecordsPage() {
 
     try {
       await deleteSacredRecord(id);
+      const remaining = orderedRecords.filter((record) => record.id !== id);
+      if (remaining.length > 0) {
+        await reorderSacredRecords(remaining.map((record) => record.id));
+      }
       toast.success("Record deleted");
       fetchRecords();
     } catch (error) {
@@ -114,12 +134,55 @@ export default function AdminSacredRecordsPage() {
     }
   };
 
-  const filteredRecords = records.filter(r =>
-    r.title.toLowerCase().includes(search.toLowerCase()) ||
-    r.category.toLowerCase().includes(search.toLowerCase()) ||
-    r.content.toLowerCase().includes(search.toLowerCase()) ||
-    r.day_number.toString().includes(search)
-  );
+  const applyReorder = async (newOrder: SacredRecord[]) => {
+    const previousRecords = records;
+    const optimistic = newOrder.map((record, index) => ({
+      ...record,
+      day_number: index + 1,
+    }));
+
+    setRecords(optimistic);
+    setIsReordering(true);
+
+    try {
+      await reorderSacredRecords(newOrder.map((record) => record.id));
+      toast.success("Record order updated");
+    } catch (error) {
+      console.error(error);
+      setRecords(previousRecords);
+      const message =
+        error instanceof Error ? error.message : "Failed to update record order";
+      toast.error(message);
+    } finally {
+      setIsReordering(false);
+      setDragIndex(null);
+    }
+  };
+
+  const handleDrop = async (targetIndex: number) => {
+    if (!canReorder || dragIndex === null || dragIndex === targetIndex) {
+      setDragIndex(null);
+      return;
+    }
+
+    const nextOrder = [...orderedRecords];
+    const [moved] = nextOrder.splice(dragIndex, 1);
+    nextOrder.splice(targetIndex, 0, moved);
+    await applyReorder(nextOrder);
+  };
+
+  const filteredRecords = orderedRecords.filter((record) => {
+    const position = positionById.get(record.id)?.toString() ?? "";
+    const query = search.toLowerCase();
+    return (
+      record.title.toLowerCase().includes(query) ||
+      record.category.toLowerCase().includes(query) ||
+      record.content.toLowerCase().includes(query) ||
+      position.includes(query)
+    );
+  });
+
+  const tableRecords = search.trim() ? filteredRecords : orderedRecords;
 
   if (isLoading) {
     return (
@@ -134,7 +197,10 @@ export default function AdminSacredRecordsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Sacred Records Management</h1>
-          <p className="mt-1 text-sm text-zinc-500">Managing {records.length} daily spiritual lessons</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            Managing {records.length} daily spiritual lessons. Day numbers follow
+            the list order below.
+          </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
@@ -165,6 +231,11 @@ export default function AdminSacredRecordsPage() {
             </button>
           )}
         </div>
+        {search.trim() && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            Clear search to drag or reorder records.
+          </p>
+        )}
       </div>
 
       {/* Table */}
@@ -173,7 +244,12 @@ export default function AdminSacredRecordsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Day #</th>
+                <th className="w-14 px-4 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  Order
+                </th>
+                <th className="w-16 px-4 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  Day #
+                </th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Category</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Title</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Content Snippet</th>
@@ -181,16 +257,50 @@ export default function AdminSacredRecordsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {filteredRecords.length === 0 ? (
+              {tableRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-sm text-zinc-500">
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-zinc-500">
                     No records found.
                   </td>
                 </tr>
               ) : (
-                filteredRecords.map((r) => (
-                  <tr key={r.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-6 py-4 font-black text-(--primary-gold)">{r.day_number}</td>
+                tableRecords.map((r, index) => {
+                  const displayNumber = positionById.get(r.id) ?? index + 1;
+                  const orderedIndex = orderedRecords.findIndex(
+                    (record) => record.id === r.id,
+                  );
+
+                  return (
+                  <tr
+                    key={r.id}
+                    draggable={canReorder}
+                    onDragStart={() => setDragIndex(orderedIndex)}
+                    onDragOver={(event) => {
+                      if (!canReorder) return;
+                      event.preventDefault();
+                    }}
+                    onDrop={() => handleDrop(orderedIndex)}
+                    onDragEnd={() => setDragIndex(null)}
+                    className={`transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${
+                      dragIndex === orderedIndex ? "opacity-60" : ""
+                    }`}
+                  >
+                    <td className="px-4 py-4">
+                      <span
+                        className={`inline-flex rounded-lg p-1.5 text-zinc-400 ${
+                          canReorder
+                            ? "cursor-grab active:cursor-grabbing"
+                            : "cursor-not-allowed opacity-40"
+                        }`}
+                        title={canReorder ? "Drag to reorder" : "Clear search to reorder"}
+                        aria-label="Drag to reorder"
+                      >
+                        <GripVertical size={16} />
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 font-black text-(--primary-gold)">
+                      {displayNumber}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
                         {r.category}
@@ -221,7 +331,8 @@ export default function AdminSacredRecordsPage() {
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -259,30 +370,28 @@ export default function AdminSacredRecordsPage() {
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Day Number</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.day_number}
-                      onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) }))}
-                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Category</label>
-                    <select
-                      required
-                      value={formData.category}
-                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                    >
-                      <option value="THE FOUNDATION (1954-2001)">THE FOUNDATION (1954-2001)</option>
-                      <option value="THE FAMILY LOVE BUILT (1991-PRESENT)">THE FAMILY LOVE BUILT (1991-PRESENT)</option>
-                      <option value="ADMINISTRATION & ACCOMPLISMENTS">ADMINISTRATION & ACCOMPLISMENTS</option>
-                    </select>
-                  </div>
+                {editingRecord && (
+                  <p className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                    Day{" "}
+                    <span className="font-bold text-(--primary-gold)">
+                      {positionById.get(editingRecord.id) ?? editingRecord.day_number}
+                    </span>
+                    . Drag rows in the table to change this number.
+                  </p>
+                )}
+
+                <div>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-500">Category</label>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
+                  >
+                    <option value="THE FOUNDATION (1954-2001)">THE FOUNDATION (1954-2001)</option>
+                    <option value="THE FAMILY LOVE BUILT (1991-PRESENT)">THE FAMILY LOVE BUILT (1991-PRESENT)</option>
+                    <option value="ADMINISTRATION & ACCOMPLISMENTS">ADMINISTRATION & ACCOMPLISMENTS</option>
+                  </select>
                 </div>
 
                 <div>

@@ -37,7 +37,7 @@ const topExcos = [
     role: "Vice President",
     name: "Brother Roland Eyo",
     delay: "100ms",
-    img: null,
+    img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1777560457/kknh8plsi3qfk1ro94t7.jpg",
   },
 ];
 
@@ -52,15 +52,23 @@ const otherExcos = [
     role: "Vice President",
     name: "Brother Roland Eyo",
     delay: "100ms",
-    img: null,
+    img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1777560457/kknh8plsi3qfk1ro94t7.jpg",
   },
   {
     role: "Secretary",
     name: "Brother David Okundia",
     img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1774983140/photo_2026-03-31_19-46-08_hpoayq.jpg",
   },
-  { role: "Asst. Secretary", name: "Sister Magaret Udoh", img: null },
-  { role: "Financial Secretary", name: "Sister Promise Umaheyo", img: null },
+  {
+    role: "Asst. Secretary",
+    name: "Sister Magaret Udoh",
+    img: "/virgins/portrait/image_2026-05-22_20-12-17.png",
+  },
+  {
+    role: "Financial Secretary",
+    name: "Sister Promise Umaeyo",
+    img: "/virgins/portrait/IMG_20240331_160057.jpg",
+  },
   {
     role: "Public Relations Officer",
     name: "Brother Emeka Christian",
@@ -74,7 +82,7 @@ const otherExcos = [
   {
     role: "Men's Fellowship Chairman",
     name: "Brother Emmanuel Godwin",
-    img: null,
+    img: "/excos/koksy.jpeg",
   },
   {
     role: "Women's Fellowship Chairperson",
@@ -86,8 +94,16 @@ const otherExcos = [
     name: "Brother Victor Firima",
     img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1774983545/photo_2026-03-31_19-58-54_yvudic.jpg",
   },
-  { role: "Mother 1", name: "Sister Ijeoma Orusakwe", img: null },
-  { role: "Mother 2", name: "Brother Victor Omolu", img: null },
+  {
+    role: "Mother 1",
+    name: "Sister Ijeoma Orusakwe",
+    img: "/excos/ijeoma.jpg",
+  },
+  {
+    role: "Mother 2",
+    name: "Brother Victor Omolu",
+    img: "/family-heads/bassey.png",
+  },
   {
     role: "Rector, Virgins Academy",
     name: "Brother Kpono Antia",
@@ -103,10 +119,22 @@ const otherExcos = [
     name: "Sister Nsa Edet",
     img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1774985083/nsa_w11tia.jpg",
   },
-  { role: "Provost 1", name: "Brother Emeka Ike", img: null },
-  { role: "Provost 2", name: "Sister Victoria Nwobodo", img: null },
-  { role: "Caretaker 1", name: "Brother Gabriel George", img: null },
-  { role: "Caretaker 2", name: "Brother Asu Ojong", img: null },
+  {
+    role: "Provost 1",
+    name: "Brother Emeka Ike",
+    img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1780220835/fbqkm2e5vxmnjmqqeitq.jpg",
+  },
+  {
+    role: "Provost 2",
+    name: "Sister Victoria Nwobodo",
+    img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1775644738/qmulhyda2cdavyebxtbl.jpg",
+  },
+  {
+    role: "Caretaker 1",
+    name: "Brother Gabriel George",
+    img: "https://res.cloudinary.com/dgmo4mkhk/image/upload/f_auto,q_auto/v1780040796/cfi0vofgqhjqwjjx4e5v.jpg",
+  },
+  { role: "Caretaker 2", name: "Brother Asu Ojong", img: "/excos/asu.png" },
   {
     role: "Stationers Coordinator",
     name: "Brother Ime Akwaowo",
