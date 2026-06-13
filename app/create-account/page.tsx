@@ -12,6 +12,7 @@ import { useRef as reactRef } from "react";
 import ImageCropper from "@/components/ImageCropper";
 
 import TalentSelector, { TALENT_OPTIONS } from "@/components/TalentSelector";
+import ShirtSizeInput, { validateChestInches } from "@/components/ShirtSizeInput";
 
 const STORAGE_KEY = "create-account-form-v2";
 const FAMILY_OPTIONS = ["Light", "Dominion", "Virtue", "Power", "Seraphs"] as const;
@@ -65,7 +66,7 @@ type FormData = {
   stateOfOrigin: string;
   nationOfResidence: string;
   stateOfResidence: string;
-  shirtSize: string;
+  shirtChestInches: string;
   talents: string[];
   singingPart: string;
   countryCode: string;
@@ -86,7 +87,7 @@ const initialForm: FormData = {
   stateOfOrigin: "",
   nationOfResidence: "Nigeria",
   stateOfResidence: "",
-  shirtSize: "",
+  shirtChestInches: "",
   talents: [],
   singingPart: "",
   countryCode: "+234",
@@ -302,7 +303,7 @@ export default function CreateAccountPage() {
       formData.stateOfOrigin &&
       formData.nationOfResidence &&
       formData.stateOfResidence &&
-      formData.shirtSize) ||
+      validateChestInches(formData.shirtChestInches).valid) ||
     step === 3;
 
   const getAssignedFamily = async (): Promise<Family> => {
@@ -390,6 +391,13 @@ export default function CreateAccountPage() {
       toast.info("Computing family assignment...");
       const mappedFamily = await getAssignedFamily();
 
+      const chestValidation = validateChestInches(formData.shirtChestInches);
+      if (!chestValidation.valid || chestValidation.chest == null || !chestValidation.label) {
+        toast.error(chestValidation.error ?? "Invalid chest measurement.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data: newMember, error: insertErr } = await supabase.from("members").insert({
         code,
         first_name: formData.firstName.trim().toLowerCase(),
@@ -402,7 +410,8 @@ export default function CreateAccountPage() {
         state_of_origin: formData.stateOfOrigin,
         nation_of_residence: formData.nationOfResidence,
         state_of_residence: formData.stateOfResidence,
-        shirt_size: formData.shirtSize,
+        shirt_size: chestValidation.label,
+        shirt_chest_inches: chestValidation.chest,
         talents: formData.talents,
         singing_part: formData.singingPart || null,
         phone_number: `${formData.countryCode}${formData.phoneNumber}`,
@@ -676,19 +685,10 @@ export default function CreateAccountPage() {
               </select>
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-sm font-semibold">Shirt Size</label>
-              <select
-                value={formData.shirtSize}
-                onChange={(e) => update("shirtSize", e.target.value)}
-                className="w-full rounded-md border border-zinc-400 bg-white/50 px-3 py-2 dark:border-zinc-700 dark:bg-black/50 outline-none focus:border-(--primary-gold) transition-colors"
-              >
-                <option value="">Select shirt size</option>
-                {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
+              <ShirtSizeInput
+                value={formData.shirtChestInches}
+                onChange={(value) => update("shirtChestInches", value)}
+              />
             </div>
           </div>
         )}

@@ -21,6 +21,7 @@ import {
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { toast } from "sonner";
 import TalentSelector from "@/components/TalentSelector";
+import ShirtSizeInput, { validateChestInches } from "@/components/ShirtSizeInput";
 import { FAMILY_OPTIONS } from "@/lib/t-shirts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -44,6 +45,7 @@ type Member = {
   nation_of_residence: string;
   state_of_residence: string;
   shirt_size: string;
+  shirt_chest_inches?: number | null;
   talents: string[];
   singing_part: string | null;
 };
@@ -114,10 +116,23 @@ export default function AdminMembersPage() {
 
   // Editing
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editingShirtChest, setEditingShirtChest] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const supabase = useMemo(() => createClient(), []);
+
+  useEffect(() => {
+    if (editingMember) {
+      setEditingShirtChest(
+        editingMember.shirt_chest_inches != null
+          ? String(editingMember.shirt_chest_inches)
+          : "",
+      );
+    } else {
+      setEditingShirtChest("");
+    }
+  }, [editingMember?.id]);
 
   useEffect(() => {
     async function fetchMembers() {
@@ -222,6 +237,12 @@ export default function AdminMembersPage() {
     e.preventDefault();
     if (!editingMember) return;
 
+    const chestValidation = validateChestInches(editingShirtChest);
+    if (!chestValidation.valid || chestValidation.chest == null || !chestValidation.label) {
+      toast.error(chestValidation.error ?? "Invalid chest measurement.");
+      return;
+    }
+
     setIsSaving(true);
     const { error } = await supabase
       .from("members")
@@ -238,7 +259,8 @@ export default function AdminMembersPage() {
         state_of_origin: editingMember.state_of_origin,
         nation_of_residence: editingMember.nation_of_residence,
         state_of_residence: editingMember.state_of_residence,
-        shirt_size: editingMember.shirt_size,
+        shirt_size: chestValidation.label,
+        shirt_chest_inches: chestValidation.chest,
         talents: editingMember.talents,
         singing_part: editingMember.singing_part,
       })
@@ -248,8 +270,13 @@ export default function AdminMembersPage() {
       toast.error("Failed to update member: " + error.message);
     } else {
       toast.success("Member updated successfully!");
+      const updatedMember = {
+        ...editingMember,
+        shirt_size: chestValidation.label,
+        shirt_chest_inches: chestValidation.chest,
+      };
       setMembers((prev) =>
-        prev.map((m) => (m.id === editingMember.id ? editingMember : m)),
+        prev.map((m) => (m.id === editingMember.id ? updatedMember : m)),
       );
       setEditingMember(null);
     }
@@ -779,28 +806,17 @@ export default function AdminMembersPage() {
                           <option value="Sister">Sister</option>
                         </select>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                          Shirt Size
-                        </label>
-                        <select
-                          value={editingMember.shirt_size}
-                          onChange={(e) =>
-                            setEditingMember({
-                              ...editingMember,
-                              shirt_size: e.target.value,
-                            })
-                          }
-                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-800 dark:bg-zinc-900"
-                        >
-                          {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map(
-                            (size) => (
-                              <option key={size} value={size}>
-                                {size}
-                              </option>
-                            ),
-                          )}
-                        </select>
+                      <div className="space-y-2 sm:col-span-2">
+                        <ShirtSizeInput
+                          value={editingShirtChest}
+                          onChange={setEditingShirtChest}
+                          compact
+                        />
+                        {editingMember.shirt_chest_inches == null && editingMember.shirt_size && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400">
+                            Legacy size on record: {editingMember.shirt_size}
+                          </p>
+                        )}
                       </div>
                     </div>
 

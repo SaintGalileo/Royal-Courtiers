@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS members (
   nation_of_residence TEXT NOT NULL,
   state_of_residence  TEXT NOT NULL,
   shirt_size          TEXT NOT NULL,
+  shirt_chest_inches  NUMERIC,
   talents             TEXT[] DEFAULT '{}',
   photo_url           TEXT DEFAULT '',
   family              TEXT DEFAULT '',

@@ -31,7 +31,7 @@ export default function CompetitionsPage() {
     },
     {
       title: "Choral Competitions",
-      description: "Composition, Solo, Duet, Quartet & Singing Competitions.",
+      description: "Composition, Solo, Duet & Singing Competitions.",
       href: "/choral",
       icon: <Music className="h-6 w-6 text-(--primary-gold)" />,
     },

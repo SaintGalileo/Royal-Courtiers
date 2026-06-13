@@ -20,6 +20,10 @@ import ImageCropper from "@/components/ImageCropper";
 import TalentSelector from "@/components/TalentSelector";
 import PinLock from "@/components/PinLock";
 import SpotifySearch, { SpotifyTrack } from "@/components/SpotifySearch";
+import ShirtSizeInput, { validateChestInches } from "@/components/ShirtSizeInput";
+import UpdateShirtSizeModal from "@/components/UpdateShirtSizeModal";
+import { saveMemberShirtSize, getErrorMessage } from "@/lib/save-member-shirt-size";
+import { formatShirtSizeDisplay } from "@/lib/shirt-sizes";
 
 
 type TabKey = "family-members" | "tshirt" | "account-info" | "share-card";
@@ -97,6 +101,7 @@ type MemberData = {
   date_of_birth: string | null;
   date_of_consecration: string | null;
   shirt_size: string;
+  shirt_chest_inches?: number | null;
   phone_number: string;
   photo_url?: string;
   talents?: string[];
@@ -123,7 +128,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [editingField, setEditingField] = useState<"firstName" | "lastName" | "dateOfBirth" | "phoneNumber" | null>(null);
+  const [editingField, setEditingField] = useState<"firstName" | "lastName" | "dateOfBirth" | "phoneNumber" | "shirtChest" | null>(null);
   const [editValue, setEditValue] = useState("");
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -139,6 +144,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const [isUserBirthday, setIsUserBirthday] = useState(false);
   const [birthdayFamilyMembers, setBirthdayFamilyMembers] = useState<MemberData[]>([]);
   const [isDownloadingBdayCard, setIsDownloadingBdayCard] = useState(false);
+  const [sizeModalDismissed, setSizeModalDismissed] = useState(false);
   const birthdayCardRef = useRef<HTMLDivElement>(null);
 
 
@@ -258,6 +264,13 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     loadData();
   }, [resolvedSlug, supabase]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    const dismissed =
+      sessionStorage.getItem(`size-update-dismissed-${user.id}`) === "true";
+    setSizeModalDismissed(dismissed);
+  }, [user?.id]);
+
   // Birthday detection
   useEffect(() => {
     if (!user) return;
@@ -344,7 +357,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     }
   };
 
-  const handleEditClick = (field: "firstName" | "lastName" | "dateOfBirth" | "phoneNumber", currentValue: string) => {
+  const handleEditClick = (field: "firstName" | "lastName" | "dateOfBirth" | "phoneNumber" | "shirtChest", currentValue: string) => {
     setEditValue(currentValue);
     setEditingField(field);
   };
@@ -383,6 +396,33 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
         case "lastName": dbField = "last_name"; flagField = "is_lname_edited"; break;
         case "dateOfBirth": dbField = "date_of_birth"; flagField = "is_dob_edited"; break;
         case "phoneNumber": dbField = "phone_number"; flagField = null; break;
+        case "shirtChest": {
+          const chestValidation = validateChestInches(editValue);
+          if (!chestValidation.valid || chestValidation.chest == null || !chestValidation.label) {
+            toast.error(chestValidation.error ?? "Invalid chest measurement.");
+            setIsSavingField(false);
+            return;
+          }
+
+          try {
+            const freshUser = await saveMemberShirtSize(
+              supabase,
+              chestValidation.chest,
+              chestValidation.label,
+              { memberId: user.id, memberCode: authCode },
+            );
+            setUser(freshUser);
+          } catch (err) {
+            toast.error(getErrorMessage(err));
+            setIsSavingField(false);
+            return;
+          }
+
+          toast.success("Shirt size updated!");
+          setEditingField(null);
+          setIsSavingField(false);
+          return;
+        }
         default: return;
       }
 
@@ -433,6 +473,28 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     } finally {
       setIsSavingField(false);
     }
+  };
+
+  const handleSaveShirtSizeFromModal = async (chest: number, label: string) => {
+    if (!user) {
+      throw new Error("Session expired. Please refresh the page and try again.");
+    }
+
+    const freshUser = await saveMemberShirtSize(supabase, chest, label, {
+      memberId: user.id,
+      memberCode: authCode,
+    });
+
+    setUser(freshUser);
+    sessionStorage.removeItem(`size-update-dismissed-${user.id}`);
+    setSizeModalDismissed(false);
+    toast.success("Shirt size updated!");
+  };
+
+  const handleDismissSizeModal = () => {
+    if (!user) return;
+    sessionStorage.setItem(`size-update-dismissed-${user.id}`, "true");
+    setSizeModalDismissed(true);
   };
 
   const handleSaveTalents = async (authorized: any = false) => {
@@ -603,6 +665,11 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const parents = familyParents[user.family];
 
   const isViewerOwner = user.code === authCode;
+  const showSizeUpdateModal =
+    isViewerOwner &&
+    isPinVerified &&
+    user.shirt_chest_inches == null &&
+    !sizeModalDismissed;
 
   return (
     <main className="min-h-screen w-full bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -645,6 +712,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
         <SpotifySearch
           onSelect={handleSelectSong}
           onClose={() => setIsSpotifyOpen(false)}
+        />
+      )}
+      {showSizeUpdateModal && (
+        <UpdateShirtSizeModal
+          onSave={handleSaveShirtSizeFromModal}
+          onDismiss={handleDismissSizeModal}
         />
       )}
 
@@ -919,7 +992,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   { label: "Family", value: user.family, canEdit: false },
                   { label: "Date of Birth", value: user.date_of_birth || "N/A", field: "dateOfBirth", canEdit: isViewerOwner && !user.is_dob_edited },
                   { label: "Date of Consecration", value: user.date_of_consecration || "N/A", canEdit: false },
-                  { label: "Shirt Size", value: user.shirt_size, canEdit: false },
+                  { label: "Shirt Size", value: formatShirtSizeDisplay(user.shirt_chest_inches, user.shirt_size), field: "shirtChest", canEdit: isViewerOwner, editOnce: false },
                   { label: "Phone Number", value: user.phone_number || "N/A", field: "phoneNumber", canEdit: isViewerOwner },
                 ].map((item) => (
                   <div
@@ -945,6 +1018,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
                             className="w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-900"
+                          />
+                        ) : item.field === "shirtChest" ? (
+                          <ShirtSizeInput
+                            value={editValue}
+                            onChange={setEditValue}
+                            compact
                           />
                         ) : (
                           <input
@@ -982,13 +1061,15 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                                   ? (user.date_of_birth || "")
                                   : item.field === "phoneNumber"
                                     ? (user.phone_number || "")
-                                    : (item.value as string);
+                                    : item.field === "shirtChest"
+                                      ? (user.shirt_chest_inches != null ? String(user.shirt_chest_inches) : "")
+                                      : (item.value as string);
                                 handleEditClick(item.field as any, initialValue);
                               }
                             }}
                             disabled={!item.canEdit}
                             className={`rounded-md border border-zinc-200 bg-white p-1.5 transition-all dark:border-zinc-800 dark:bg-zinc-900 ${item.canEdit ? "text-zinc-400 hover:text-(--primary-gold)" : "text-zinc-200 dark:text-zinc-700 opacity-50 cursor-not-allowed"}`}
-                            title={item.canEdit ? (item.field === "phoneNumber" ? "Edit" : "Edit once") : "Locked"}
+                            title={item.canEdit ? ((item as { editOnce?: boolean }).editOnce === false || item.field === "phoneNumber" ? "Edit" : "Edit once") : "Locked"}
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
@@ -1268,7 +1349,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   <p className="text-sm text-zinc-500 mt-1">Rotate and explore your official event T-shirt</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-base font-semibold text-(--primary-gold)">Size: {user.shirt_size || "XL"}</span>
+                  <span className="text-base font-semibold text-(--primary-gold)">
+                    Size: {formatShirtSizeDisplay(user.shirt_chest_inches, user.shirt_size)}
+                  </span>
                   <p className="text-xs text-zinc-500 mt-1">Still in progress…</p>
                 </div>
               </div>

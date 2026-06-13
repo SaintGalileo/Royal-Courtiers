@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatShirtSizeDisplay, SHIRT_SIZES } from "@/lib/shirt-sizes";
 
 export const FAMILY_OPTIONS = [
   "Dominion",
@@ -10,8 +11,6 @@ export const FAMILY_OPTIONS = [
 ] as const;
 
 export type Family = (typeof FAMILY_OPTIONS)[number];
-
-export const SHIRT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
 
 export const SESSION_STORAGE_KEY = "admin-t-shirts-session-v1";
 
@@ -26,6 +25,7 @@ export type MemberSeed = {
   nick_name: string;
   date_of_birth: string | null;
   shirt_size: string;
+  shirt_chest_inches?: number | null;
   nation_of_residence: string;
   family: string;
 };
@@ -37,10 +37,12 @@ export type RosterRow = {
   nick_name: string;
   age: number | null;
   shirt_size: string;
+  shirt_chest_inches?: number | null;
   nation_of_residence: string;
   defaultNickName?: string;
   defaultAge?: number | null;
   defaultShirtSize?: string;
+  defaultShirtChestInches?: number | null;
   defaultNation?: string;
 };
 
@@ -108,6 +110,13 @@ function shirtSizeOrder(size: string): number {
   return idx === -1 ? SHIRT_SIZES.length : idx;
 }
 
+export function formatRosterShirtSize(row: {
+  shirt_size: string;
+  shirt_chest_inches?: number | null;
+}): string {
+  return formatShirtSizeDisplay(row.shirt_chest_inches, row.shirt_size);
+}
+
 export function calculateAge(dob: string | null): number | null {
   if (!dob) return null;
   const today = new Date();
@@ -136,10 +145,12 @@ export function memberToDefaultRow(member: MemberSeed): RosterRow {
     nick_name: nick,
     age,
     shirt_size: member.shirt_size || "M",
+    shirt_chest_inches: member.shirt_chest_inches ?? null,
     nation_of_residence: nation,
     defaultNickName: nick,
     defaultAge: age,
     defaultShirtSize: member.shirt_size || "M",
+    defaultShirtChestInches: member.shirt_chest_inches ?? null,
     defaultNation: nation,
   };
 }
@@ -321,7 +332,7 @@ function exportCellValue(row: RosterRow, column: ExportColumn): string {
     case "age":
       return row.age !== null ? String(row.age) : "";
     case "shirt_size":
-      return row.shirt_size;
+      return formatRosterShirtSize(row);
     case "nation_of_residence":
       return row.nation_of_residence;
   }
@@ -481,6 +492,7 @@ export function rowDiffersFromDefault(row: RosterRow): boolean {
     row.nick_name !== row.defaultNickName ||
     row.age !== row.defaultAge ||
     row.shirt_size !== row.defaultShirtSize ||
+    row.shirt_chest_inches !== row.defaultShirtChestInches ||
     row.nation_of_residence !== row.defaultNation
   );
 }
@@ -492,6 +504,7 @@ export function createManualRow(): RosterRow {
     nick_name: "",
     age: null,
     shirt_size: "",
+    shirt_chest_inches: null,
     nation_of_residence: "",
   };
 }

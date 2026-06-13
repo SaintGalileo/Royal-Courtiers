@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import { Clock, Shield } from "lucide-react";
 import { GiMusicalNotes, GiMusicalScore } from "react-icons/gi";
-import { PiUserSoundFill, PiUsersFill, PiUsersFourFill } from "react-icons/pi";
+import { PiUserSoundFill, PiUsersFill } from "react-icons/pi";
 import { useRouter } from "next/navigation";
 
 type ChoralTab =
   | "Composition Competition"
   | "Solo"
   | "Duet"
-  | "Quartet"
   | "Singing Competition";
 
 interface EventMatch {
@@ -27,7 +26,6 @@ const choralTabs: ChoralTab[] = [
   "Composition Competition",
   "Solo",
   "Duet",
-  "Quartet",
   "Singing Competition",
 ];
 
@@ -62,16 +60,6 @@ const MATCHES: EventMatch[] = [
     time: "02:00 PM",
   },
 
-  // Quartet
-  {
-    id: "c-quartet",
-    type: "Quartet",
-    round: "Performance Session",
-    date: "Aug 14",
-    participants: "Open to All Irrespective of Family",
-    time: "02:00 PM",
-  },
-
   // Singing Competition
   {
     id: "c-singing",
@@ -89,7 +77,6 @@ const ChoralIcon = ({ tab }: { tab: ChoralTab }) => {
     return <GiMusicalScore className={cls} />;
   if (tab === "Solo") return <PiUserSoundFill className={cls} />;
   if (tab === "Duet") return <PiUsersFill className={cls} />;
-  if (tab === "Quartet") return <PiUsersFourFill className={cls} />;
   if (tab === "Singing Competition") return <GiMusicalNotes className={cls} />;
   return <PiUserSoundFill className={cls} />;
 };

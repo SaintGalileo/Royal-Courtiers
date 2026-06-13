@@ -31,7 +31,6 @@ import {
   DEFAULT_EXPORT_COLUMNS,
   EXPORT_COLUMN_OPTIONS,
   FAMILY_OPTIONS,
-  SHIRT_SIZES,
   type ExportColumn,
   type Family,
   type MemberSeed,
@@ -49,6 +48,7 @@ import {
   formatExportColumnsLabel,
   formatFamilyDisplayName,
   formatNationFilterLabel,
+  formatRosterShirtSize,
   loadSession,
   memberToDefaultRow,
   DEFAULT_ROSTER_SORT,
@@ -62,6 +62,7 @@ import {
   type RosterSortConfig,
   type RosterSortKey,
 } from "@/lib/t-shirts";
+import { validateChestInches } from "@/lib/shirt-sizes";
 
 type IconType = ComponentType<{ className?: string; size?: number }>;
 
@@ -256,7 +257,7 @@ export default function AdminTShirtsPage() {
       const { data, error } = await supabase
         .from("members")
         .select(
-          "id, first_name, nick_name, date_of_birth, shirt_size, nation_of_residence, family",
+          "id, first_name, nick_name, date_of_birth, shirt_size, shirt_chest_inches, nation_of_residence, family",
         );
 
       if (error) {
@@ -329,7 +330,7 @@ export default function AdminTShirtsPage() {
     rowKey: string,
     field: keyof Pick<
       RosterRow,
-      "nick_name" | "age" | "shirt_size" | "nation_of_residence"
+      "nick_name" | "age" | "shirt_size" | "shirt_chest_inches" | "nation_of_residence"
     >,
     value: string,
   ) => {
@@ -339,6 +340,33 @@ export default function AdminTShirtsPage() {
         return { ...r, age: Number.isNaN(parsed) ? null : parsed };
       }
       return { ...r, [field]: value };
+    });
+  };
+
+  const handleShirtChestChange = (
+    family: Family,
+    rowKey: string,
+    value: string,
+  ) => {
+    updateFamilyRow(family, rowKey, (r) => {
+      if (value.trim() === "") {
+        return { ...r, shirt_chest_inches: null, shirt_size: "" };
+      }
+
+      const validation = validateChestInches(value);
+      if (validation.valid && validation.chest != null && validation.label) {
+        return {
+          ...r,
+          shirt_chest_inches: validation.chest,
+          shirt_size: validation.label,
+        };
+      }
+
+      const parsed = parseFloat(value);
+      return {
+        ...r,
+        shirt_chest_inches: Number.isFinite(parsed) ? parsed : null,
+      };
     });
   };
 
@@ -932,34 +960,35 @@ export default function AdminTShirtsPage() {
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <select
-                          value={row.shirt_size}
-                          onChange={(e) =>
-                            handleFieldChange(
-                              activeFamily,
-                              row.rowKey,
-                              "shirt_size",
-                              e.target.value,
-                            )
-                          }
-                          onFocus={() => handleRowFocus(row.rowKey)}
-                          onBlur={handleRowBlur}
-                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950"
-                        >
-                          <option value="">—</option>
-                          {SHIRT_SIZES.map((size) => (
-                            <option key={size} value={size}>
-                              {size}
-                            </option>
-                          ))}
-                          {!SHIRT_SIZES.includes(
-                            row.shirt_size as (typeof SHIRT_SIZES)[number],
-                          ) && (
-                            <option value={row.shirt_size}>
-                              {row.shirt_size}
-                            </option>
+                        <div className="space-y-1">
+                          <input
+                            type="number"
+                            min={20}
+                            max={54}
+                            step={0.5}
+                            value={row.shirt_chest_inches ?? ""}
+                            onChange={(e) =>
+                              handleShirtChestChange(
+                                activeFamily,
+                                row.rowKey,
+                                e.target.value,
+                              )
+                            }
+                            onFocus={() => handleRowFocus(row.rowKey)}
+                            onBlur={handleRowBlur}
+                            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950"
+                            placeholder={
+                              row.shirt_size && row.shirt_chest_inches == null
+                                ? `Legacy: ${row.shirt_size}`
+                                : "Chest (in)"
+                            }
+                          />
+                          {(row.shirt_chest_inches != null || row.shirt_size) && (
+                            <p className="text-[10px] font-semibold text-(--primary-gold)">
+                              {formatRosterShirtSize(row)}
+                            </p>
                           )}
-                        </select>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <input
