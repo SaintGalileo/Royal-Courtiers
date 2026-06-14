@@ -14,6 +14,19 @@ const libreBaskerville = Libre_Baskerville({
 export const metadata: Metadata = {
   title: "The Family Love Built.",
   description: "Bearers of the seal of the Universal Monarch.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        type: "image/png",
+        sizes: "180x180",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

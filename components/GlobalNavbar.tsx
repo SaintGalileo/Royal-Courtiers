@@ -36,16 +36,8 @@ const EVENT_FAMILIES = [
 
 export default function GlobalNavbar() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-    const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    return savedTheme === "dark" || (!savedTheme && prefersDark)
-      ? "dark"
-      : "light";
-  });
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [themeReady, setThemeReady] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [authSlug, setAuthSlug] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,6 +59,15 @@ export default function GlobalNavbar() {
 
   useEffect(() => {
     setIsClient(true);
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    const resolved =
+      savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light";
+    setTheme(resolved);
+    setThemeReady(true);
+
     const auth = localStorage.getItem("virgins-auth");
     if (auth) {
       try {
@@ -192,8 +193,15 @@ export default function GlobalNavbar() {
             aria-label={
               theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
             }
+            suppressHydrationWarning
           >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            {!themeReady ? (
+              <Moon size={18} />
+            ) : theme === "dark" ? (
+              <Sun size={18} />
+            ) : (
+              <Moon size={18} />
+            )}
           </button>
 
           {authSlug ? (
@@ -297,8 +305,15 @@ export default function GlobalNavbar() {
                 className="rounded-md border border-zinc-400 p-2 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
                 onClick={toggleTheme}
                 type="button"
+                suppressHydrationWarning
               >
-                {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                {!themeReady ? (
+                  <Moon size={18} />
+                ) : theme === "dark" ? (
+                  <Sun size={18} />
+                ) : (
+                  <Moon size={18} />
+                )}
               </button>
             </div>
 

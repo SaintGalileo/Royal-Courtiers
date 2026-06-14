@@ -301,9 +301,12 @@ type BirthdayMember = {
 };
 
 export default function Home() {
-  const [countdown, setCountdown] = useState<Countdown>(() =>
-    getCountdown(new Date()),
-  );
+  const [countdown, setCountdown] = useState<Countdown>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [prevSlide, setPrevSlide] = useState<number | null>(null);
   const [isFading, setIsFading] = useState(false);
@@ -324,8 +327,9 @@ export default function Home() {
     img.src = src;
   }, []);
 
-  // Countdown tick
+  // Countdown tick (zeros during SSR so server/client markup match)
   useEffect(() => {
+    setCountdown(getCountdown(new Date()));
     const timer = setInterval(
       () => setCountdown(getCountdown(new Date())),
       1000,
