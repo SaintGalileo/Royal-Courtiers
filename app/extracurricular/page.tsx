@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Shield, AlertCircle } from "lucide-react";
+import { Clock, AlertCircle } from "lucide-react";
 import { FaComments, FaPenFancy, FaCrown } from "react-icons/fa";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import EventInfoCard from "@/components/competitions/EventInfoCard";
+import { FamilyShield } from "@/components/competitions/FamilyBadge";
+import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
+import PageantryCulturePanel from "@/components/competitions/PageantryCulturePanel";
+import { applySemiFinalDraws, DEBATE_TOPICS } from "@/lib/competitions";
 
 type ExtracurricularTab =
   | "Debate"
@@ -23,6 +27,7 @@ interface EventMatch {
   participants?: string;
   isGraded?: boolean;
   info?: string;
+  topic?: string;
 }
 
 const extracurricularTabs: ExtracurricularTab[] = [
@@ -31,7 +36,7 @@ const extracurricularTabs: ExtracurricularTab[] = [
   "Pageantry",
 ];
 
-const MOCK_MATCHES: EventMatch[] = [
+const MOCK_MATCHES: EventMatch[] = applySemiFinalDraws([
   // Debate (Matchup)
   {
     id: "e-sf1-debate",
@@ -41,6 +46,7 @@ const MOCK_MATCHES: EventMatch[] = [
     teamA: "TBD",
     teamB: "TBD",
     time: "04:00 PM",
+    topic: DEBATE_TOPICS["e-sf1-debate"],
   },
   {
     id: "e-sf2-debate",
@@ -50,6 +56,7 @@ const MOCK_MATCHES: EventMatch[] = [
     teamA: "TBD",
     teamB: "TBD",
     time: "05:00 PM",
+    topic: DEBATE_TOPICS["e-sf2-debate"],
   },
   {
     id: "e-3rd-debate",
@@ -60,6 +67,7 @@ const MOCK_MATCHES: EventMatch[] = [
     teamB: "Runner Up 2",
     time: "05:30 PM",
     info: "Holy Father's Vestry",
+    topic: DEBATE_TOPICS["e-3rd-debate"],
   },
   {
     id: "e-final-debate",
@@ -70,6 +78,7 @@ const MOCK_MATCHES: EventMatch[] = [
     teamB: "Winner SF2",
     time: "",
     isFinal: true,
+    topic: DEBATE_TOPICS["e-final-debate"],
   },
 
   // Essay Writing (Graded)
@@ -114,7 +123,7 @@ const MOCK_MATCHES: EventMatch[] = [
     isGraded: true,
     isFinal: true,
   },
-];
+] as EventMatch[]);
 
 const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
@@ -165,6 +174,8 @@ export default function ExtracurricularPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 pb-20">
       <main className="max-w-2xl mx-auto px-4 py-12">
+        <CompetitionBackButton />
+
         {/* Header */}
         <header className="mb-10">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500 mb-2">
@@ -200,16 +211,10 @@ export default function ExtracurricularPage() {
           ))}
         </div>
 
-        {/* Draw Notice */}
-        {activeTab === "Debate" && (
-          <div className="mb-8 flex items-start gap-3 px-4 py-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-            <AlertCircle className="h-4 w-4 text-(--primary-gold) shrink-0 mt-0.5" />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-              The Draw will be confirmed after the Event Meeting with the Family
-              Heads.
-            </p>
-          </div>
-        )}
+        <div className="mb-8">
+          <EventInfoCard eventName={activeTab} />
+          {activeTab === "Pageantry" && <PageantryCulturePanel />}
+        </div>
 
         <div className="space-y-10">
           {sortedDates.length > 0 ? (
@@ -284,7 +289,7 @@ function MatchCard({ match }: { match: EventMatch }) {
         {/* Participants + time */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
-            <SimpleShield />
+            <FamilyShield name={match.participants} />
             <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
               {match.participants}
             </span>
@@ -322,10 +327,16 @@ function MatchCard({ match }: { match: EventMatch }) {
         </span>
       </div>
 
+      {match.topic && (
+        <p className="mb-4 text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 border-l-2 border-(--primary-gold)/40 pl-3">
+          {match.topic}
+        </p>
+      )}
+
       {/* Teams + time */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
-          <SimpleShield />
+          <FamilyShield name={match.teamA} />
           <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
             {match.teamA}
           </span>
@@ -347,20 +358,9 @@ function MatchCard({ match }: { match: EventMatch }) {
           <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight text-right">
             {match.teamB}
           </span>
-          <SimpleShield />
+          <FamilyShield name={match.teamB} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function SimpleShield() {
-  return (
-    <div className="h-10 w-10 shrink-0 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl relative">
-      <Shield className="h-5 w-5 text-zinc-200 dark:text-zinc-700" />
-      <span className="absolute text-xs font-black text-zinc-300 dark:text-zinc-600">
-        ?
-      </span>
     </div>
   );
 }

@@ -27,19 +27,19 @@ export default function CompetitionsPage() {
       title: "Sports Arena",
       description: "Football, Volleyball, Track Events, and more.",
       href: "/sports",
-      icon: <Trophy className="h-6 w-6 text-(--primary-gold)" />,
+      icon: <Trophy className="h-6 w-6 text-primary-gold" />,
     },
     {
       title: "Choral Competitions",
       description: "Composition, Solo, Duet & Singing Competitions.",
       href: "/choral",
-      icon: <Music className="h-6 w-6 text-(--primary-gold)" />,
+      icon: <Music className="h-6 w-6 text-primary-gold" />,
     },
     {
       title: "Extracurricular Competitions",
       description: "Debate, Essay Writing & Pageantry.",
       href: "/extracurricular",
-      icon: <Lightbulb className="h-6 w-6 text-(--primary-gold)" />,
+      icon: <Lightbulb className="h-6 w-6 text-primary-gold" />,
     },
   ];
 
@@ -51,7 +51,7 @@ export default function CompetitionsPage() {
             Official Events
           </p>
           <h1 className="text-4xl md:text-5xl font-black tracking-[-0.03em] leading-none">
-            Event <span className="text-(--primary-gold)">Competitions</span>
+            Event <span className="text-primary-gold">Competitions</span>
           </h1>
           <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-2 font-medium">
             Select a competition category to view schedules and details.

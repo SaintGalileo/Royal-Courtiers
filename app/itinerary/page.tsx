@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 
 type ItineraryDay = {
@@ -28,17 +27,12 @@ const ITINERARY: ItineraryDay[] = [
         location: "Morning Devotion",
       },
       {
-        time: "12:00 PM",
-        title: "Hall of Fame Reveal",
-        location: "26 Mbukpa",
-      },
-      {
-        time: "2:00 PM",
+        time: "1:00 PM",
         title: "Chess, Scrabble & Ludo",
         location: "26 Mbukpa Holy Chapel",
       },
       {
-        time: "04:00 PM",
+        time: "02:00 PM",
         title: "Debate Semi-Finals",
         location: "26 Mbukpa Holy Chapel",
       },
@@ -71,7 +65,7 @@ const ITINERARY: ItineraryDay[] = [
         location: "The Great Hall",
       },
       {
-        time: "08:00 AM",
+        time: "09:00 AM",
         title: "Football Finals",
         location: "Bromco Field",
       },
@@ -103,7 +97,7 @@ const ITINERARY: ItineraryDay[] = [
       },
       {
         time: "05:30 PM",
-        title: "Debate 3rd Place Match",
+        title: "3rd Place Debate Competition",
         location: "Holy Father's Vestry",
       },
     ],
@@ -161,6 +155,11 @@ const ITINERARY: ItineraryDay[] = [
       },
       {
         time: "",
+        title: "Induction of Hall of Famers",
+        location: "The Great Hall",
+      },
+      {
+        time: "",
         title: "Presentation of Awards & Prize Giving Ceremony",
         location: "The Great Hall",
       },
@@ -179,8 +178,7 @@ export default function ItineraryPage() {
           </p> */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-8">
             <h1 className="text-4xl font-bold md:text-5xl">
-              Anniversary{" "}
-              <span className="text-(--primary-gold)">Itinerary</span>
+              Anniversary <span className="text-primary-gold">Itinerary</span>
             </h1>
             <div className="flex items-center justify-center md:justify-start gap-2 text-zinc-500 rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/5 px-4 py-1.5">
               <CalendarDays className="h-4 w-4" />
@@ -199,12 +197,12 @@ export default function ItineraryPage() {
           {ITINERARY.map((dayData, index) => (
             <section
               key={dayData.day}
-              className="group relative overflow-hidden rounded-2xl border border-stone-200 p-5 shadow-sm hover:border-(--primary-gold)/50 hover:shadow-md transition-all duration-300 dark:border-(--primary-gold)/30"
+              className="group relative overflow-hidden rounded-2xl border border-stone-200 p-5 shadow-sm hover:border-primary-gold/50 hover:shadow-md transition-all duration-300 dark:border-primary-gold/30"
             >
               {/* Day Header */}
-              <div className="mb-4 flex items-center justify-between border-b border-stone-200 dark:border-(--primary-gold)/15 pb-3">
+              <div className="mb-4 flex items-center justify-between border-b border-stone-200 dark:border-primary-gold/15 pb-3">
                 <div>
-                  <h2 className="text-xl font-bold text-(--primary-gold)">
+                  <h2 className="text-xl font-bold text-primary-gold">
                     {dayData.day}
                   </h2>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
@@ -220,8 +218,8 @@ export default function ItineraryPage() {
               <div className="space-y-3.5">
                 {dayData.visibleItems.map((item, idx) => (
                   <div key={idx} className="relative pl-3.5">
-                    <div className="absolute left-0 top-1.5 h-1.5 w-1.5 rounded-full bg-(--primary-gold)" />
-                    <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-(--primary-gold)">
+                    <div className="absolute left-0 top-1.5 h-1.5 w-1.5 rounded-full bg-primary-gold" />
+                    <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-primary-gold">
                       {item.time}
                     </p>
                     <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
@@ -234,7 +232,7 @@ export default function ItineraryPage() {
                 ))}
               </div>
 
-              <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-(--primary-gold)/5 blur-2xl group-hover:bg-(--primary-gold)/10 transition-all" />
+              <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-primary-gold/5 blur-2xl group-hover:bg-primary-gold/10 transition-all" />
             </section>
           ))}
         </div>
