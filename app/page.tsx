@@ -40,7 +40,7 @@ const EVENT_FAMILIES = [
     icon: GiPolarStar,
     colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]",
     fatherImage: "/family-heads/linho.png",
-    motherImage: "/family-heads/ayrah.png",
+    motherImage: "/family-heads/sarah.jpeg",
   },
   {
     family: "Family of Power",
