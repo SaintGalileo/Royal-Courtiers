@@ -27,6 +27,7 @@ export type MemberSeed = {
   shirt_size: string;
   shirt_chest_inches?: number | null;
   nation_of_residence: string;
+  gender?: string | null;
   family: string;
 };
 
@@ -39,6 +40,7 @@ export type RosterRow = {
   shirt_size: string;
   shirt_chest_inches?: number | null;
   nation_of_residence: string;
+  gender?: string | null;
   defaultNickName?: string;
   defaultAge?: number | null;
   defaultShirtSize?: string;
@@ -79,9 +81,19 @@ export const DEFAULT_EXPORT_COLUMNS: ExportColumn[] = EXPORT_COLUMN_OPTIONS.map(
   (option) => option.key,
 );
 
+export const SHIRT_SIZE_TYPE_OPTIONS = ["legacy", "measurement"] as const;
+
+export type ShirtSizeTypeFilter = (typeof SHIRT_SIZE_TYPE_OPTIONS)[number];
+
+export const SHIRT_SIZE_TYPE_LABELS: Record<ShirtSizeTypeFilter, string> = {
+  legacy: "Legacy sizes",
+  measurement: "Chest measurements",
+};
+
 export type RosterSession = {
   rosters: Record<Family, RosterRow[]>;
   selectedNations: string[];
+  selectedShirtSizeTypes?: ShirtSizeTypeFilter[];
   exportColumns?: ExportColumn[];
 };
 
@@ -147,6 +159,7 @@ export function memberToDefaultRow(member: MemberSeed): RosterRow {
     shirt_size: member.shirt_size || "M",
     shirt_chest_inches: member.shirt_chest_inches ?? null,
     nation_of_residence: nation,
+    gender: member.gender ?? null,
     defaultNickName: nick,
     defaultAge: age,
     defaultShirtSize: member.shirt_size || "M",
@@ -270,14 +283,93 @@ export function filterAllRostersByNations(
   );
 }
 
-/** Nation filter for display — keeps a focused row visible while editing. */
+export function isLegacyShirtSizeRow(row: RosterRow): boolean {
+  return row.shirt_chest_inches == null;
+}
+
+export function isMeasurementShirtSizeRow(row: RosterRow): boolean {
+  return row.shirt_chest_inches != null;
+}
+
+export function filterRowsByShirtSizeType(
+  rows: RosterRow[],
+  selectedTypes: ShirtSizeTypeFilter[],
+): RosterRow[] {
+  if (selectedTypes.length === 0) return [];
+  if (selectedTypes.length === SHIRT_SIZE_TYPE_OPTIONS.length) return rows;
+
+  return rows.filter((row) => {
+    if (row.shirt_chest_inches != null) {
+      return selectedTypes.includes("measurement");
+    }
+    return selectedTypes.includes("legacy");
+  });
+}
+
+export function filterAllRostersByShirtSizeType(
+  rosters: Record<Family, RosterRow[]>,
+  selectedTypes: ShirtSizeTypeFilter[],
+): Record<Family, RosterRow[]> {
+  return FAMILY_OPTIONS.reduce(
+    (acc, family) => {
+      acc[family] = filterRowsByShirtSizeType(
+        rosters[family] ?? [],
+        selectedTypes,
+      );
+      return acc;
+    },
+    {} as Record<Family, RosterRow[]>,
+  );
+}
+
+export function filterRosterRows(
+  rows: RosterRow[],
+  options: {
+    selectedNations: string[];
+    allNations: string[];
+    selectedShirtSizeTypes: ShirtSizeTypeFilter[];
+  },
+): RosterRow[] {
+  const byNation = filterRowsByNations(
+    rows,
+    options.selectedNations,
+    options.allNations,
+  );
+  return filterRowsByShirtSizeType(byNation, options.selectedShirtSizeTypes);
+}
+
+export function filterAllRosters(
+  rosters: Record<Family, RosterRow[]>,
+  options: {
+    selectedNations: string[];
+    allNations: string[];
+    selectedShirtSizeTypes: ShirtSizeTypeFilter[];
+  },
+): Record<Family, RosterRow[]> {
+  return FAMILY_OPTIONS.reduce(
+    (acc, family) => {
+      acc[family] = filterRosterRows(rosters[family] ?? [], options);
+      return acc;
+    },
+    {} as Record<Family, RosterRow[]>,
+  );
+}
+
+/** Nation and size-type filters for display — keeps a focused row visible while editing. */
 export function filterRowsForDisplay(
   rows: RosterRow[],
   selectedNations: string[],
   allNations: string[],
   pinnedRowKey?: string | null,
+  selectedShirtSizeTypes: ShirtSizeTypeFilter[] = [
+    ...SHIRT_SIZE_TYPE_OPTIONS,
+  ],
 ): RosterRow[] {
-  const filtered = filterRowsByNations(rows, selectedNations, allNations);
+  const filtered = filterRosterRows(rows, {
+    selectedNations,
+    allNations,
+    selectedShirtSizeTypes,
+  });
   if (!pinnedRowKey || filtered.some((r) => r.rowKey === pinnedRowKey)) {
     return filtered;
   }
@@ -340,6 +432,7 @@ function exportCellValue(row: RosterRow, column: ExportColumn): string {
 
 export type RosterExportOptions = {
   nationFilterLabel?: string;
+  shirtSizeTypeFilterLabel?: string;
   exportColumns?: ExportColumn[];
 };
 
@@ -364,6 +457,9 @@ export function rosterToCsv(
     `Size Breakdown: ${breakdownLine || "None"}`,
     ...(options.nationFilterLabel
       ? [`Nations: ${options.nationFilterLabel}`]
+      : []),
+    ...(options.shirtSizeTypeFilterLabel
+      ? [`Size types: ${options.shirtSizeTypeFilterLabel}`]
       : []),
     `Columns: ${columnsLabel}`,
     "",
@@ -426,6 +522,9 @@ function addFamilyToPdf(
   const summaryParts = [text];
   if (options.nationFilterLabel) {
     summaryParts.push(`Nations: ${options.nationFilterLabel}`);
+  }
+  if (options.shirtSizeTypeFilterLabel) {
+    summaryParts.push(`Size types: ${options.shirtSizeTypeFilterLabel}`);
   }
   summaryParts.push(`Columns: ${columnsLabel}`);
   const summaryLines = doc.splitTextToSize(summaryParts.join("\n"), pageWidth - 28);
@@ -596,4 +695,23 @@ export function formatNationFilterLabel(
   if (selectedNations.length === 0) return "None selected";
   if (selectedNations.length === allNations.length) return "All nations";
   return selectedNations.join(", ");
+}
+
+export function formatShirtSizeTypeFilterLabel(
+  selectedTypes: ShirtSizeTypeFilter[],
+): string {
+  if (selectedTypes.length === 0) return "None selected";
+  if (selectedTypes.length === SHIRT_SIZE_TYPE_OPTIONS.length) {
+    return "All size types";
+  }
+  return selectedTypes.map((type) => SHIRT_SIZE_TYPE_LABELS[type]).join(", ");
+}
+
+export function resolveShirtSizeTypes(
+  selectedTypes?: ShirtSizeTypeFilter[],
+): ShirtSizeTypeFilter[] {
+  if (!selectedTypes?.length) return [...SHIRT_SIZE_TYPE_OPTIONS];
+  const valid = new Set(SHIRT_SIZE_TYPE_OPTIONS);
+  const resolved = selectedTypes.filter((type) => valid.has(type));
+  return resolved.length > 0 ? resolved : [...SHIRT_SIZE_TYPE_OPTIONS];
 }

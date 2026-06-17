@@ -16,6 +16,9 @@ import {
   RotateCcw,
   Trash2,
   Undo2,
+  Upload,
+  Wand2,
+  Wrench,
   X,
 } from "lucide-react";
 import {
@@ -43,26 +46,37 @@ import {
   downloadAllFamiliesPdf,
   downloadCsv,
   downloadRosterPdf,
-  filterAllRostersByNations,
+  filterAllRosters,
   filterRowsForDisplay,
   formatExportColumnsLabel,
   formatFamilyDisplayName,
   formatNationFilterLabel,
   formatRosterShirtSize,
+  formatShirtSizeTypeFilterLabel,
   loadSession,
   memberToDefaultRow,
   DEFAULT_ROSTER_SORT,
   mergeSessionRosters,
   resolveAllFamilyRosters,
+  resolveShirtSizeTypes,
   rosterToCsv,
   rostersHaveEdits,
   rowDiffersFromDefault,
   saveSession,
+  SHIRT_SIZE_TYPE_LABELS,
+  SHIRT_SIZE_TYPE_OPTIONS,
   sortRosterRows,
   type RosterSortConfig,
   type RosterSortKey,
+  type ShirtSizeTypeFilter,
+  type RosterSession,
 } from "@/lib/t-shirts";
 import { validateChestInches } from "@/lib/shirt-sizes";
+import {
+  applyLegacySizeEstimatesToRosters,
+  DEFAULT_CHEST_BUFFER_INCHES,
+  MIN_COMMUNITY_AGE,
+} from "@/lib/estimate-legacy-shirt-sizes";
 
 type IconType = ComponentType<{ className?: string; size?: number }>;
 
@@ -133,11 +147,15 @@ export default function AdminTShirtsPage() {
     resolveAllFamilyRosters([]),
   );
   const [selectedNations, setSelectedNations] = useState<string[]>([]);
+  const [selectedShirtSizeTypes, setSelectedShirtSizeTypes] = useState<
+    ShirtSizeTypeFilter[]
+  >([...SHIRT_SIZE_TYPE_OPTIONS]);
   const [exportColumns, setExportColumns] = useState<ExportColumn[]>([
     ...DEFAULT_EXPORT_COLUMNS,
   ]);
   const [showNationFilter, setShowNationFilter] = useState(false);
   const [showExportColumns, setShowExportColumns] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   const [activeFamilyIndex, setActiveFamilyIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -150,6 +168,7 @@ export default function AdminTShirtsPage() {
   const [focusedRowKey, setFocusedRowKey] = useState<string | null>(null);
   const touchStartX = useRef<number | null>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionImportRef = useRef<HTMLInputElement>(null);
 
   const supabase = useMemo(() => createClient(), []);
   const activeFamily = FAMILY_OPTIONS[activeFamilyIndex];
@@ -158,21 +177,30 @@ export default function AdminTShirtsPage() {
     selectedNations,
     allNations,
   );
+  const shirtSizeTypeFilterLabel = formatShirtSizeTypeFilterLabel(
+    selectedShirtSizeTypes,
+  );
   const exportColumnsLabel = formatExportColumnsLabel(exportColumns);
   const exportOptions = useMemo(
     () => ({
       nationFilterLabel,
+      shirtSizeTypeFilterLabel,
       exportColumns,
     }),
-    [nationFilterLabel, exportColumns],
+    [nationFilterLabel, shirtSizeTypeFilterLabel, exportColumns],
   );
   const isExportColumnsCustom =
     exportColumns.length !== DEFAULT_EXPORT_COLUMNS.length ||
     DEFAULT_EXPORT_COLUMNS.some((column) => !exportColumns.includes(column));
 
   const filteredRosters = useMemo(
-    () => filterAllRostersByNations(rosters, selectedNations, allNations),
-    [rosters, selectedNations, allNations],
+    () =>
+      filterAllRosters(rosters, {
+        selectedNations,
+        allNations,
+        selectedShirtSizeTypes,
+      }),
+    [rosters, selectedNations, allNations, selectedShirtSizeTypes],
   );
 
   const exportRosters = useMemo(() => {
@@ -195,6 +223,7 @@ export default function AdminTShirtsPage() {
           selectedNations,
           allNations,
           focusedRowKey,
+          selectedShirtSizeTypes,
         ),
         sortConfig,
       ),
@@ -203,12 +232,16 @@ export default function AdminTShirtsPage() {
       selectedNations,
       allNations,
       focusedRowKey,
+      selectedShirtSizeTypes,
       sortConfig,
     ],
   );
 
   const isNationFilterActive =
     allNations.length > 0 && selectedNations.length < allNations.length;
+  const isShirtSizeTypeFilterActive =
+    selectedShirtSizeTypes.length < SHIRT_SIZE_TYPE_OPTIONS.length;
+  const isFilterActive = isNationFilterActive || isShirtSizeTypeFilterActive;
   const totalTeeCount = useMemo(
     () =>
       FAMILY_OPTIONS.reduce(
@@ -235,11 +268,13 @@ export default function AdminTShirtsPage() {
     (
       nextRosters: Record<Family, RosterRow[]>,
       nations: string[],
+      shirtSizeTypes: ShirtSizeTypeFilter[],
       columns: ExportColumn[],
     ) => {
       const saved = saveSession({
         rosters: nextRosters,
         selectedNations: nations,
+        selectedShirtSizeTypes: shirtSizeTypes,
         exportColumns: columns,
       });
       if (!saved) {
@@ -257,7 +292,7 @@ export default function AdminTShirtsPage() {
       const { data, error } = await supabase
         .from("members")
         .select(
-          "id, first_name, nick_name, date_of_birth, shirt_size, shirt_chest_inches, nation_of_residence, family",
+          "id, first_name, nick_name, date_of_birth, shirt_size, shirt_chest_inches, nation_of_residence, gender, family",
         );
 
       if (error) {
@@ -278,19 +313,25 @@ export default function AdminTShirtsPage() {
         const nations = session.selectedNations?.length
           ? session.selectedNations
           : collectNations(merged);
+        const shirtSizeTypes = resolveShirtSizeTypes(
+          session.selectedShirtSizeTypes,
+        );
         const columns = session.exportColumns?.length
           ? session.exportColumns
           : [...DEFAULT_EXPORT_COLUMNS];
         setRosters(merged);
         setSelectedNations(nations);
+        setSelectedShirtSizeTypes(shirtSizeTypes);
         setExportColumns(columns);
       } else {
         const nations = collectNations(defaults);
+        const shirtSizeTypes = [...SHIRT_SIZE_TYPE_OPTIONS];
         const columns = [...DEFAULT_EXPORT_COLUMNS];
         setRosters(defaults);
         setSelectedNations(nations);
+        setSelectedShirtSizeTypes(shirtSizeTypes);
         setExportColumns(columns);
-        persistSession(defaults, nations, columns);
+        persistSession(defaults, nations, shirtSizeTypes, columns);
       }
 
       setIsLoading(false);
@@ -302,11 +343,11 @@ export default function AdminTShirtsPage() {
     (updater: (prev: Record<Family, RosterRow[]>) => Record<Family, RosterRow[]>) => {
       setRosters((prev) => {
         const next = updater(prev);
-        persistSession(next, selectedNations, exportColumns);
+        persistSession(next, selectedNations, selectedShirtSizeTypes, exportColumns);
         return next;
       });
     },
-    [persistSession, selectedNations, exportColumns],
+    [persistSession, selectedNations, selectedShirtSizeTypes, exportColumns],
   );
 
   const updateFamilyRow = useCallback(
@@ -418,22 +459,33 @@ export default function AdminTShirtsPage() {
     (next: string[]) => {
       setSelectedNations(next);
       setRosters((current) => {
-        persistSession(current, next, exportColumns);
+        persistSession(current, next, selectedShirtSizeTypes, exportColumns);
         return current;
       });
     },
-    [persistSession, exportColumns],
+    [persistSession, selectedShirtSizeTypes, exportColumns],
+  );
+
+  const persistShirtSizeTypeSelection = useCallback(
+    (next: ShirtSizeTypeFilter[]) => {
+      setSelectedShirtSizeTypes(next);
+      setRosters((current) => {
+        persistSession(current, selectedNations, next, exportColumns);
+        return current;
+      });
+    },
+    [persistSession, selectedNations, exportColumns],
   );
 
   const persistExportColumnSelection = useCallback(
     (next: ExportColumn[]) => {
       setExportColumns(next);
       setRosters((current) => {
-        persistSession(current, selectedNations, next);
+        persistSession(current, selectedNations, selectedShirtSizeTypes, next);
         return current;
       });
     },
-    [persistSession, selectedNations],
+    [persistSession, selectedNations, selectedShirtSizeTypes],
   );
 
   const toggleNation = (nation: string) => {
@@ -449,6 +501,21 @@ export default function AdminTShirtsPage() {
 
   const clearNationFilter = () => {
     persistNationSelection([]);
+  };
+
+  const toggleShirtSizeType = (type: ShirtSizeTypeFilter) => {
+    const next = selectedShirtSizeTypes.includes(type)
+      ? selectedShirtSizeTypes.filter((value) => value !== type)
+      : [...selectedShirtSizeTypes, type];
+    persistShirtSizeTypeSelection(next);
+  };
+
+  const selectAllShirtSizeTypes = () => {
+    persistShirtSizeTypeSelection([...SHIRT_SIZE_TYPE_OPTIONS]);
+  };
+
+  const clearShirtSizeTypeFilter = () => {
+    persistShirtSizeTypeSelection([]);
   };
 
   const toggleExportColumn = (column: ExportColumn) => {
@@ -469,14 +536,70 @@ export default function AdminTShirtsPage() {
 
   const confirmUndoAllEdits = () => {
     const nations = collectNations(defaultRosters);
+    const shirtSizeTypes = [...SHIRT_SIZE_TYPE_OPTIONS];
     const columns = [...DEFAULT_EXPORT_COLUMNS];
     clearSession();
     setRosters(defaultRosters);
     setSelectedNations(nations);
+    setSelectedShirtSizeTypes(shirtSizeTypes);
     setExportColumns(columns);
     setSortConfig(DEFAULT_ROSTER_SORT);
     setShowUndoConfirm(false);
     toast.success("All session edits cleared — restored from member data");
+  };
+
+  const handleEstimateLegacyForFamily = (family: Family) => {
+    const result = applyLegacySizeEstimatesToRosters(rosters, members, {
+      chestBufferInches: DEFAULT_CHEST_BUFFER_INCHES,
+      families: [family],
+    });
+
+    if (result.updatedCount === 0) {
+      toast.info(
+        `No legacy sizes left to estimate in ${formatFamilyDisplayName(family)}.`,
+      );
+      return;
+    }
+
+    updateRosters(() => result.rosters);
+    toast.success(
+      `Estimated ${result.updatedCount} legacy size${result.updatedCount === 1 ? "" : "s"} in ${formatFamilyDisplayName(family)} from measured-member averages. Review rows marked “Edited for export”.`,
+    );
+  };
+
+  const handleSessionImport = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    try {
+      const parsed = JSON.parse(await file.text()) as RosterSession;
+      if (!parsed.rosters) {
+        throw new Error("Session file is missing roster data.");
+      }
+
+      const merged = mergeSessionRosters(defaultRosters, parsed.rosters);
+      const nations = parsed.selectedNations?.length
+        ? parsed.selectedNations
+        : collectNations(merged);
+      const shirtSizeTypes = resolveShirtSizeTypes(parsed.selectedShirtSizeTypes);
+      const columns = parsed.exportColumns?.length
+        ? parsed.exportColumns
+        : [...DEFAULT_EXPORT_COLUMNS];
+
+      setRosters(merged);
+      setSelectedNations(nations);
+      setSelectedShirtSizeTypes(shirtSizeTypes);
+      setExportColumns(columns);
+      persistSession(merged, nations, shirtSizeTypes, columns);
+      toast.success("Imported t-shirt session file");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not import session file.",
+      );
+    }
   };
 
   const handleRowFocus = (rowKey: string) => {
@@ -547,6 +670,13 @@ export default function AdminTShirtsPage() {
           </p>
         </div>
         <div className="flex shrink-0 flex-nowrap items-center gap-2 overflow-x-auto">
+          <input
+            ref={sessionImportRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={handleSessionImport}
+          />
           <button
             onClick={() => setShowUndoConfirm(true)}
             disabled={!hasEdits}
@@ -557,11 +687,24 @@ export default function AdminTShirtsPage() {
             Undo All
           </button>
           <button
-            onClick={() => setShowNationFilter((v) => !v)}
-            title="Filter by nation of residence"
-            aria-label="Filter by nation of residence"
+            onClick={() => setShowTools((v) => !v)}
+            title="Bulk sizing tools"
+            aria-label="Bulk sizing tools"
+            aria-expanded={showTools}
             className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs transition ${
-              showNationFilter || isNationFilterActive
+              showTools
+                ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
+                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            }`}
+          >
+            <Wrench size={16} />
+          </button>
+          <button
+            onClick={() => setShowNationFilter((v) => !v)}
+            title="Filter roster"
+            aria-label="Filter roster"
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs transition ${
+              showNationFilter || isFilterActive
                 ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
                 : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             }`}
@@ -612,10 +755,7 @@ export default function AdminTShirtsPage() {
             {totalTeeCount}
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            {selectedNations.length > 0 &&
-            selectedNations.length < allNations.length
-              ? "Filtered count"
-              : "All families"}
+            {isFilterActive ? "Filtered count" : "All families"}
           </p>
         </div>
         {FAMILY_OPTIONS.map((family) => (
@@ -642,6 +782,81 @@ export default function AdminTShirtsPage() {
           </div>
         ))}
       </div>
+
+      {showTools && (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Bulk Sizing Tools
+              </h3>
+              <p className="text-xs text-zinc-500">
+                Session-only helpers for filling legacy sizes before export.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowTools(false)}
+              className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              aria-label="Close bulk sizing tools"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col justify-between gap-3 rounded-xl border border-zinc-100 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Wand2 size={16} className="text-(--primary-gold)" />
+                  <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Estimate legacy sizes
+                  </h4>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+                  Runs on the family currently shown ({formatFamilyDisplayName(activeFamily)})
+                  — switch families to do each table on its own. Fills label-only
+                  sizes from the average chest of measured members in the same age
+                  band and gender (blended with research baselines, computed across
+                  all families), plus +{DEFAULT_CHEST_BUFFER_INCHES} in for error.
+                  Bad DOBs (under {MIN_COMMUNITY_AGE}) or legacy sizes wildly larger
+                  than the age suggests ignore age and fall back to the legacy size,
+                  capped at XL. Rows appear as edited for export.
+                </p>
+              </div>
+              <button
+                onClick={() => handleEstimateLegacyForFamily(activeFamily)}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                <Wand2 size={14} />
+                Estimate {activeFamily}
+              </button>
+            </div>
+            <div className="flex flex-col justify-between gap-3 rounded-xl border border-zinc-100 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Upload size={16} className="text-(--primary-gold)" />
+                  <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Import session file
+                  </h4>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+                  Load a JSON session from{" "}
+                  <code className="rounded bg-zinc-200/80 px-1 py-0.5 text-[10px] dark:bg-zinc-800">
+                    npm run estimate-legacy-sizes:session
+                  </code>
+                  . Merges with current member data.
+                </p>
+              </div>
+              <button
+                onClick={() => sessionImportRef.current?.click()}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                <Upload size={14} />
+                Choose JSON file
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showExportColumns && (
         <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -696,51 +911,112 @@ export default function AdminTShirtsPage() {
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Filter by Nation of Residence
+                Filters
               </h3>
               <p className="text-xs text-zinc-500">
-                Applies to the table, totals, and exports. Currently:{" "}
-                {nationFilterLabel}
+                Applies to the table, totals, and exports.
               </p>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={selectAllNations}
-                className="rounded-lg px-3 py-1.5 text-xs font-semibold text-(--primary-gold) hover:bg-(--primary-gold)/10"
-              >
-                Select All
-              </button>
-              <button
-                onClick={clearNationFilter}
-                className="rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              >
-                Clear
-              </button>
-              <button
-                onClick={() => setShowNationFilter(false)}
-                className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              >
-                <X size={16} />
-              </button>
-            </div>
+            <button
+              onClick={() => setShowNationFilter(false)}
+              className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              <X size={16} />
+            </button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {allNations.map((nation) => {
-              const checked = selectedNations.includes(nation);
-              return (
-                <button
-                  key={nation}
-                  onClick={() => toggleNation(nation)}
-                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
-                    checked
-                      ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400"
-                  }`}
-                >
-                  {nation}
-                </button>
-              );
-            })}
+
+          <div className="space-y-4">
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    Nation of Residence
+                  </h4>
+                  <p className="text-xs text-zinc-500">{nationFilterLabel}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllNations}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold text-(--primary-gold) hover:bg-(--primary-gold)/10"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearNationFilter}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {allNations.map((nation) => {
+                  const checked = selectedNations.includes(nation);
+                  return (
+                    <button
+                      key={nation}
+                      onClick={() => toggleNation(nation)}
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                        checked
+                          ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
+                          : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400"
+                      }`}
+                    >
+                      {nation}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    Shirt Size Type
+                  </h4>
+                  <p className="text-xs text-zinc-500">
+                    {shirtSizeTypeFilterLabel}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllShirtSizeTypes}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold text-(--primary-gold) hover:bg-(--primary-gold)/10"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearShirtSizeTypeFilter}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {SHIRT_SIZE_TYPE_OPTIONS.map((type) => {
+                  const checked = selectedShirtSizeTypes.includes(type);
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => toggleShirtSizeType(type)}
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                        checked
+                          ? "border-(--primary-gold) bg-(--primary-gold)/10 text-(--primary-gold)"
+                          : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400"
+                      }`}
+                    >
+                      {SHIRT_SIZE_TYPE_LABELS[type]}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-xs text-zinc-500">
+                Legacy sizes use the old label-only field. Chest measurements
+                include an entered inch value and mapped size.
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -819,10 +1095,13 @@ export default function AdminTShirtsPage() {
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                   {summary.text}
                 </p>
-                {isNationFilterActive && (
+                {isFilterActive && (
                   <p className="mt-1 text-xs text-zinc-500">
-                    Showing {filteredFamilyRows.length} of {familyRows.length}{" "}
-                    · Nations: {nationFilterLabel}
+                    Showing {filteredFamilyRows.length} of {familyRows.length}
+                    {isNationFilterActive && <> · Nations: {nationFilterLabel}</>}
+                    {isShirtSizeTypeFilterActive && (
+                      <> · Size types: {shirtSizeTypeFilterLabel}</>
+                    )}
                   </p>
                 )}
               </div>
@@ -841,6 +1120,14 @@ export default function AdminTShirtsPage() {
               >
                 <FileText size={14} />
                 PDF
+              </button>
+              <button
+                onClick={() => handleEstimateLegacyForFamily(activeFamily)}
+                title={`Estimate legacy sizes for ${formatFamilyDisplayName(activeFamily)} only`}
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              >
+                <Wand2 size={14} />
+                Estimate
               </button>
               <button
                 onClick={() => handleAddRow(activeFamily)}
@@ -894,7 +1181,7 @@ export default function AdminTShirtsPage() {
                   >
                     {familyRows.length === 0
                       ? "No members in this family yet. Use Add Row for manual entries."
-                      : "No members match the current nation filter. Adjust the filter or add a manual row."}
+                      : "No members match the current filters. Adjust the filters or add a manual row."}
                   </td>
                 </tr>
               ) : (

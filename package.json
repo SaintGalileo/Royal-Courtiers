@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "estimate-legacy-sizes": "npx tsx scripts/estimate-legacy-shirt-sizes.ts",
+    "estimate-legacy-sizes:session": "npx tsx scripts/estimate-legacy-shirt-sizes.ts --write-session"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
