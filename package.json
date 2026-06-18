@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "estimate-legacy-sizes": "npx tsx scripts/estimate-legacy-shirt-sizes.ts",
-    "estimate-legacy-sizes:session": "npx tsx scripts/estimate-legacy-shirt-sizes.ts --write-session"
+    "estimate-legacy-sizes:session": "npx tsx scripts/estimate-legacy-shirt-sizes.ts --write-session",
+    "remove-nickname-emojis": "npx tsx scripts/remove-nickname-emojis.ts",
+    "remove-nickname-emojis:apply": "npx tsx scripts/remove-nickname-emojis.ts --apply"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

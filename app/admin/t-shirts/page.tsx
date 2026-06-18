@@ -18,6 +18,7 @@ import {
   Undo2,
   Upload,
   Wand2,
+  Eraser,
   Wrench,
   X,
 } from "lucide-react";
@@ -77,6 +78,10 @@ import {
   DEFAULT_CHEST_BUFFER_INCHES,
   MIN_COMMUNITY_AGE,
 } from "@/lib/estimate-legacy-shirt-sizes";
+import {
+  rosterRowNeedsEmojiStrip,
+  stripEmojisFromRosterRows,
+} from "@/lib/strip-emojis";
 
 type IconType = ComponentType<{ className?: string; size?: number }>;
 
@@ -567,6 +572,31 @@ export default function AdminTShirtsPage() {
     );
   };
 
+  const handleStripEmojisForFamily = (family: Family) => {
+    const familyRows = rosters[family] ?? [];
+    const { rows, updatedCount } = stripEmojisFromRosterRows(familyRows);
+
+    if (updatedCount === 0) {
+      toast.info(
+        `No emoji nicknames to clean in ${formatFamilyDisplayName(family)}.`,
+      );
+      return;
+    }
+
+    updateRosters((prev) => ({
+      ...prev,
+      [family]: rows,
+    }));
+    toast.success(
+      `Removed emojis from ${updatedCount} export nickname${updatedCount === 1 ? "" : "s"} in ${formatFamilyDisplayName(family)}. Member records were not changed.`,
+    );
+  };
+
+  const activeFamilyEmojiCount = useMemo(
+    () => (rosters[activeFamily] ?? []).filter(rosterRowNeedsEmojiStrip).length,
+    [rosters, activeFamily],
+  );
+
   const handleSessionImport = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -688,8 +718,8 @@ export default function AdminTShirtsPage() {
           </button>
           <button
             onClick={() => setShowTools((v) => !v)}
-            title="Bulk sizing tools"
-            aria-label="Bulk sizing tools"
+            title="Export tools"
+            aria-label="Export tools"
             aria-expanded={showTools}
             className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs transition ${
               showTools
@@ -788,21 +818,22 @@ export default function AdminTShirtsPage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Bulk Sizing Tools
+                Export Tools
               </h3>
               <p className="text-xs text-zinc-500">
-                Session-only helpers for filling legacy sizes before export.
+                Session-only helpers before CSV or PDF export. Member records in
+                the database are not changed.
               </p>
             </div>
             <button
               onClick={() => setShowTools(false)}
               className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              aria-label="Close bulk sizing tools"
+              aria-label="Close export tools"
             >
               <X size={16} />
             </button>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-3">
             <div className="flex flex-col justify-between gap-3 rounded-xl border border-zinc-100 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
               <div>
                 <div className="flex items-center gap-2">
@@ -852,6 +883,33 @@ export default function AdminTShirtsPage() {
               >
                 <Upload size={14} />
                 Choose JSON file
+              </button>
+            </div>
+            <div className="flex flex-col justify-between gap-3 rounded-xl border border-zinc-100 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Eraser size={16} className="text-(--primary-gold)" />
+                  <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Remove emoji nicknames
+                  </h4>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+                  Strips emojis from export nicknames in{" "}
+                  {formatFamilyDisplayName(activeFamily)} only
+                  {activeFamilyEmojiCount > 0
+                    ? ` (${activeFamilyEmojiCount} in this table)`
+                    : ""}
+                  . Session export data only — member database records are not
+                  changed.
+                </p>
+              </div>
+              <button
+                onClick={() => handleStripEmojisForFamily(activeFamily)}
+                disabled={activeFamilyEmojiCount === 0}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                <Eraser size={14} />
+                Strip emojis · {activeFamily}
               </button>
             </div>
           </div>
@@ -1128,6 +1186,15 @@ export default function AdminTShirtsPage() {
               >
                 <Wand2 size={14} />
                 Estimate
+              </button>
+              <button
+                onClick={() => handleStripEmojisForFamily(activeFamily)}
+                disabled={activeFamilyEmojiCount === 0}
+                title={`Remove emojis from export nicknames in ${formatFamilyDisplayName(activeFamily)}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              >
+                <Eraser size={14} />
+                Strip emojis
               </button>
               <button
                 onClick={() => handleAddRow(activeFamily)}
