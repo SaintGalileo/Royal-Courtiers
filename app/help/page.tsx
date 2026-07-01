@@ -50,9 +50,14 @@ const faqs = [
       "Competitions are scored on a point system based on position. For example, 1st place earns 100%, 2nd place 80%, 3rd place 60%, and 4th place 40% of the maximum points allotted for that event category.",
   },
   {
+    question: "How does Conduct & Discipline scoring work?",
+    answer:
+      "Every family starts with 50 conduct points at flag-off. Late roster submission is one unified penalty (−5) if all participants are not submitted together by July 18, 2026. Per-event penalties may also be recorded: Lateness (−5), Unregistered participant (−10), No-show — more than 30 minutes late or failure to appear (−10), and Unsporting conduct (−10). Conduct cannot go below zero and is added to your competition total on the live scoresheet.",
+  },
+  {
     question: "When are the sports events taking place?",
     answer:
-      "The majority of the sports preliminaries happen in July and early August, with the Grand Finals and Sports Day taking place around August 10th to 12th. See the 'Competitions' page for more details.",
+      "The majority of the sports preliminaries happen in early August, with the Grand Finals and Sports Day taking place around August 10th to 12th. See the 'Competitions' page for more details.",
   },
   {
     question: "Are there activities for younger participants?",

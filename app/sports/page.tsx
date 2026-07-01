@@ -12,9 +12,7 @@ import {
   FaShoppingBasket,
   FaChess,
   FaFont,
-  FaDice,
 } from "react-icons/fa";
-import { GiShuttlecock } from "react-icons/gi";
 import { IoMaleSharp, IoFemaleSharp, IoMaleFemaleSharp } from "react-icons/io5";
 import GlobalNavbar from "@/components/GlobalNavbar";
 import GlobalFooter from "@/components/GlobalFooter";
@@ -23,20 +21,18 @@ import { useRouter } from "next/navigation";
 import EventInfoCard from "@/components/competitions/EventInfoCard";
 import { FamilyShield } from "@/components/competitions/FamilyBadge";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
-import { applySemiFinalDraws, applyFootballSecondLegHomeAway } from "@/lib/competitions";
+import { applySemiFinalDraws } from "@/lib/competitions";
 
 type SportTab =
   | "Football"
   | "Volleyball"
-  | "Badminton"
   | "Table Tennis"
   | "Track Events"
   | "Sack Race (Junior)"
   | "Egg Race (Junior)"
   | "Filling the Basket (Junior)"
   | "Chess"
-  | "Scrabble"
-  | "Ludo";
+  | "Scrabble";
 
 interface Match {
   id: string;
@@ -55,7 +51,6 @@ interface Match {
 const sports: SportTab[] = [
   "Football",
   "Volleyball",
-  "Badminton",
   "Table Tennis",
   "Track Events",
   "Sack Race (Junior)",
@@ -63,42 +58,23 @@ const sports: SportTab[] = [
   "Filling the Basket (Junior)",
   "Chess",
   "Scrabble",
-  "Ludo",
 ];
 
-const MATCHES = applyFootballSecondLegHomeAway(applySemiFinalDraws([
+const MATCHES = applySemiFinalDraws([
   // Football
   {
-    id: "fb-sf1-1",
+    id: "fb-sf1",
     type: "Football",
-    round: "Semi-Final 1 (1st Leg)",
-    date: "July 25",
-    time: "04:00 PM",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "fb-sf2-1",
-    type: "Football",
-    round: "Semi-Final 2 (1st Leg)",
-    date: "July 25",
-    time: "05:00 PM",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "fb-sf1-2",
-    type: "Football",
-    round: "Semi-Final 1 (2nd Leg)",
+    round: "Semi-Final 1",
     date: "Aug 4",
     time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
   },
   {
-    id: "fb-sf2-2",
+    id: "fb-sf2",
     type: "Football",
-    round: "Semi-Final 2 (2nd Leg)",
+    round: "Semi-Final 2",
     date: "Aug 4",
     time: "05:00 PM",
     teamA: "TBD",
@@ -119,7 +95,7 @@ const MATCHES = applyFootballSecondLegHomeAway(applySemiFinalDraws([
     type: "Football",
     round: "Grand Final",
     date: "Aug 12",
-    time: "08:00 AM",
+    time: "09:00 AM",
     teamA: "Winner SF1",
     teamB: "Winner SF2",
     isFinal: true,
@@ -160,49 +136,6 @@ const MATCHES = applyFootballSecondLegHomeAway(applySemiFinalDraws([
     id: "vb-final",
     type: "Volleyball",
     round: "Grand Final · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "mixed",
-  },
-
-  // Badminton (Mixed Doubles) - Aug 11 (Sports Day)
-  {
-    id: "bm-sf1",
-    type: "Badminton",
-    round: "Semi-Final 1 · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "bm-sf2",
-    type: "Badminton",
-    round: "Semi-Final 2 · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "bm-3rd",
-    type: "Badminton",
-    round: "3rd Place Match · Mixed Doubles",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "mixed",
-  },
-  {
-    id: "bm-final",
-    type: "Badminton",
-    round: "Grand Final · Mixed Doubles",
     date: "Aug 11",
     time: "",
     teamA: "Winner SF1",
@@ -448,7 +381,7 @@ const MATCHES = applyFootballSecondLegHomeAway(applySemiFinalDraws([
     gender: "female",
   },
 
-  // Indoor Games (Chess, Scrabble, Ludo) - Aug 10
+  // Indoor Games (Chess, Scrabble) - Aug 10
   {
     id: "ch-sf1",
     type: "Chess",
@@ -523,51 +456,12 @@ const MATCHES = applyFootballSecondLegHomeAway(applySemiFinalDraws([
     teamB: "Winner SF2",
     isFinal: true,
   },
-  {
-    id: "lu-sf1",
-    type: "Ludo",
-    round: "Semi-Final 1",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "lu-sf2",
-    type: "Ludo",
-    round: "Semi-Final 2",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "lu-3rd",
-    type: "Ludo",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
-    id: "lu-final",
-    type: "Ludo",
-    round: "Grand Final",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-  },
-] as Match[]));
+] as Match[]);
 
 const SportIcon = ({ sport }: { sport: SportTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
   if (sport === "Football") return <FaFutbol className={cls} />;
   if (sport === "Volleyball") return <FaVolleyballBall className={cls} />;
-  if (sport === "Badminton")
-    return <GiShuttlecock className={`${cls} rotate-210`} />;
   if (sport === "Table Tennis") return <FaTableTennis className={cls} />;
   if (sport === "Track Events") return <FaRunning className={cls} />;
   if (sport === "Sack Race (Junior)") return <FaChild className={cls} />;
@@ -576,7 +470,6 @@ const SportIcon = ({ sport }: { sport: SportTab }) => {
     return <FaShoppingBasket className={cls} />;
   if (sport === "Chess") return <FaChess className={cls} />;
   if (sport === "Scrabble") return <FaFont className={cls} />;
-  if (sport === "Ludo") return <FaDice className={cls} />;
   return <FaFutbol className={cls} />;
 };
 
@@ -646,9 +539,10 @@ export default function SportsPage() {
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold
                 transition-all border whitespace-nowrap
-                ${activeTab === sport
-                  ? "bg-(--primary-gold) text-white border-(--primary-gold) shadow-sm"
-                  : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                ${
+                  activeTab === sport
+                    ? "bg-(--primary-gold) text-white border-(--primary-gold) shadow-sm"
+                    : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
                 }
               `}
             >
@@ -702,11 +596,6 @@ export default function SportsPage() {
 }
 
 function MatchCard({ match }: { match: Match }) {
-  const isFootball = match.type === "Football";
-  const isTwoLegged =
-    isFootball &&
-    (match.round.includes("1st Leg") || match.round.includes("2nd Leg"));
-
   const GenderIcon = () => {
     if (match.gender === "male")
       return <IoMaleSharp className="ml-1.5 h-3.5 w-3.5 text-blue-500" />;
@@ -779,16 +668,9 @@ function MatchCard({ match }: { match: Match }) {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
           <FamilyShield name={match.teamA} />
-          <div>
-            <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-              {match.teamA}
-            </span>
-            {isTwoLegged && (
-              <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                Home
-              </p>
-            )}
-          </div>
+          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
+            {match.teamA}
+          </span>
         </div>
 
         <div className="flex flex-col items-center shrink-0">
@@ -804,16 +686,9 @@ function MatchCard({ match }: { match: Match }) {
         </div>
 
         <div className="flex items-center gap-3 flex-1 justify-end">
-          <div className="text-right">
-            <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-              {match.teamB}
-            </span>
-            {isTwoLegged && (
-              <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                Away
-              </p>
-            )}
-          </div>
+          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
+            {match.teamB}
+          </span>
           <FamilyShield name={match.teamB} />
         </div>
       </div>

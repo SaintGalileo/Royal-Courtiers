@@ -28,7 +28,7 @@ const ITINERARY: ItineraryDay[] = [
       },
       {
         time: "1:00 PM",
-        title: "Chess, Scrabble & Ludo",
+        title: "Chess & Scrabble",
         location: "26 Mbukpa Holy Chapel",
       },
       {
@@ -50,7 +50,7 @@ const ITINERARY: ItineraryDay[] = [
       {
         time: "11:00 AM",
         title:
-          "Sports Day (Volleyball, Badminton, Table Tennis, Track Events, etc.)",
+          "Sports Day (Volleyball, Table Tennis, Track Events, etc.)",
         location: "U.J. Esuene Stadium",
       },
     ],

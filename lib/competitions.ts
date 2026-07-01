@@ -9,7 +9,6 @@ export type CompetitionCategory =
 export type EventName =
   | "Football"
   | "Volleyball"
-  | "Badminton"
   | "Table Tennis"
   | "Track Events"
   | "Sack Race (Junior)"
@@ -17,7 +16,6 @@ export type EventName =
   | "Filling the Basket (Junior)"
   | "Chess"
   | "Scrabble"
-  | "Ludo"
   | "Composition Competition"
   | "Solo"
   | "Duet"
@@ -61,8 +59,7 @@ export const SCORING_PLACEMENTS =
 /** Points allotted per competition event (matches the live scoresheet). Choral excluded — independent scoring. */
 export const EVENT_POINTS: Partial<Record<EventName, EventPointsInfo>> = {
   Football: { maxPoints: 100, unit: "total" },
-  Volleyball: { maxPoints: 50, unit: "total" },
-  Badminton: { maxPoints: 50, unit: "total" },
+  Volleyball: { maxPoints: 100, unit: "total" },
   "Table Tennis": {
     maxPoints: 50,
     unit: "per category",
@@ -96,7 +93,6 @@ export const EVENT_POINTS: Partial<Record<EventName, EventPointsInfo>> = {
   },
   Chess: { maxPoints: 50, unit: "total" },
   Scrabble: { maxPoints: 50, unit: "total" },
-  Ludo: { maxPoints: 50, unit: "total" },
   Debate: { maxPoints: 100, unit: "total" },
   "Essay Writing": { maxPoints: 50, unit: "total" },
   Pageantry: { maxPoints: 200, unit: "total" },
@@ -155,11 +151,9 @@ export const SEMI_FINAL_DRAWS: Record<
 > = {
   Football: { sf1: ["Virtue", "Power"], sf2: ["Light", "Dominion"] },
   Volleyball: { sf1: ["Dominion", "Power"], sf2: ["Virtue", "Light"] },
-  Badminton: { sf1: ["Virtue", "Dominion"], sf2: ["Power", "Light"] },
   "Table Tennis": { sf1: ["Power", "Light"], sf2: ["Dominion", "Virtue"] },
   Chess: { sf1: ["Light", "Power"], sf2: ["Virtue", "Dominion"] },
   Scrabble: { sf1: ["Light", "Dominion"], sf2: ["Power", "Virtue"] },
-  Ludo: { sf1: ["Dominion", "Light"], sf2: ["Virtue", "Power"] },
   Debate: { sf1: ["Light", "Virtue"], sf2: ["Dominion", "Power"] },
 };
 
@@ -180,8 +174,8 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
     about:
       "Families face off in a small-sided football tournament. Only five players are on the pitch at a time, so speed, teamwork, and stamina all matter. Each half lasts 20 minutes. In the event of a draw, the match goes straight to penalty kicks.",
     howItWorks: [
-      "Four families enter a knockout bracket starting with two semi-finals.",
-      "Each semi-final is played over two legs (home-and-away style) before the final.",
+      "Four families enter a single-leg knockout bracket starting with two semi-finals.",
+      "Each semi-final is decided in one match — World Cup style.",
       "The two semi-final winners meet in the Grand Final; the losers play for 3rd place.",
     ],
     registration: [
@@ -190,7 +184,6 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
     ],
     formatNotes: [
       "5-a-side means five players per team on the pitch, this includes a goalkeeper that cannot use his hands if your family chooses to field one.",
-      "Two-legged ties: the away family in the 1st leg hosts the 2nd leg — team order flips to show home and away.",
     ],
   },
   Volleyball: {
@@ -209,20 +202,6 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
     ],
     formatNotes: [
       "Mixed team: both brothers and sisters play together in the same match, not in separate boys-only or girls-only games.",
-    ],
-  },
-  Badminton: {
-    name: "Badminton",
-    category: "Sports Arena",
-    about:
-      "Two families compete through a single pair who play badminton together over the net. Points are won when the shuttlecock lands on the opponent's side or they fail to return it. Only one set will be played and it lasts 21 points. In the event of a draw (20 points each), the match is decided by the first team to win 2 points.",
-    howItWorks: [
-      "Knockout semi-finals, then a final and a 3rd-place match.",
-      "Played on Sports Day (August 11).",
-    ],
-    registration: ["Register one pair per family."],
-    formatNotes: [
-      "Mixed doubles: one brother and one sister play as partners on the same side of the court — they share the court and alternate shots.",
     ],
   },
   "Table Tennis": {
@@ -318,17 +297,6 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
     category: "Board Games",
     about:
       "Families send one player to build high-scoring words on the board using letter tiles drawn at random in a rapid game of scrabble (each player has 10 minutes to play) — the player with the highest score after 10 minutes wins.",
-    howItWorks: [
-      "Knockout semi-finals on August 10, then final and 3rd-place match.",
-      "Venue: 26 Mbukpa Holy Chapel.",
-    ],
-    registration: ["Register 1 player per family."],
-  },
-  Ludo: {
-    name: "Ludo",
-    category: "Board Games",
-    about:
-      "The familiar board game where players roll dice and move pieces around the board to get all four home first.",
     howItWorks: [
       "Knockout semi-finals on August 10, then final and 3rd-place match.",
       "Venue: 26 Mbukpa Holy Chapel.",
@@ -473,19 +441,6 @@ export function applySemiFinalDraws<T extends MatchWithTeams>(
       return { ...match, teamA: draws.sf2[0], teamB: draws.sf2[1] };
     }
     return match;
-  });
-}
-
-/** Swap home/away for football 2nd legs (away team from 1st leg hosts). */
-export function applyFootballSecondLegHomeAway<T extends MatchWithTeams>(
-  matches: T[],
-): T[] {
-  return matches.map((match) => {
-    if (match.type !== "Football" || !match.round.includes("2nd Leg")) {
-      return match;
-    }
-    if (!match.teamA || !match.teamB) return match;
-    return { ...match, teamA: match.teamB, teamB: match.teamA };
   });
 }
 
