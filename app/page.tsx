@@ -317,6 +317,7 @@ export default function Home() {
   const [shuffledPortrait, setShuffledPortrait] = useState<string[]>([]);
   const [shuffledLandscape, setShuffledLandscape] = useState<string[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const preloadedImages = useRef<Set<string>>(new Set());
 
   const preloadImage = useCallback((src: string) => {
@@ -354,6 +355,7 @@ export default function Home() {
     fixedToPreload.forEach(preloadImage);
 
     setHasMounted(true);
+    setIsLoggedIn(!!localStorage.getItem("virgins-auth"));
 
     return () => window.removeEventListener("resize", checkOrientation);
   }, [preloadImage]);
@@ -517,7 +519,7 @@ export default function Home() {
         <div className="absolute inset-0 z-30 flex flex-col items-start justify-start pt-32 sm:pt-0 sm:justify-center px-6 sm:px-12 md:px-24 lg:px-32">
           <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
             <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-(--primary-gold) mb-6">
-              August 10, 2026
+              August 10 - August 16, 2026
             </p>
             <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-[0.95] tracking-tight">
               35th Anniversary
@@ -534,20 +536,22 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="mt-10 flex flex-row items-center gap-3 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-              <Link
-                href="/create-account"
-                className="btn-primary rounded-full px-4 py-4 sm:px-10 sm:py-5 text-[10px] sm:text-base font-black shadow-2xl shadow-black/50 transition-all hover:scale-105 active:scale-95 text-center flex-1 sm:flex-initial whitespace-nowrap"
-              >
-                JOIN A FAMILY
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-full border border-white/20 bg-white/5 backdrop-blur-md px-4 py-4 sm:px-10 sm:py-5 text-[10px] sm:text-base font-black text-white hover:bg-white/10 transition-all text-center flex-1 sm:flex-initial whitespace-nowrap"
-              >
-                LOG IN
-              </Link>
-            </div>
+            {hasMounted && !isLoggedIn && (
+              <div className="mt-10 flex flex-row items-center gap-3 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+                <Link
+                  href="/create-account"
+                  className="btn-primary rounded-full px-4 py-4 sm:px-10 sm:py-5 text-[10px] sm:text-base font-black shadow-2xl shadow-black/50 transition-all hover:scale-105 active:scale-95 text-center flex-1 sm:flex-initial whitespace-nowrap"
+                >
+                  JOIN A FAMILY
+                </Link>
+                <Link
+                  href="/login"
+                  className="rounded-full border border-white/20 bg-white/5 backdrop-blur-md px-4 py-4 sm:px-10 sm:py-5 text-[10px] sm:text-base font-black text-white hover:bg-white/10 transition-all text-center flex-1 sm:flex-initial whitespace-nowrap"
+                >
+                  LOG IN
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

@@ -18,6 +18,7 @@ import { ChevronDown, Star, Trophy } from "lucide-react";
 type EventInfoCardProps = {
   eventName: EventName | string;
   showGrandFinaleNote?: boolean;
+  hideSubmissionDeadline?: boolean;
   defaultOpen?: boolean;
 };
 
@@ -97,6 +98,7 @@ function PointsBlock({ points }: { points: EventPointsInfo }) {
 export default function EventInfoCard({
   eventName,
   showGrandFinaleNote,
+  hideSubmissionDeadline = false,
   defaultOpen = true,
 }: EventInfoCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -220,13 +222,15 @@ export default function EventInfoCard({
             </p>
           )}
 
-          <p className="border-t border-zinc-100 dark:border-zinc-800 pt-3 text-[11px] text-zinc-400 dark:text-zinc-500">
-            Submit participant names on or before{" "}
-            <span className="font-semibold text-zinc-500 dark:text-zinc-400">
-              {SUBMISSION_DEADLINE}
-            </span>
-            .
-          </p>
+          {!hideSubmissionDeadline && (
+            <p className="border-t border-zinc-100 dark:border-zinc-800 pt-3 text-[11px] text-zinc-400 dark:text-zinc-500">
+              Submit participant names on or before{" "}
+              <span className="font-semibold text-zinc-500 dark:text-zinc-400">
+                {SUBMISSION_DEADLINE}
+              </span>
+              .
+            </p>
+          )}
         </div>
       )}
     </div>

@@ -44,7 +44,7 @@ export type EventPointsInfo = {
   breakdown?: string[];
 };
 
-export const SUBMISSION_DEADLINE = "July 1, 2026";
+export const SUBMISSION_DEADLINE = "July 18, 2026";
 
 export const CHORAL_GRAND_FINALE_NOTE =
   "Winners of the Solo and Duet competitions will perform again during the Grand Finale.";

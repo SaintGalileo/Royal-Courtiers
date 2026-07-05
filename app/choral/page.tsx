@@ -167,6 +167,7 @@ export default function ChoralPage() {
           <EventInfoCard
             eventName={activeTab}
             showGrandFinaleNote={activeTab === "Solo" || activeTab === "Duet"}
+            hideSubmissionDeadline
           />
         </div>
 
