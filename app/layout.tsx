@@ -38,8 +38,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${libreBaskerville.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <GlobalNavbar />
         <div className="flex-1 flex flex-col">
           {children}

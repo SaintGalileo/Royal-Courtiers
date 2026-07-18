@@ -59,11 +59,11 @@ const faqs = [
     answer:
       "The majority of the sports preliminaries happen in early August, with the Grand Finals and Sports Day taking place around August 10th to 12th. See the 'Competitions' page for more details.",
   },
-  {
-    question: "Are there activities for younger participants?",
-    answer:
-      "Yes! The Junior Games category includes fun and competitive events like the Sack Race, Egg Race, and Filling the Basket.",
-  },
+  // {
+  //   question: "Are there activities for younger participants?",
+  //   answer:
+  //     "Yes! The Junior Games category includes fun and competitive events like the Sack Race, Egg Race, and Filling the Basket.",
+  // },
   {
     question: "How do I get the official 35th Anniversary T-Shirt?",
     answer:

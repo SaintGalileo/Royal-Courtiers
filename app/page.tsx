@@ -7,7 +7,6 @@ import {
   GiPolarStar,
   GiWingedScepter,
   GiFruitTree,
-  GiDove,
 } from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import { ChevronDown, Cake, Gift } from "lucide-react";
@@ -309,7 +308,7 @@ export default function Home() {
   });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [prevSlide, setPrevSlide] = useState<number | null>(null);
-  const [isFading, setIsFading] = useState(false);
+  const [, setIsFading] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [birthdayMembers, setBirthdayMembers] = useState<BirthdayMember[]>([]);
   const supabase = useMemo(() => createClient(), []);
@@ -518,12 +517,12 @@ export default function Home() {
         {/* Hero content */}
         <div className="absolute inset-0 z-30 flex flex-col items-start justify-start pt-32 sm:pt-0 sm:justify-center px-6 sm:px-12 md:px-24 lg:px-32">
           <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
-            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-(--primary-gold) mb-6">
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-primary-gold mb-6">
               August 10 - August 16, 2026
             </p>
             <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-[0.95] tracking-tight">
               35th Anniversary
-              <span className="block text-(--primary-gold) mt-1 tracking-normal">
+              <span className="block text-primary-gold mt-1 tracking-normal">
                 Celebration
               </span>
             </h1>

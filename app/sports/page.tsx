@@ -7,9 +7,9 @@ import {
   FaRunning,
   FaTableTennis,
   FaVolleyballBall,
-  FaChild,
-  FaEgg,
-  FaShoppingBasket,
+  // FaChild,
+  // FaEgg,
+  // FaShoppingBasket,
   FaChess,
   FaFont,
 } from "react-icons/fa";
@@ -28,9 +28,9 @@ type SportTab =
   | "Volleyball"
   | "Table Tennis"
   | "Track Events"
-  | "Sack Race (Junior)"
-  | "Egg Race (Junior)"
-  | "Filling the Basket (Junior)"
+  // | "Sack Race (Junior)"
+  // | "Egg Race (Junior)"
+  // | "Filling the Basket (Junior)"
   | "Chess"
   | "Scrabble";
 
@@ -53,9 +53,9 @@ const sports: SportTab[] = [
   "Volleyball",
   "Table Tennis",
   "Track Events",
-  "Sack Race (Junior)",
-  "Egg Race (Junior)",
-  "Filling the Basket (Junior)",
+  // "Sack Race (Junior)",
+  // "Egg Race (Junior)",
+  // "Filling the Basket (Junior)",
   "Chess",
   "Scrabble",
 ];
@@ -66,7 +66,7 @@ const MATCHES = applySemiFinalDraws([
     id: "fb-sf1",
     type: "Football",
     round: "Semi-Final 1",
-    date: "Aug 4",
+    date: "Jul 31",
     time: "04:00 PM",
     teamA: "TBD",
     teamB: "TBD",
@@ -75,7 +75,7 @@ const MATCHES = applySemiFinalDraws([
     id: "fb-sf2",
     type: "Football",
     round: "Semi-Final 2",
-    date: "Aug 4",
+    date: "Jul 31",
     time: "05:00 PM",
     teamA: "TBD",
     teamB: "TBD",
@@ -84,7 +84,7 @@ const MATCHES = applySemiFinalDraws([
     id: "fb-3rd",
     type: "Football",
     round: "3rd Place Match",
-    date: "Aug 8",
+    date: "Aug 4",
     time: "04:00 PM",
     teamA: "Runner Up 1",
     teamB: "Runner Up 2",
@@ -320,66 +320,66 @@ const MATCHES = applySemiFinalDraws([
   },
 
   // Junior Games - Aug 11 (Sports Day)
-  {
-    id: "jr-sack-m",
-    type: "Sack Race (Junior)",
-    round: "Male Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "male",
-  },
-  {
-    id: "jr-sack-f",
-    type: "Sack Race (Junior)",
-    round: "Female Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "female",
-  },
-  {
-    id: "jr-egg-m",
-    type: "Egg Race (Junior)",
-    round: "Male Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "male",
-  },
-  {
-    id: "jr-egg-f",
-    type: "Egg Race (Junior)",
-    round: "Female Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "female",
-  },
-  {
-    id: "jr-basket-m",
-    type: "Filling the Basket (Junior)",
-    round: "Male Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "male",
-  },
-  {
-    id: "jr-basket-f",
-    type: "Filling the Basket (Junior)",
-    round: "Female Category",
-    date: "Aug 11",
-    time: "",
-    participants: "All Junior Families",
-    isGraded: true,
-    gender: "female",
-  },
+  // {
+  //   id: "jr-sack-m",
+  //   type: "Sack Race (Junior)",
+  //   round: "Male Category",
+  //   date: "Aug 11",
+  //   time: "",
+  //   participants: "All Junior Families",
+  //   isGraded: true,
+  //   gender: "male",
+  // },
+  // {
+  //   id: "jr-sack-f",
+  //   type: "Sack Race (Junior)",
+  //   round: "Female Category",
+  //   date: "Aug 11",
+  //   time: "",
+  //   participants: "All Junior Families",
+  //   isGraded: true,
+  //   gender: "female",
+  // },
+  // {
+  //   id: "jr-egg-m",
+  //   type: "Egg Race (Junior)",
+  //   round: "Male Category",
+  //   date: "Aug 11",
+  //   time: "",
+  //   participants: "All Junior Families",
+  //   isGraded: true,
+  //   gender: "male",
+  // },
+  // {
+  //   id: "jr-egg-f",
+  //   type: "Egg Race (Junior)",
+  //   round: "Female Category",
+  //   date: "Aug 11",
+  //   time: "",
+  //   participants: "All Junior Families",
+  //   isGraded: true,
+  //   gender: "female",
+  // },
+  // {
+  //   id: "jr-basket-m",
+  //   type: "Filling the Basket (Junior)",
+  //   round: "Male Category",
+  //   date: "Aug 11",
+  //   time: "",
+  //   participants: "All Junior Families",
+  //   isGraded: true,
+  //   gender: "male",
+  // },
+  // {
+  //   id: "jr-basket-f",
+  //   type: "Filling the Basket (Junior)",
+  //   round: "Female Category",
+  //   date: "Aug 11",
+  //   time: "",
+  //   participants: "All Junior Families",
+  //   isGraded: true,
+  //   gender: "female",
+  // },
 
   // Indoor Games (Chess, Scrabble) - Aug 10
   {
@@ -464,10 +464,10 @@ const SportIcon = ({ sport }: { sport: SportTab }) => {
   if (sport === "Volleyball") return <FaVolleyballBall className={cls} />;
   if (sport === "Table Tennis") return <FaTableTennis className={cls} />;
   if (sport === "Track Events") return <FaRunning className={cls} />;
-  if (sport === "Sack Race (Junior)") return <FaChild className={cls} />;
-  if (sport === "Egg Race (Junior)") return <FaEgg className={cls} />;
-  if (sport === "Filling the Basket (Junior)")
-    return <FaShoppingBasket className={cls} />;
+  // if (sport === "Sack Race (Junior)") return <FaChild className={cls} />;
+  // if (sport === "Egg Race (Junior)") return <FaEgg className={cls} />;
+  // if (sport === "Filling the Basket (Junior)")
+  //   return <FaShoppingBasket className={cls} />;
   if (sport === "Chess") return <FaChess className={cls} />;
   if (sport === "Scrabble") return <FaFont className={cls} />;
   return <FaFutbol className={cls} />;

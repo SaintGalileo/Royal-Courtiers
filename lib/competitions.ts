@@ -11,9 +11,9 @@ export type EventName =
   | "Volleyball"
   | "Table Tennis"
   | "Track Events"
-  | "Sack Race (Junior)"
-  | "Egg Race (Junior)"
-  | "Filling the Basket (Junior)"
+  // | "Sack Race (Junior)"
+  // | "Egg Race (Junior)"
+  // | "Filling the Basket (Junior)"
   | "Chess"
   | "Scrabble"
   | "Composition Competition"
@@ -76,21 +76,21 @@ export const EVENT_POINTS: Partial<Record<EventName, EventPointsInfo>> = {
       "Male and female categories scored independently (up to 8 races × 50 pts)",
     ],
   },
-  "Sack Race (Junior)": {
-    maxPoints: 50,
-    unit: "per category",
-    breakdown: ["Junior Male — 50 pts", "Junior Female — 50 pts"],
-  },
-  "Egg Race (Junior)": {
-    maxPoints: 50,
-    unit: "per category",
-    breakdown: ["Junior Male — 50 pts", "Junior Female — 50 pts"],
-  },
-  "Filling the Basket (Junior)": {
-    maxPoints: 50,
-    unit: "per category",
-    breakdown: ["Junior Male — 50 pts", "Junior Female — 50 pts"],
-  },
+  // "Sack Race (Junior)": {
+  //   maxPoints: 50,
+  //   unit: "per category",
+  //   breakdown: ["Junior Male — 50 pts", "Junior Female — 50 pts"],
+  // },
+  // "Egg Race (Junior)": {
+  //   maxPoints: 50,
+  //   unit: "per category",
+  //   breakdown: ["Junior Male — 50 pts", "Junior Female — 50 pts"],
+  // },
+  // "Filling the Basket (Junior)": {
+  //   maxPoints: 50,
+  //   unit: "per category",
+  //   breakdown: ["Junior Male — 50 pts", "Junior Female — 50 pts"],
+  // },
   Chess: { maxPoints: 50, unit: "total" },
   Scrabble: { maxPoints: 50, unit: "total" },
   Debate: { maxPoints: 100, unit: "total" },
@@ -239,53 +239,53 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
       "4 × 100m relay: four runners per team each run 100m and pass a baton to the next runner.",
     ],
   },
-  "Sack Race (Junior)": {
-    name: "Sack Race (Junior)",
-    category: "Sports Arena",
-    about:
-      "A light-hearted race for younger participants who hop inside a sack from start to finish. First to cross the line wins.",
-    howItWorks: [
-      "Separate races for boys and girls.",
-      "Held on Sports Day (August 11).",
-    ],
-    registration: [
-      "Open to juniors only — under 13 years old (maximum age 12).",
-      "Families nominate one eligible junior per category.",
-    ],
-  },
-  "Egg Race (Junior)": {
-    name: "Egg Race (Junior)",
-    category: "Sports Arena",
-    about:
-      "Participants balance an egg on a spoon and race without using their hands to hold the egg. If the egg drops or participant holds the egg with their hands, they must return to the starting line to get a new egg. Fastest to the finish line wins.",
-    howItWorks: [
-      "Separate races for boys and girls.",
-      "Held on Sports Day (August 11).",
-    ],
-    registration: [
-      "Open to juniors only — under 13 years old (maximum age 12).",
-      "Families nominate one eligible junior per category.",
-    ],
-  },
-  "Filling the Basket (Junior)": {
-    name: "Filling the Basket (Junior)",
-    category: "Sports Arena",
-    about:
-      "A game where juniors transfer small balls one at a time from a basket on one end of a track and fill another basket on the other end as quickly as possible before returning the basket to the starting position. Speed, coordination and stamina are key.",
-    howItWorks: [
-      "Separate categories for boys and girls.",
-      "Held on Sports Day (August 11).",
-    ],
-    registration: [
-      "Open to juniors only — under 13 years old (maximum age 12).",
-      "Families nominate one eligible junior per category.",
-    ],
-  },
+  // "Sack Race (Junior)": {
+  //   name: "Sack Race (Junior)",
+  //   category: "Sports Arena",
+  //   about:
+  //     "A light-hearted race for younger participants who hop inside a sack from start to finish. First to cross the line wins.",
+  //   howItWorks: [
+  //     "Separate races for boys and girls.",
+  //     "Held on Sports Day (August 11).",
+  //   ],
+  //   registration: [
+  //     "Open to juniors only — under 13 years old (maximum age 12).",
+  //     "Families nominate one eligible junior per category.",
+  //   ],
+  // },
+  // "Egg Race (Junior)": {
+  //   name: "Egg Race (Junior)",
+  //   category: "Sports Arena",
+  //   about:
+  //     "Participants balance an egg on a spoon and race without using their hands to hold the egg. If the egg drops or participant holds the egg with their hands, they must return to the starting line to get a new egg. Fastest to the finish line wins.",
+  //   howItWorks: [
+  //     "Separate races for boys and girls.",
+  //     "Held on Sports Day (August 11).",
+  //   ],
+  //   registration: [
+  //     "Open to juniors only — under 13 years old (maximum age 12).",
+  //     "Families nominate one eligible junior per category.",
+  //   ],
+  // },
+  // "Filling the Basket (Junior)": {
+  //   name: "Filling the Basket (Junior)",
+  //   category: "Sports Arena",
+  //   about:
+  //     "A game where juniors transfer small balls one at a time from a basket on one end of a track and fill another basket on the other end as quickly as possible before returning the basket to the starting position. Speed, coordination and stamina are key.",
+  //   howItWorks: [
+  //     "Separate categories for boys and girls.",
+  //     "Held on Sports Day (August 11).",
+  //   ],
+  //   registration: [
+  //     "Open to juniors only — under 13 years old (maximum age 12).",
+  //     "Families nominate one eligible junior per category.",
+  //   ],
+  // },
   Chess: {
     name: "Chess",
     category: "Board Games",
     about:
-      "One representative per family plays rapid chess (each player has 10 minutes to play) — the player with the highest score after 10 minutes wins.",
+      "One representative per family plays house rules chess. Each player has 30 seconds to make a move; you miss a turn if the timer runs out. Win by checkmate or resignation.",
     howItWorks: [
       "Knockout semi-finals on August 10, then final and 3rd-place match.",
       "Venue: 26 Mbukpa Holy Chapel.",
@@ -296,7 +296,7 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
     name: "Scrabble",
     category: "Board Games",
     about:
-      "Families send one player to build high-scoring words on the board using letter tiles drawn at random in a rapid game of scrabble (each player has 10 minutes to play) — the player with the highest score after 10 minutes wins.",
+      "Families send one player to build high-scoring words on the board using letter tiles drawn at random in a house rules game of scrabble. Each player has 30 seconds to make a move; you miss a turn if the timer runs out. The game ends when all tiles in the bag are played. Total score of remaining tiles of opponent rack is deducted from the player's score. Highest score wins.",
     howItWorks: [
       "Knockout semi-finals on August 10, then final and 3rd-place match.",
       "Venue: 26 Mbukpa Holy Chapel.",
