@@ -19,9 +19,10 @@ import GlobalFooter from "@/components/GlobalFooter";
 // import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EventInfoCard from "@/components/competitions/EventInfoCard";
-import { FamilyShield } from "@/components/competitions/FamilyBadge";
+import { FamilyTeamButton, AllFamiliesRosterButtons } from "@/components/competitions/FamilyTeamButton";
+import { FamilyRosterModal } from "@/components/competitions/FamilyRosterModal";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
-import { applySemiFinalDraws } from "@/lib/competitions";
+import { applySemiFinalDraws, type CompetitionFamily } from "@/lib/competitions";
 
 type SportTab =
   | "Football"
@@ -596,6 +597,8 @@ export default function SportsPage() {
 }
 
 function MatchCard({ match }: { match: Match }) {
+  const [openFamily, setOpenFamily] = useState<CompetitionFamily | null>(null);
+
   const GenderIcon = () => {
     if (match.gender === "male")
       return <IoMaleSharp className="ml-1.5 h-3.5 w-3.5 text-blue-500" />;
@@ -626,20 +629,13 @@ function MatchCard({ match }: { match: Match }) {
           {match.round}
           <GenderIcon />
         </span>
-        {/* {showDetailLink && (
-          <span className="flex items-center gap-1 text-[10px] font-black text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400 dark:group-hover:text-zinc-500 transition-colors uppercase tracking-widest">
-            Details <ChevronRight className="h-3 w-3" />
-          </span>
-        )} */}
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <FamilyShield name={match.participants} />
-          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-            {match.participants}
-          </span>
-        </div>
+        <AllFamiliesRosterButtons
+          eventName={match.type}
+          onOpen={setOpenFamily}
+        />
 
         <div className="flex items-center gap-1.5 shrink-0">
           <Clock className="h-3 w-3 text-(--primary-gold)" />
@@ -658,20 +654,14 @@ function MatchCard({ match }: { match: Match }) {
           {match.round}
           <GenderIcon />
         </span>
-        {/* {showDetailLink && (
-          <span className="flex items-center gap-1 text-[10px] font-black text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400 dark:group-hover:text-zinc-500 transition-colors uppercase tracking-widest">
-            Details <ChevronRight className="h-3 w-3" />
-          </span>
-        )} */}
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <FamilyShield name={match.teamA} />
-          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-            {match.teamA}
-          </span>
-        </div>
+        <FamilyTeamButton
+          name={match.teamA}
+          eventName={match.type}
+          onOpen={setOpenFamily}
+        />
 
         <div className="flex flex-col items-center shrink-0">
           <div className="flex items-center gap-1.5">
@@ -685,23 +675,28 @@ function MatchCard({ match }: { match: Match }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 flex-1 justify-end">
-          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-            {match.teamB}
-          </span>
-          <FamilyShield name={match.teamB} />
-        </div>
+        <FamilyTeamButton
+          name={match.teamB}
+          eventName={match.type}
+          align="right"
+          onOpen={setOpenFamily}
+        />
       </div>
     </>
   );
 
-  // if (showDetailLink) {
-  //   return (
-  //     <Link href={`/sports/${match.id}`} className={cardClass}>
-  //       {inner}
-  //     </Link>
-  //   );
-  // }
-
-  return <div className={cardClass}>{inner}</div>;
+  return (
+    <>
+      <div className={cardClass}>{inner}</div>
+      {openFamily && (
+        <FamilyRosterModal
+          family={openFamily}
+          eventName={match.type}
+          round={match.round}
+          gender={match.gender}
+          onClose={() => setOpenFamily(null)}
+        />
+      )}
+    </>
+  );
 }

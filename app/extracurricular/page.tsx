@@ -5,10 +5,18 @@ import { Clock, AlertCircle } from "lucide-react";
 import { FaComments, FaPenFancy, FaCrown } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import EventInfoCard from "@/components/competitions/EventInfoCard";
-import { FamilyShield } from "@/components/competitions/FamilyBadge";
+import {
+  FamilyTeamButton,
+  AllFamiliesRosterButtons,
+} from "@/components/competitions/FamilyTeamButton";
+import { FamilyRosterModal } from "@/components/competitions/FamilyRosterModal";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
 import PageantryCulturePanel from "@/components/competitions/PageantryCulturePanel";
-import { applySemiFinalDraws, DEBATE_TOPICS } from "@/lib/competitions";
+import {
+  applySemiFinalDraws,
+  DEBATE_TOPICS,
+  type CompetitionFamily,
+} from "@/lib/competitions";
 
 type ExtracurricularTab =
   | "Debate"
@@ -256,10 +264,13 @@ export default function ExtracurricularPage() {
 }
 
 function MatchCard({ match }: { match: EventMatch }) {
+  const [openFamily, setOpenFamily] = useState<CompetitionFamily | null>(null);
+
   if (match.isGraded) {
     return (
-      <div
-        className={`
+      <>
+        <div
+          className={`
           group block bg-white dark:bg-zinc-900
           border border-zinc-200 dark:border-zinc-800
           rounded-2xl px-6 py-5
@@ -268,47 +279,52 @@ function MatchCard({ match }: { match: EventMatch }) {
           transition-all duration-200
           ${match.isFinal ? "border-(--primary-gold)/30 dark:border-(--primary-gold)/20" : ""}
         `}
-      >
-        {/* Round label */}
-        <div className="flex items-center justify-between mb-4">
-          <span
-            className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
-          >
-            {match.round}
-          </span>
-          {match.info && (
-            <span className="group/info relative cursor-help">
-              <AlertCircle className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600 hover:text-(--primary-gold) transition-colors" />
-              <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-52 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 shadow-lg opacity-0 group-hover/info:opacity-100 group-hover/info:pointer-events-auto transition-opacity z-10">
-                {match.info}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <span
+              className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
+            >
+              {match.round}
+            </span>
+            {match.info && (
+              <span className="group/info relative cursor-help">
+                <AlertCircle className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600 hover:text-(--primary-gold) transition-colors" />
+                <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-52 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 shadow-lg opacity-0 group-hover/info:opacity-100 group-hover/info:pointer-events-auto transition-opacity z-10">
+                  {match.info}
+                </span>
               </span>
-            </span>
-          )}
-        </div>
-
-        {/* Participants + time */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <FamilyShield name={match.participants} />
-            <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-              {match.participants}
-            </span>
+            )}
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Clock className="h-3 w-3 text-(--primary-gold)" />
-            <span className="text-xs font-black text-(--primary-gold)">
-              {match.time}
-            </span>
+          <div className="flex items-center justify-between gap-4">
+            <AllFamiliesRosterButtons
+              eventName={match.type}
+              onOpen={setOpenFamily}
+            />
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Clock className="h-3 w-3 text-(--primary-gold)" />
+              <span className="text-xs font-black text-(--primary-gold)">
+                {match.time}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+        {openFamily && (
+          <FamilyRosterModal
+            family={openFamily}
+            eventName={match.type}
+            onClose={() => setOpenFamily(null)}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    <div
-      className={`
+    <>
+      <div
+        className={`
         group block bg-white dark:bg-zinc-900
         border border-zinc-200 dark:border-zinc-800
         rounded-2xl px-6 py-5
@@ -317,50 +333,55 @@ function MatchCard({ match }: { match: EventMatch }) {
         transition-all duration-200
         ${match.isFinal ? "border-(--primary-gold)/30 dark:border-(--primary-gold)/20" : ""}
       `}
-    >
-      {/* Round label */}
-      <div className="flex items-center justify-between mb-4">
-        <span
-          className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
-        >
-          {match.round}
-        </span>
-      </div>
-
-      {match.topic && (
-        <p className="mb-4 text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 border-l-2 border-(--primary-gold)/40 pl-3">
-          {match.topic}
-        </p>
-      )}
-
-      {/* Teams + time */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <FamilyShield name={match.teamA} />
-          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight">
-            {match.teamA}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <span
+            className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
+          >
+            {match.round}
           </span>
         </div>
 
-        <div className="flex flex-col items-center shrink-0">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3 w-3 text-(--primary-gold)" />
-            <span className="text-xs font-black text-(--primary-gold)">
-              {match.time}
+        {match.topic && (
+          <p className="mb-4 text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 border-l-2 border-(--primary-gold)/40 pl-3">
+            {match.topic}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between gap-4">
+          <FamilyTeamButton
+            name={match.teamA}
+            eventName={match.type}
+            onOpen={setOpenFamily}
+          />
+
+          <div className="flex flex-col items-center shrink-0">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-(--primary-gold)" />
+              <span className="text-xs font-black text-(--primary-gold)">
+                {match.time}
+              </span>
+            </div>
+            <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
+              VS
             </span>
           </div>
-          <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
-            VS
-          </span>
-        </div>
 
-        <div className="flex items-center gap-3 flex-1 justify-end">
-          <span className="font-black text-sm text-zinc-700 dark:text-zinc-200 uppercase tracking-tight text-right">
-            {match.teamB}
-          </span>
-          <FamilyShield name={match.teamB} />
+          <FamilyTeamButton
+            name={match.teamB}
+            eventName={match.type}
+            align="right"
+            onOpen={setOpenFamily}
+          />
         </div>
       </div>
-    </div>
+      {openFamily && (
+        <FamilyRosterModal
+          family={openFamily}
+          eventName={match.type}
+          onClose={() => setOpenFamily(null)}
+        />
+      )}
+    </>
   );
 }
