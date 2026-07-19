@@ -167,8 +167,8 @@ export default function GlobalNavbar() {
             </>
           )}
           <Link
-            href="/wall-of-fame"
-            className={`hover:text-(--primary-gold) transition-colors ${pathname === "/wall-of-fame" ? "font-bold text-(--primary-gold)" : ""}`}
+            href="/hall-of-fame"
+            className={`hover:text-(--primary-gold) transition-colors ${pathname === "/hall-of-fame" ? "font-bold text-(--primary-gold)" : ""}`}
           >
             Hall of Fame
           </Link>
@@ -282,9 +282,9 @@ export default function GlobalNavbar() {
             </>
           )}
           <Link
-            href="/wall-of-fame"
+            href="/hall-of-fame"
             onClick={closeMenu}
-            className={`block px-2 py-1 font-medium ${pathname === "/wall-of-fame" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+            className={`block px-2 py-1 font-medium ${pathname === "/hall-of-fame" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
           >
             Hall of Fame
           </Link>

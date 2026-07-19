@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function WallOfFamePage() {
+export default function HallOfFamePage() {
   const row = Array.from({ length: 8 }, (_, i) => i + 1);
 
   return (
