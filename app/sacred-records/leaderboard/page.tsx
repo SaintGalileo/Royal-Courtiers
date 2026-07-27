@@ -133,19 +133,20 @@ export default function SacredRecordsLeaderboardPage() {
 
   return (
     <main className="mx-auto min-h-[calc(100vh-80px)] w-full max-w-3xl px-4 py-8 sm:px-6">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <header className="mb-6 flex w-full flex-row flex-nowrap items-center justify-between gap-2">
         <Link
           href="/sacred-records"
-          className="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-(--primary-gold)"
+          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-zinc-500 hover:text-(--primary-gold)"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to path
+          <span className="sm:hidden">Back</span>
+          <span className="hidden sm:inline">Back to path</span>
         </Link>
-        <div className="flex items-center gap-2 text-(--primary-gold)">
+        <h1 className="m-0 flex shrink-0 items-center gap-2 text-right text-lg font-black text-(--primary-gold) sm:text-xl">
           <Trophy className="h-5 w-5" />
-          <h1 className="text-lg font-black sm:text-xl">Leaderboard</h1>
-        </div>
-      </div>
+          Leaderboard
+        </h1>
+      </header>
 
       <div className="mb-4 flex gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900">
         {(["general", "family"] as const).map((key) => (
