@@ -16,9 +16,11 @@ export const metadata: Metadata = {
   description: "Bearers of the seal of the Universal Monarch.",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.png", type: "image/png", sizes: "32x32" },
       { url: "/icon.png", type: "image/png", sizes: "32x32" },
     ],
+    shortcut: "/favicon.ico",
     apple: [
       {
         url: "/apple-touch-icon.png",
@@ -26,6 +28,24 @@ export const metadata: Metadata = {
         sizes: "180x180",
       },
     ],
+  },
+  openGraph: {
+    title: "The Family Love Built.",
+    description: "Bearers of the seal of the Universal Monarch.",
+    images: [
+      {
+        url: "/apple-touch-icon.png",
+        width: 180,
+        height: 180,
+        alt: "The Family Love Built",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "The Family Love Built.",
+    description: "Bearers of the seal of the Universal Monarch.",
+    images: ["/apple-touch-icon.png"],
   },
 };
 

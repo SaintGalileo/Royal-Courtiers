@@ -31,23 +31,23 @@ export default function FlashCard({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden
       />
 
-      <div className="relative flex max-h-[min(92dvh,100%)] w-full max-w-md flex-col px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:max-h-none sm:px-0 sm:pb-0 sm:pt-0">
+      <div className="relative flex max-h-[min(88dvh,100%)] w-full max-w-md flex-col px-0 sm:max-h-none">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-20 rounded-full bg-black/40 p-2 text-white transition-colors hover:bg-black/60 sm:-top-12 sm:right-0 sm:bg-white/20 sm:hover:bg-white/40"
+          className="absolute right-2 top-2 z-20 rounded-full bg-black/40 p-2 text-white transition-colors hover:bg-black/60 sm:-top-12 sm:right-0 sm:bg-white/20 sm:hover:bg-white/40"
           aria-label="Close"
         >
           <X size={22} />
         </button>
 
-        <div className="perspective-1000 h-[min(78dvh,560px)] min-h-[280px] w-full sm:h-[70vh] sm:min-h-[350px] sm:max-h-[550px]">
+        <div className="perspective-1000 h-[min(72dvh,520px)] min-h-[260px] w-full sm:h-[70vh] sm:min-h-[350px] sm:max-h-[550px]">
           <motion.div
             className="relative h-full w-full transition-all duration-300 preserve-3d"
             animate={{ rotateY: isFlipped ? 180 : 0 }}
