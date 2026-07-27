@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
+import {
+  GiPolarStar,
+  GiWingedScepter,
+  GiFruitTree,
+  GiDove,
+} from "react-icons/gi";
 import { FaBolt, FaWhatsapp } from "react-icons/fa";
 import type { ComponentType } from "react";
 import { useRouter } from "next/navigation";
@@ -14,17 +19,40 @@ import BirthdayCard from "@/components/BirthdayCard";
 import BirthdayConfetti from "@/components/BirthdayConfetti";
 import { toPng } from "html-to-image";
 import { useRef } from "react";
-import { Download, Share2, Edit2, X, Camera, Cake, Gift, Music, ArrowLeft, Copy, Check, Star, Moon, Sun, Play, Pause } from "lucide-react";
+import {
+  Download,
+  Share2,
+  Edit2,
+  X,
+  Camera,
+  Cake,
+  Gift,
+  Music,
+  ArrowLeft,
+  Copy,
+  Check,
+  Star,
+  Moon,
+  Sun,
+  Play,
+  Pause,
+  ScrollText,
+  ArrowRight,
+} from "lucide-react";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import ImageCropper from "@/components/ImageCropper";
 import TalentSelector from "@/components/TalentSelector";
 import PinLock from "@/components/PinLock";
 import SpotifySearch, { SpotifyTrack } from "@/components/SpotifySearch";
-import ShirtSizeInput, { validateChestInches } from "@/components/ShirtSizeInput";
+import ShirtSizeInput, {
+  validateChestInches,
+} from "@/components/ShirtSizeInput";
 import UpdateShirtSizeModal from "@/components/UpdateShirtSizeModal";
-import { saveMemberShirtSize, getErrorMessage } from "@/lib/save-member-shirt-size";
+import {
+  saveMemberShirtSize,
+  getErrorMessage,
+} from "@/lib/save-member-shirt-size";
 import { formatShirtSizeDisplay } from "@/lib/shirt-sizes";
-
 
 type TabKey = "family-members" | "tshirt" | "account-info" | "share-card";
 
@@ -41,20 +69,52 @@ const familyStyles: Record<
   string,
   { color: string; className: string; icon: IconType; whatsapp?: string }
 > = {
-  Light: { color: "Gold", className: "text-yellow-500", icon: GiPolarStar, whatsapp: "https://chat.whatsapp.com/CTvPv2hRFYMHWEpnvB4xIR" },
-  Power: { color: "Red", className: "text-red-500", icon: FaBolt, whatsapp: "https://chat.whatsapp.com/DqQOrFH7Ly632ugZcztGB6?mode=gi_t" },
-  Dominion: { color: "Purple", className: "text-purple-500", icon: GiWingedScepter, whatsapp: "https://chat.whatsapp.com/HH5CsLRZhMV1i2Ic7QNo9Z?mode=gi_t" },
-  Virtue: { color: "Green", className: "text-green-500", icon: GiFruitTree, whatsapp: "https://chat.whatsapp.com/IlE58HqgW2nGJu4G9kil5H?mode=gi_t" },
+  Light: {
+    color: "Gold",
+    className: "text-yellow-500",
+    icon: GiPolarStar,
+    whatsapp: "https://chat.whatsapp.com/CTvPv2hRFYMHWEpnvB4xIR",
+  },
+  Power: {
+    color: "Red",
+    className: "text-red-500",
+    icon: FaBolt,
+    whatsapp: "https://chat.whatsapp.com/DqQOrFH7Ly632ugZcztGB6?mode=gi_t",
+  },
+  Dominion: {
+    color: "Purple",
+    className: "text-purple-500",
+    icon: GiWingedScepter,
+    whatsapp: "https://chat.whatsapp.com/HH5CsLRZhMV1i2Ic7QNo9Z?mode=gi_t",
+  },
+  Virtue: {
+    color: "Green",
+    className: "text-green-500",
+    icon: GiFruitTree,
+    whatsapp: "https://chat.whatsapp.com/IlE58HqgW2nGJu4G9kil5H?mode=gi_t",
+  },
   Seraphs: { color: "Cyan", className: "text-cyan-500", icon: GiDove },
 };
 
-
-const HEAD_CODES = ["35AABA", "35AABB", "35AABC", "35AABD", "35AABE", "35AABG", "35AABH", "35AAAI", "35AAAH"];
+const HEAD_CODES = [
+  "35AABA",
+  "35AABB",
+  "35AABC",
+  "35AABD",
+  "35AABE",
+  "35AABG",
+  "35AABH",
+  "35AAAI",
+  "35AAAH",
+];
 
 const familyParents: Record<string, { father: string; mother: string }> = {
   Light: { father: "Brother Paul Etop", mother: "Sister Sarah Cyril" },
   Power: { father: "Brother Victor Omolu", mother: "Sister Fortune Umoh" },
-  Dominion: { father: "Brother David Abeng", mother: "Sister Divine Edosomwan" },
+  Dominion: {
+    father: "Brother David Abeng",
+    mother: "Sister Divine Edosomwan",
+  },
   Virtue: { father: "Brother Henry Igani", mother: "Sister Mercy Alexander" },
 };
 
@@ -87,7 +147,12 @@ function formatDuration(dateString: string | null) {
 }
 
 function getInitials(name: string) {
-  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }
 
 type MemberData = {
@@ -115,7 +180,11 @@ type MemberData = {
   favorite_song?: any;
 };
 
-export default function DashboardPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function DashboardPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const [activeTab, setActiveTab] = useState<TabKey>("account-info");
   const [resolvedSlug, setResolvedSlug] = useState("");
   const [user, setUser] = useState<MemberData | null>(null);
@@ -128,7 +197,14 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [editingField, setEditingField] = useState<"firstName" | "lastName" | "dateOfBirth" | "phoneNumber" | "shirtChest" | null>(null);
+  const [editingField, setEditingField] = useState<
+    | "firstName"
+    | "lastName"
+    | "dateOfBirth"
+    | "phoneNumber"
+    | "shirtChest"
+    | null
+  >(null);
   const [editValue, setEditValue] = useState("");
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -139,15 +215,18 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   const [selectedMember, setSelectedMember] = useState<MemberData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPinVerified, setIsPinVerified] = useState(false);
-  const [pendingAction, setPendingAction] = useState<{ fn: () => void; title: string } | null>(null);
+  const [pendingAction, setPendingAction] = useState<{
+    fn: () => void;
+    title: string;
+  } | null>(null);
   const [isSpotifyOpen, setIsSpotifyOpen] = useState(false);
   const [isUserBirthday, setIsUserBirthday] = useState(false);
-  const [birthdayFamilyMembers, setBirthdayFamilyMembers] = useState<MemberData[]>([]);
+  const [birthdayFamilyMembers, setBirthdayFamilyMembers] = useState<
+    MemberData[]
+  >([]);
   const [isDownloadingBdayCard, setIsDownloadingBdayCard] = useState(false);
   const [sizeModalDismissed, setSizeModalDismissed] = useState(false);
   const birthdayCardRef = useRef<HTMLDivElement>(null);
-
-
 
   // Protection check
   useEffect(() => {
@@ -160,8 +239,11 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     // Theme initialization
     setIsClient(true);
     const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light";
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
+    const initialTheme =
+      savedTheme === "dark" || (!savedTheme && prefersDark) ? "dark" : "light";
     setTheme(initialTheme);
   }, [router]);
 
@@ -194,7 +276,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           const auth = JSON.parse(authStr);
           code = auth.code;
           setAuthCode(code);
-        } catch { }
+        } catch {}
       }
 
       const nameParts = decodeURIComponent(resolvedSlug).split("-");
@@ -236,7 +318,8 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           return;
         }
 
-        const verified = sessionStorage.getItem(`pin-verified-${memberData.id}`) === "true";
+        const verified =
+          sessionStorage.getItem(`pin-verified-${memberData.id}`) === "true";
         setIsPinVerified(verified);
 
         setUser(memberData);
@@ -250,10 +333,14 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
         if (famErr) console.error("Error fetching family", famErr);
         if (famData) {
           const sorted = famData
-            .filter(m => !HEAD_CODES.includes(m.code))
+            .filter((m) => !HEAD_CODES.includes(m.code))
             .sort((a, b) => {
-              const dateA = a.date_of_consecration ? new Date(a.date_of_consecration).getTime() : new Date().getTime();
-              const dateB = b.date_of_consecration ? new Date(b.date_of_consecration).getTime() : new Date().getTime();
+              const dateA = a.date_of_consecration
+                ? new Date(a.date_of_consecration).getTime()
+                : new Date().getTime();
+              const dateB = b.date_of_consecration
+                ? new Date(b.date_of_consecration).getTime()
+                : new Date().getTime();
               return dateA - dateB;
             });
           setFamilyMembers(sorted);
@@ -312,7 +399,10 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     router.push("/");
   };
 
-  const downloadCard = async (ref?: React.RefObject<HTMLDivElement | null>, filename?: string) => {
+  const downloadCard = async (
+    ref?: React.RefObject<HTMLDivElement | null>,
+    filename?: string,
+  ) => {
     const targetRef = ref || cardRef;
     if (!targetRef.current) return;
     setIsDownloading(true);
@@ -326,7 +416,11 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
       link.download = filename || `virgins-family-card-${user?.first_name}.png`;
       link.href = dataUrl;
       link.click();
-      toast.success(filename?.includes("birthday") ? "Birthday Card downloaded! 🎉" : "Family Card downloaded! Share it on your status.");
+      toast.success(
+        filename?.includes("birthday")
+          ? "Birthday Card downloaded! 🎉"
+          : "Family Card downloaded! Share it on your status.",
+      );
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate card image.");
@@ -357,7 +451,15 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     }
   };
 
-  const handleEditClick = (field: "firstName" | "lastName" | "dateOfBirth" | "phoneNumber" | "shirtChest", currentValue: string) => {
+  const handleEditClick = (
+    field:
+      | "firstName"
+      | "lastName"
+      | "dateOfBirth"
+      | "phoneNumber"
+      | "shirtChest",
+    currentValue: string,
+  ) => {
     setEditValue(currentValue);
     setEditingField(field);
   };
@@ -392,13 +494,29 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
       let flagField: string | null = null;
 
       switch (editingField) {
-        case "firstName": dbField = "first_name"; flagField = "is_fname_edited"; break;
-        case "lastName": dbField = "last_name"; flagField = "is_lname_edited"; break;
-        case "dateOfBirth": dbField = "date_of_birth"; flagField = "is_dob_edited"; break;
-        case "phoneNumber": dbField = "phone_number"; flagField = null; break;
+        case "firstName":
+          dbField = "first_name";
+          flagField = "is_fname_edited";
+          break;
+        case "lastName":
+          dbField = "last_name";
+          flagField = "is_lname_edited";
+          break;
+        case "dateOfBirth":
+          dbField = "date_of_birth";
+          flagField = "is_dob_edited";
+          break;
+        case "phoneNumber":
+          dbField = "phone_number";
+          flagField = null;
+          break;
         case "shirtChest": {
           const chestValidation = validateChestInches(editValue);
-          if (!chestValidation.valid || chestValidation.chest == null || !chestValidation.label) {
+          if (
+            !chestValidation.valid ||
+            chestValidation.chest == null ||
+            !chestValidation.label
+          ) {
             toast.error(chestValidation.error ?? "Invalid chest measurement.");
             setIsSavingField(false);
             return;
@@ -423,11 +541,17 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           setIsSavingField(false);
           return;
         }
-        default: return;
+        default:
+          return;
       }
 
       const updates: Record<string, any> = {
-        [dbField]: editingField === "dateOfBirth" ? editValue : editingField === "phoneNumber" ? editValue.trim() : editValue.trim().toLowerCase(),
+        [dbField]:
+          editingField === "dateOfBirth"
+            ? editValue
+            : editingField === "phoneNumber"
+              ? editValue.trim()
+              : editValue.trim().toLowerCase(),
       };
       if (flagField) {
         updates[flagField] = true;
@@ -455,16 +579,26 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
 
       // If name changed, update the URL slug to match
       if (editingField === "firstName" || editingField === "lastName") {
-        const newFirst = editingField === "firstName" ? editValue.trim().toLowerCase() : user.first_name;
-        const newLast = editingField === "lastName" ? editValue.trim().toLowerCase() : user.last_name;
+        const newFirst =
+          editingField === "firstName"
+            ? editValue.trim().toLowerCase()
+            : user.first_name;
+        const newLast =
+          editingField === "lastName"
+            ? editValue.trim().toLowerCase()
+            : user.last_name;
         const newSlug = `${newFirst}-${newLast}`.replace(/\s+/g, "-");
-        router.replace(`/dashboard/${encodeURIComponent(newSlug)}`, { scroll: false });
+        router.replace(`/dashboard/${encodeURIComponent(newSlug)}`, {
+          scroll: false,
+        });
       }
 
       if (editingField === "phoneNumber") {
         toast.success("Phone number updated!");
       } else {
-        toast.success(`${editingField.replace(/([A-Z])/g, ' $1')} updated! This field is now locked.`);
+        toast.success(
+          `${editingField.replace(/([A-Z])/g, " $1")} updated! This field is now locked.`,
+        );
       }
       setEditingField(null);
     } catch (err: any) {
@@ -477,7 +611,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
 
   const handleSaveShirtSizeFromModal = async (chest: number, label: string) => {
     if (!user) {
-      throw new Error("Session expired. Please refresh the page and try again.");
+      throw new Error(
+        "Session expired. Please refresh the page and try again.",
+      );
     }
 
     const freshUser = await saveMemberShirtSize(supabase, chest, label, {
@@ -530,7 +666,10 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     }
   };
 
-  const handleSelectSong = async (track: SpotifyTrack, authorized: any = false) => {
+  const handleSelectSong = async (
+    track: SpotifyTrack,
+    authorized: any = false,
+  ) => {
     if (!user) return;
     const isAuthorized = authorized === true;
 
@@ -563,8 +702,6 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
     }
   };
 
-
-
   const onPhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (user?.is_photo_edited) {
       toast.error("You've already updated your photo once.");
@@ -575,10 +712,13 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
 
     const imageUrl = URL.createObjectURL(file);
     setCropImageSrc(imageUrl);
-    event.target.value = '';
+    event.target.value = "";
   };
 
-  const handleCropComplete = async (croppedFile: File, authorized: any = false) => {
+  const handleCropComplete = async (
+    croppedFile: File,
+    authorized: any = false,
+  ) => {
     if (!user || user.is_photo_edited) return;
     const isAuthorized = authorized === true;
 
@@ -608,10 +748,13 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
       uploadFormData.append("file", croppedFile);
       uploadFormData.append("upload_preset", uploadPreset);
 
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: "POST",
-        body: uploadFormData,
-      });
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: uploadFormData,
+        },
+      );
 
       const data = await res.json();
       if (data.secure_url) {
@@ -647,9 +790,16 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
   if (!user) {
     return (
       <main className="min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center gap-4">
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">User Not Found</h1>
-        <p className="text-sm text-zinc-500">We couldn&apos;t find a member matching this profile.</p>
-        <Link href="/" className="text-sm font-medium text-(--primary-gold) underline underline-offset-4 hover:opacity-70 transition-opacity">
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+          User Not Found
+        </h1>
+        <p className="text-sm text-zinc-500">
+          We couldn&apos;t find a member matching this profile.
+        </p>
+        <Link
+          href="/"
+          className="text-sm font-medium text-(--primary-gold) underline underline-offset-4 hover:opacity-70 transition-opacity"
+        >
           Return Home
         </Link>
       </main>
@@ -658,10 +808,15 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
 
   const age = calculateYears(user.date_of_birth);
   const serviceDuration = formatDuration(user.date_of_consecration);
-  const fallbackStyles = { color: "Gold", className: "text-yellow-500", icon: GiPolarStar };
+  const fallbackStyles = {
+    color: "Gold",
+    className: "text-yellow-500",
+    icon: GiPolarStar,
+  };
   const styleObj = familyStyles[user.family] || fallbackStyles;
   const Icon = styleObj.icon;
-  const initials = `${user.first_name[0] ?? "U"}${user.last_name[0] ?? "M"}`.toUpperCase();
+  const initials =
+    `${user.first_name[0] ?? "U"}${user.last_name[0] ?? "M"}`.toUpperCase();
   const parents = familyParents[user.family];
 
   const isViewerOwner = user.code === authCode;
@@ -734,14 +889,20 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
               <ArrowLeft size={18} />
             </div>
-            <span className="hidden sm:inline text-sm font-black uppercase tracking-widest">Back to Home</span>
+            <span className="hidden sm:inline text-sm font-black uppercase tracking-widest">
+              Back to Home
+            </span>
           </Link>
 
           <div className="flex items-center gap-3">
             <button
               onClick={toggleTheme}
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-all active:scale-90 shadow-sm"
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
             >
               {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -756,12 +917,31 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
       </nav>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6">
-
+        {isViewerOwner && (
+          <Link
+            href="/sacred-records"
+            className="group flex items-center justify-between gap-4 rounded-2xl border border-(--primary-gold)/35 bg-linear-to-r from-(--primary-gold)/10 to-transparent px-5 py-4 transition-all hover:border-(--primary-gold)/60 hover:shadow-sm"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--primary-gold)/15 text-(--primary-gold)">
+                <ScrollText className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-black text-zinc-900 dark:text-zinc-100">
+                  Continue Sacred Records
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  144,000 Virgins Body must knows; daily knowledge for all.{" "}
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-(--primary-gold) transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        )}
 
         {/* ── Compact Centered Dashboard Header ── */}
         <header className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 relative overflow-hidden">
           <div className="flex flex-col items-center gap-4">
-            
             {/* Avatar & Identity (Centered) */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
@@ -780,11 +960,19 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   {isViewerOwner && !user.is_photo_edited && (
                     <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                       <Camera className="text-white h-5 w-5" />
-                      <input type="file" accept="image/*" className="hidden" onChange={onPhotoChange} disabled={isUploadingPhoto} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={onPhotoChange}
+                        disabled={isUploadingPhoto}
+                      />
                     </label>
                   )}
                 </div>
-                <div className={`absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-white shadow-sm dark:border-zinc-900 dark:bg-zinc-950 ${styleObj.className}`}>
+                <div
+                  className={`absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-white shadow-sm dark:border-zinc-900 dark:bg-zinc-950 ${styleObj.className}`}
+                >
                   <Icon className="h-3 w-3" />
                 </div>
               </div>
@@ -824,35 +1012,51 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
             <div className="flex flex-col items-center gap-3 w-full">
               <div className="flex items-center gap-3 px-6 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-100 dark:border-zinc-800">
                 <div className="text-center">
-                  <p className="text-[8px] uppercase tracking-widest font-black text-zinc-400">Unique Access Code</p>
-                  <span className="font-mono text-base sm:text-lg font-black tracking-[0.2em] text-(--primary-gold)">{user.code}</span>
+                  <p className="text-[8px] uppercase tracking-widest font-black text-zinc-400">
+                    Unique Access Code
+                  </p>
+                  <span className="font-mono text-base sm:text-lg font-black tracking-[0.2em] text-(--primary-gold)">
+                    {user.code}
+                  </span>
                 </div>
-                <button onClick={copyCode} className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md transition-all">
-                  {copied ? <Check className="text-green-500 h-4 w-4" /> : <Copy size={14} className="text-zinc-400" />}
+                <button
+                  onClick={copyCode}
+                  className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md transition-all"
+                >
+                  {copied ? (
+                    <Check className="text-green-500 h-4 w-4" />
+                  ) : (
+                    <Copy size={14} className="text-zinc-400" />
+                  )}
                 </button>
               </div>
               <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-300 dark:text-zinc-700">AGE:</span>
-                  <span className="text-zinc-700 dark:text-zinc-300">{age}</span>
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {age}
+                  </span>
                 </div>
                 <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-800" />
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-300 dark:text-zinc-700">SVC:</span>
-                  <span className="text-zinc-700 dark:text-zinc-300">{serviceDuration}</span>
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {serviceDuration}
+                  </span>
                 </div>
                 {user.favorite_song && (
                   <>
                     <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-800" />
                     <div className="flex items-center gap-1.5 text-emerald-500">
                       <Music size={10} />
-                      <span className="max-w-[100px] truncate">{user.favorite_song.name}</span>
+                      <span className="max-w-[100px] truncate">
+                        {user.favorite_song.name}
+                      </span>
                     </div>
                   </>
                 )}
               </div>
             </div>
-
           </div>
         </header>
 
@@ -872,7 +1076,13 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                     height: `${2 + Math.random() * 4}px`,
                     top: `${Math.random() * 100}%`,
                     left: `${Math.random() * 100}%`,
-                    backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#22c55e', '#ec4899'][i % 5],
+                    backgroundColor: [
+                      "#f59e0b",
+                      "#ef4444",
+                      "#8b5cf6",
+                      "#22c55e",
+                      "#ec4899",
+                    ][i % 5],
                     opacity: 0.2 + Math.random() * 0.15,
                     animationDelay: `${Math.random() * 2}s`,
                   }}
@@ -887,8 +1097,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   Happy Birthday, {user.first_name}! 🎉
                 </h3>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
-                  The <span className="font-bold text-amber-600 dark:text-amber-400">Family of {user.family}</span> celebrates you today.
-                  Wishing you love, grace, and everything beautiful!
+                  The{" "}
+                  <span className="font-bold text-amber-600 dark:text-amber-400">
+                    Family of {user.family}
+                  </span>{" "}
+                  celebrates you today. Wishing you love, grace, and everything
+                  beautiful!
                 </p>
               </div>
               <button
@@ -926,7 +1140,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           <div className="rounded-2xl border border-amber-200/40 dark:border-amber-500/10 bg-amber-50/50 dark:bg-amber-950/10 p-5 animate-in fade-in duration-500">
             <div className="flex items-center gap-2 mb-3">
               <Cake size={16} className="text-amber-500" />
-              <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400">Family Birthdays Today</h3>
+              <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                Family Birthdays Today
+              </h3>
             </div>
             <div className="flex flex-wrap gap-3">
               {birthdayFamilyMembers.map((m) => (
@@ -936,16 +1152,23 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                 >
                   <div className="relative">
                     {m.photo_url ? (
-                      <img src={getOptimizedUrl(m.photo_url)} alt="" className="h-10 w-10 rounded-full object-cover border-2 border-amber-400" />
+                      <img
+                        src={getOptimizedUrl(m.photo_url)}
+                        alt=""
+                        className="h-10 w-10 rounded-full object-cover border-2 border-amber-400"
+                      />
                     ) : (
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 text-sm font-bold text-amber-600">
-                        {m.first_name[0]}{m.last_name[0]}
+                        {m.first_name[0]}
+                        {m.last_name[0]}
                       </div>
                     )}
                     <div className="absolute -top-1 -right-1 text-xs">🎂</div>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">{m.first_name} {m.last_name}</p>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">
+                      {m.first_name} {m.last_name}
+                    </p>
                     <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
                       🎉 Happy Birthday!
                     </p>
@@ -958,7 +1181,6 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
 
         {/* ── Tab Section ── */}
         <section className="rounded-2xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900 p-6">
-
           {/* Tab bar - Made responsive with horizontal scroll on small screens */}
           <div className="mb-6 flex gap-1 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 p-1.5 dark:border-zinc-800 dark:bg-zinc-950 scrollbar-hide">
             {tabs.map((tab) => (
@@ -966,10 +1188,11 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 type="button"
-                className={`flex-1 min-w-[100px] sm:min-w-0 whitespace-nowrap rounded-md px-4 py-2.5 text-xs sm:text-sm font-semibold transition-all ${activeTab === tab.key
-                  ? "bg-white text-(--primary-gold) shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:bg-zinc-800 dark:text-(--primary-gold)"
-                  : "text-zinc-500 hover:bg-zinc-200/50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
-                  }`}
+                className={`flex-1 min-w-[100px] sm:min-w-0 whitespace-nowrap rounded-md px-4 py-2.5 text-xs sm:text-sm font-semibold transition-all ${
+                  activeTab === tab.key
+                    ? "bg-white text-(--primary-gold) shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:bg-zinc-800 dark:text-(--primary-gold)"
+                    : "text-zinc-500 hover:bg-zinc-200/50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
+                }`}
               >
                 {tab.label}
               </button>
@@ -981,25 +1204,63 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
             <div className="space-y-6 animate-in fade-in duration-300">
               <div>
                 <h2 className="text-lg font-bold">Personal Information</h2>
-                <p className="text-sm text-zinc-500 mt-1">Review your registered details. Each field under your profile can be edited exactly once.</p>
+                <p className="text-sm text-zinc-500 mt-1">
+                  Review your registered details. Each field under your profile
+                  can be edited exactly once.
+                </p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {[
-                  { label: "First Name", value: user.first_name, field: "firstName", canEdit: isViewerOwner && !user.is_fname_edited },
-                  { label: "Last Name", value: user.last_name, field: "lastName", canEdit: isViewerOwner && !user.is_lname_edited },
+                  {
+                    label: "First Name",
+                    value: user.first_name,
+                    field: "firstName",
+                    canEdit: isViewerOwner && !user.is_fname_edited,
+                  },
+                  {
+                    label: "Last Name",
+                    value: user.last_name,
+                    field: "lastName",
+                    canEdit: isViewerOwner && !user.is_lname_edited,
+                  },
                   { label: "Gender", value: user.gender, canEdit: false },
                   { label: "Family", value: user.family, canEdit: false },
-                  { label: "Date of Birth", value: user.date_of_birth || "N/A", field: "dateOfBirth", canEdit: isViewerOwner && !user.is_dob_edited },
-                  { label: "Date of Consecration", value: user.date_of_consecration || "N/A", canEdit: false },
-                  { label: "Shirt Size", value: formatShirtSizeDisplay(user.shirt_chest_inches, user.shirt_size), field: "shirtChest", canEdit: isViewerOwner, editOnce: false },
-                  { label: "Phone Number", value: user.phone_number || "N/A", field: "phoneNumber", canEdit: isViewerOwner },
+                  {
+                    label: "Date of Birth",
+                    value: user.date_of_birth || "N/A",
+                    field: "dateOfBirth",
+                    canEdit: isViewerOwner && !user.is_dob_edited,
+                  },
+                  {
+                    label: "Date of Consecration",
+                    value: user.date_of_consecration || "N/A",
+                    canEdit: false,
+                  },
+                  {
+                    label: "Shirt Size",
+                    value: formatShirtSizeDisplay(
+                      user.shirt_chest_inches,
+                      user.shirt_size,
+                    ),
+                    field: "shirtChest",
+                    canEdit: isViewerOwner,
+                    editOnce: false,
+                  },
+                  {
+                    label: "Phone Number",
+                    value: user.phone_number || "N/A",
+                    field: "phoneNumber",
+                    canEdit: isViewerOwner,
+                  },
                 ].map((item) => (
                   <div
                     key={item.label}
                     className="group relative rounded-xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm transition-all hover:border-(--primary-gold)/20 dark:border-zinc-800 dark:bg-zinc-950"
                   >
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{item.label}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                      {item.label}
+                    </p>
                     {editingField === item.field ? (
                       <div className="mt-2 flex flex-col gap-2">
                         {item.field === "dateOfBirth" ? (
@@ -1052,24 +1313,39 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                       </div>
                     ) : (
                       <div className="mt-1.5 flex items-center justify-between gap-2">
-                        <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate capitalize">{item.value}</p>
+                        <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate capitalize">
+                          {item.value}
+                        </p>
                         {item.field && isViewerOwner && (
                           <button
                             onClick={() => {
                               if (item.canEdit) {
-                                const initialValue = item.field === "dateOfBirth"
-                                  ? (user.date_of_birth || "")
-                                  : item.field === "phoneNumber"
-                                    ? (user.phone_number || "")
-                                    : item.field === "shirtChest"
-                                      ? (user.shirt_chest_inches != null ? String(user.shirt_chest_inches) : "")
-                                      : (item.value as string);
-                                handleEditClick(item.field as any, initialValue);
+                                const initialValue =
+                                  item.field === "dateOfBirth"
+                                    ? user.date_of_birth || ""
+                                    : item.field === "phoneNumber"
+                                      ? user.phone_number || ""
+                                      : item.field === "shirtChest"
+                                        ? user.shirt_chest_inches != null
+                                          ? String(user.shirt_chest_inches)
+                                          : ""
+                                        : (item.value as string);
+                                handleEditClick(
+                                  item.field as any,
+                                  initialValue,
+                                );
                               }
                             }}
                             disabled={!item.canEdit}
                             className={`rounded-md border border-zinc-200 bg-white p-1.5 transition-all dark:border-zinc-800 dark:bg-zinc-900 ${item.canEdit ? "text-zinc-400 hover:text-(--primary-gold)" : "text-zinc-200 dark:text-zinc-700 opacity-50 cursor-not-allowed"}`}
-                            title={item.canEdit ? ((item as { editOnce?: boolean }).editOnce === false || item.field === "phoneNumber" ? "Edit" : "Edit once") : "Locked"}
+                            title={
+                              item.canEdit
+                                ? (item as { editOnce?: boolean }).editOnce ===
+                                    false || item.field === "phoneNumber"
+                                  ? "Edit"
+                                  : "Edit once"
+                                : "Locked"
+                            }
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
@@ -1084,8 +1360,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Favorite Song</h3>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">Your personal anthem</p>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">
+                      Favorite Song
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">
+                      Your personal anthem
+                    </p>
                   </div>
                   {isViewerOwner && (
                     <button
@@ -1108,11 +1388,14 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                             alt={user.favorite_song.name}
                             className="h-full w-full object-cover"
                           />
-
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">{user.favorite_song.name}</p>
-                          <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{user.favorite_song.artist}</p>
+                          <p className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                            {user.favorite_song.name}
+                          </p>
+                          <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                            {user.favorite_song.artist}
+                          </p>
                         </div>
                       </div>
                       <a
@@ -1129,9 +1412,14 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                       onClick={() => isViewerOwner && setIsSpotifyOpen(true)}
                       className={`flex h-20 flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-200 dark:border-zinc-800 ${isViewerOwner ? "cursor-pointer hover:border-green-500/50 hover:bg-green-500/5 transition-all" : ""}`}
                     >
-                      <Music size={20} className="mb-1 text-zinc-300 dark:text-zinc-700" />
+                      <Music
+                        size={20}
+                        className="mb-1 text-zinc-300 dark:text-zinc-700"
+                      />
                       <p className="text-[11px] font-medium text-zinc-400">
-                        {isViewerOwner ? "Click to add your favorite song" : "No song selected"}
+                        {isViewerOwner
+                          ? "Click to add your favorite song"
+                          : "No song selected"}
                       </p>
                     </div>
                   )}
@@ -1142,8 +1430,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">Talents & Gifts</h3>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">What you bring to the family</p>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">
+                      Talents & Gifts
+                    </h3>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">
+                      What you bring to the family
+                    </p>
                   </div>
                   {isViewerOwner && !isEditingTalents && (
                     <button
@@ -1194,7 +1486,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                           </span>
                         ))
                       ) : (
-                        <p className="text-xs italic text-zinc-500">No talents added yet.</p>
+                        <p className="text-xs italic text-zinc-500">
+                          No talents added yet.
+                        </p>
                       )}
                     </div>
                   )}
@@ -1209,10 +1503,14 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
                 <div>
                   <h2 className="text-lg sm:text-xl font-bold">Family Tree</h2>
-                  <p className="text-xs sm:text-sm text-zinc-500 mt-1">See your growing spiritual family. Together we stand.</p>
+                  <p className="text-xs sm:text-sm text-zinc-500 mt-1">
+                    See your growing spiritual family. Together we stand.
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 rounded-full bg-(--primary-gold)/10 px-4 py-2 text-(--primary-gold)">
-                  <span className="text-sm font-bold">{familyMembers.length} Members Total</span>
+                  <span className="text-sm font-bold">
+                    {familyMembers.length} Members Total
+                  </span>
                 </div>
               </div>
 
@@ -1224,11 +1522,17 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                       {/* Father */}
                       <div className="flex flex-col items-center text-center gap-2">
                         <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/10 shadow-sm transition-transform hover:scale-105">
-                          <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">{getInitials(parents.father)}</span>
+                          <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">
+                            {getInitials(parents.father)}
+                          </span>
                         </div>
                         <div>
-                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">Father</p>
-                          <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">{parents.father}</p>
+                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">
+                            Father
+                          </p>
+                          <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">
+                            {parents.father}
+                          </p>
                         </div>
                       </div>
 
@@ -1238,11 +1542,17 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                       {/* Mother */}
                       <div className="flex flex-col items-center text-center gap-2">
                         <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/10 shadow-sm transition-transform hover:scale-105">
-                          <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">{getInitials(parents.mother)}</span>
+                          <span className="text-sm sm:text-xl font-bold text-(--primary-gold)">
+                            {getInitials(parents.mother)}
+                          </span>
                         </div>
                         <div>
-                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">Mother</p>
-                          <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">{parents.mother}</p>
+                          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-(--primary-gold)">
+                            Mother
+                          </p>
+                          <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 max-w-[80px] sm:max-w-[120px]">
+                            {parents.mother}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1285,7 +1595,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               {/* Members grid */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {familyMembers.map((member, index) => {
-                  const mInitial = getInitials(`${member.first_name} ${member.last_name}`);
+                  const mInitial = getInitials(
+                    `${member.first_name} ${member.last_name}`,
+                  );
                   const mService = formatDuration(member.date_of_consecration);
                   const isViewer = member.id === user.id;
 
@@ -1296,24 +1608,35 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                         setSelectedMember(member);
                         setIsModalOpen(true);
                       }}
-                      className={`flex w-full items-center gap-4 rounded-xl border p-4 transition-all shadow-sm text-left ${isViewer
-                        ? "border-(--primary-gold)/40 bg-(--primary-gold)/5 ring-1 ring-(--primary-gold)/10"
-                        : "border-zinc-200 bg-white hover:bg-zinc-50 hover:border-(--primary-gold)/30 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800/80"
-                        }`}
+                      className={`flex w-full items-center gap-4 rounded-xl border p-4 transition-all shadow-sm text-left ${
+                        isViewer
+                          ? "border-(--primary-gold)/40 bg-(--primary-gold)/5 ring-1 ring-(--primary-gold)/10"
+                          : "border-zinc-200 bg-white hover:bg-zinc-50 hover:border-(--primary-gold)/30 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800/80"
+                      }`}
                     >
                       <div className="relative shrink-0">
                         {member.photo_url ? (
-                          <img src={getOptimizedUrl(member.photo_url)} alt="Member" className={`h-12 w-12 rounded-full object-cover shadow-sm ${isViewer ? "shadow-md shadow-(--primary-gold)/20 border-2 border-(--primary-gold)" : ""}`} />
+                          <img
+                            src={getOptimizedUrl(member.photo_url)}
+                            alt="Member"
+                            className={`h-12 w-12 rounded-full object-cover shadow-sm ${isViewer ? "shadow-md shadow-(--primary-gold)/20 border-2 border-(--primary-gold)" : ""}`}
+                          />
                         ) : (
-                          <div className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold ${isViewer
-                            ? "bg-(--primary-gold) text-white shadow-md shadow-(--primary-gold)/20"
-                            : "bg-(--primary-gold)/10 text-(--primary-gold)"
-                            }`}>
+                          <div
+                            className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold ${
+                              isViewer
+                                ? "bg-(--primary-gold) text-white shadow-md shadow-(--primary-gold)/20"
+                                : "bg-(--primary-gold)/10 text-(--primary-gold)"
+                            }`}
+                          >
                             {mInitial}
                           </div>
                         )}
                         {index === 0 && (
-                          <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 shadow-xs" title="Eldest">
+                          <div
+                            className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 shadow-xs"
+                            title="Eldest"
+                          >
                             <Star className="h-3 w-3 text-white fill-white" />
                           </div>
                         )}
@@ -1327,7 +1650,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-zinc-500 mt-1">{mService} service</p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          {mService} service
+                        </p>
                       </div>
                     </button>
                   );
@@ -1335,7 +1660,9 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               </div>
 
               {familyMembers.length === 0 && (
-                <p className="py-10 text-center text-sm text-zinc-500">No members found in this family yet.</p>
+                <p className="py-10 text-center text-sm text-zinc-500">
+                  No members found in this family yet.
+                </p>
               )}
             </div>
           )}
@@ -1346,13 +1673,21 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="text-lg font-bold">3D Shirt Preview</p>
-                  <p className="text-sm text-zinc-500 mt-1">Rotate and explore your official event T-shirt</p>
+                  <p className="text-sm text-zinc-500 mt-1">
+                    Rotate and explore your official event T-shirt
+                  </p>
                 </div>
                 <div className="text-right">
                   <span className="text-base font-semibold text-(--primary-gold)">
-                    Size: {formatShirtSizeDisplay(user.shirt_chest_inches, user.shirt_size)}
+                    Size:{" "}
+                    {formatShirtSizeDisplay(
+                      user.shirt_chest_inches,
+                      user.shirt_size,
+                    )}
                   </span>
-                  <p className="text-xs text-zinc-500 mt-1">Still in progress…</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Still in progress…
+                  </p>
                 </div>
               </div>
 
@@ -1362,12 +1697,20 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-1.5">Material</p>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">100% Premium Cotton</p>
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-1.5">
+                    Material
+                  </p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    100% Premium Cotton
+                  </p>
                 </div>
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-1.5">Design</p>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Virgins Official 2026 Edition</p>
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-1.5">
+                    Design
+                  </p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Virgins Official 2026 Edition
+                  </p>
                 </div>
               </div>
             </div>
@@ -1377,8 +1720,12 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-100 dark:border-zinc-800 pb-5">
                 <div className="text-center sm:text-left">
-                  <h2 className="text-lg sm:text-xl font-bold">Your Shareable Identity</h2>
-                  <p className="text-xs sm:text-sm text-zinc-500 mt-1">Download this square card to share on social media.</p>
+                  <h2 className="text-lg sm:text-xl font-bold">
+                    Your Shareable Identity
+                  </h2>
+                  <p className="text-xs sm:text-sm text-zinc-500 mt-1">
+                    Download this square card to share on social media.
+                  </p>
                 </div>
                 <button
                   onClick={() => downloadCard()}
@@ -1416,7 +1763,6 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
             </div>
           )}
         </section>
-
       </div>
 
       {/* ── Member Detail Modal ── */}
@@ -1451,14 +1797,22 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-(--primary-gold)/10 text-6xl font-bold text-(--primary-gold)">
-                    {getInitials(`${selectedMember.first_name} ${selectedMember.last_name}`)}
+                    {getInitials(
+                      `${selectedMember.first_name} ${selectedMember.last_name}`,
+                    )}
                   </div>
                 )}
 
                 {/* Image Overlay Label */}
                 <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-6 text-white pt-20">
-                  <h3 className="text-2xl font-bold">{selectedMember.first_name} {selectedMember.last_name}</h3>
-                  <p className="mt-1 text-sm font-medium text-white/80">@{selectedMember.nick_name || selectedMember.first_name.toLowerCase()}</p>
+                  <h3 className="text-2xl font-bold">
+                    {selectedMember.first_name} {selectedMember.last_name}
+                  </h3>
+                  <p className="mt-1 text-sm font-medium text-white/80">
+                    @
+                    {selectedMember.nick_name ||
+                      selectedMember.first_name.toLowerCase()}
+                  </p>
                 </div>
               </div>
 
@@ -1466,25 +1820,34 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
               <div className="p-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Service Duration</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                      Service Duration
+                    </p>
                     <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                      {formatDuration(selectedMember.date_of_consecration)} of service
+                      {formatDuration(selectedMember.date_of_consecration)} of
+                      service
                     </p>
                   </div>
                   <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Family</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                      Family
+                    </p>
                     <p className="mt-1 text-sm font-bold text-(--primary-gold)">
                       {selectedMember.family}
                     </p>
                   </div>
                   <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Nation of Origin</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                      Nation of Origin
+                    </p>
                     <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
                       {selectedMember.nation_of_origin || "N/A"}
                     </p>
                   </div>
                   <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">State of Origin</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                      State of Origin
+                    </p>
                     <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
                       {selectedMember.state_of_origin || "N/A"}
                     </p>
@@ -1497,21 +1860,24 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-sm border border-green-200/50">
-                          <img 
-                            src={selectedMember.favorite_song.albumArt} 
-                            alt={selectedMember.favorite_song.name} 
-                            className="h-full w-full object-cover" 
+                          <img
+                            src={selectedMember.favorite_song.albumArt}
+                            alt={selectedMember.favorite_song.name}
+                            className="h-full w-full object-cover"
                           />
-
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100">{selectedMember.favorite_song.name}</p>
-                          <p className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">{selectedMember.favorite_song.artist}</p>
+                          <p className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                            {selectedMember.favorite_song.name}
+                          </p>
+                          <p className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">
+                            {selectedMember.favorite_song.artist}
+                          </p>
                         </div>
                       </div>
-                      <a 
-                        href={selectedMember.favorite_song.spotifyUrl} 
-                        target="_blank" 
+                      <a
+                        href={selectedMember.favorite_song.spotifyUrl}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-full bg-green-500/10 p-2 text-green-500 hover:bg-green-500/20 transition-colors"
                       >
@@ -1522,21 +1888,24 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
                 )}
 
                 {/* Talents section if any */}
-                {selectedMember.talents && selectedMember.talents.length > 0 && (
-                  <div className="mt-6">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Talents & Gifts</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedMember.talents.map((t) => (
-                        <span
-                          key={t}
-                          className="inline-flex items-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/5 px-3 py-1 text-xs font-medium text-(--primary-gold)"
-                        >
-                          {t}
-                        </span>
-                      ))}
+                {selectedMember.talents &&
+                  selectedMember.talents.length > 0 && (
+                    <div className="mt-6">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                        Talents & Gifts
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedMember.talents.map((t) => (
+                          <span
+                            key={t}
+                            className="inline-flex items-center rounded-full border border-(--primary-gold)/30 bg-(--primary-gold)/5 px-3 py-1 text-xs font-medium text-(--primary-gold)"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Action Button */}
                 <button

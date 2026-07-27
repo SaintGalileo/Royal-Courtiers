@@ -164,6 +164,12 @@ export default function GlobalNavbar() {
               >
                 Scoresheet
               </Link>
+              <Link
+                href="/sacred-records"
+                className={`hover:text-(--primary-gold) transition-colors ${pathname === "/sacred-records" || pathname?.startsWith("/sacred-records/") ? "font-bold text-(--primary-gold)" : ""}`}
+              >
+                Sacred Records
+              </Link>
             </>
           )}
           <Link
@@ -278,6 +284,13 @@ export default function GlobalNavbar() {
                 className={`block px-2 py-1 font-medium ${pathname === "/scoresheet" ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
               >
                 Scoresheet
+              </Link>
+              <Link
+                href="/sacred-records"
+                onClick={closeMenu}
+                className={`block px-2 py-1 font-medium ${pathname === "/sacred-records" || pathname?.startsWith("/sacred-records/") ? "text-(--primary-gold) font-bold" : "hover:text-(--primary-gold)"}`}
+              >
+                Sacred Records
               </Link>
             </>
           )}

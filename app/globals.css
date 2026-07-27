@@ -226,3 +226,43 @@ select option {
   }
 }
 
+@keyframes sacred-scroll-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes sacred-scroll-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+.sacred-scroll-fab {
+  animation: sacred-scroll-bounce 2.2s ease-in-out infinite;
+}
+
+.sacred-scroll-fab-pulse {
+  animation: sacred-scroll-pulse 2s ease-out infinite;
+}
+
+.sacred-scroll-fab-pulse-delay {
+  animation-delay: 1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sacred-scroll-fab,
+  .sacred-scroll-fab-pulse {
+    animation: none;
+  }
+}
+

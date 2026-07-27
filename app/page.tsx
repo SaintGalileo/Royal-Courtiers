@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import WelcomePopup from "@/components/WelcomePopup";
-import {
-  GiPolarStar,
-  GiWingedScepter,
-  GiFruitTree,
-} from "react-icons/gi";
+import SacredScrollFab from "@/components/SacredScrollFab";
+import { GiPolarStar, GiWingedScepter, GiFruitTree } from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import { ChevronDown, Cake, Gift } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -318,6 +315,7 @@ export default function Home() {
   const [hasMounted, setHasMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const preloadedImages = useRef<Set<string>>(new Set());
+  const heroRef = useRef<HTMLElement | null>(null);
 
   const preloadImage = useCallback((src: string) => {
     if (preloadedImages.current.has(src)) return;
@@ -469,8 +467,10 @@ export default function Home() {
       <WelcomePopup />
 
       {/* ─── HERO ─── */}
-      <section className="relative w-full h-screen overflow-hidden">
-        {/* Slide images */}
+      <section
+        ref={heroRef}
+        className="relative w-full h-screen overflow-hidden"
+      >        {/* Slide images */}
         {activeImages.map((src, idx) => {
           const isCurrent = idx === currentSlide;
           const isPrev = idx === prevSlide;
@@ -903,6 +903,8 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      <SacredScrollFab heroRef={heroRef} />
     </main>
   );
 }
