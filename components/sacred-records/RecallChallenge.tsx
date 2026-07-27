@@ -113,24 +113,24 @@ export default function RecallChallenge({
   if (!question) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6 animate-in fade-in duration-200">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
-      <div className="relative w-full max-w-md">
+      <div className="relative max-h-[min(90dvh,100%)] w-full max-w-md overflow-y-auto overscroll-contain">
         <button
           onClick={() => {
             if (isSaving) return;
             forfeitRemaining();
           }}
           disabled={isSaving}
-          className="absolute -top-12 right-0 rounded-full bg-white/20 p-2 text-white transition-colors hover:bg-white/40 disabled:opacity-50"
+          className="absolute right-2 top-2 z-20 rounded-full bg-black/40 p-2 text-white transition-colors hover:bg-black/60 disabled:opacity-50 sm:-top-12 sm:right-0 sm:bg-white/20 sm:hover:bg-white/40"
           aria-label="Close and forfeit remaining"
         >
-          <X size={24} />
+          <X size={22} />
         </button>
 
-        <div className="rounded-3xl border-4 border-(--primary-gold)/40 bg-white p-6 shadow-2xl dark:bg-zinc-900 sm:p-8">
-          <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="rounded-3xl border-4 border-(--primary-gold)/40 bg-white p-4 shadow-2xl dark:bg-zinc-900 sm:p-8">
+          <div className="mb-4 flex items-center justify-between gap-3 pr-10 sm:mb-6 sm:pr-0">
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
               Recall {index + 1}/{questions.length}
             </p>
@@ -144,7 +144,7 @@ export default function RecallChallenge({
             </div>
           </div>
 
-          <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center">
+          <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center sm:mb-6 sm:h-20 sm:w-20">
             <svg className="absolute inset-0 -rotate-90" viewBox="0 0 36 36">
               <path
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -167,11 +167,11 @@ export default function RecallChallenge({
             </span>
           </div>
 
-          <p className="mb-8 text-center text-lg font-bold leading-snug text-zinc-900 dark:text-zinc-100">
+          <p className="mb-5 text-center text-base font-bold leading-snug text-zinc-900 dark:text-zinc-100 sm:mb-8 sm:text-lg">
             {question.prompt}
           </p>
 
-          <div className="grid gap-3">
+          <div className="grid gap-2.5 sm:gap-3">
             {(["a", "b"] as const).map((key) => (
               <motion.button
                 key={key}
@@ -179,7 +179,7 @@ export default function RecallChallenge({
                 whileTap={{ scale: 0.98 }}
                 disabled={locked}
                 onClick={() => handleChoice(key)}
-                className="rounded-2xl border-2 border-zinc-200 bg-zinc-50 px-4 py-4 text-left text-sm font-bold text-zinc-800 transition-colors hover:border-(--primary-gold)/50 hover:bg-(--primary-gold)/5 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="rounded-2xl border-2 border-zinc-200 bg-zinc-50 px-3 py-3.5 text-left text-sm font-bold text-zinc-800 transition-colors hover:border-(--primary-gold)/50 hover:bg-(--primary-gold)/5 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 sm:px-4 sm:py-4"
               >
                 <span className="mr-2 text-(--primary-gold)">
                   {key.toUpperCase()}.
@@ -189,7 +189,7 @@ export default function RecallChallenge({
             ))}
           </div>
 
-          <p className="mt-4 text-center text-[11px] font-medium text-zinc-400">
+          <p className="mt-3 text-center text-[11px] font-medium text-zinc-400 sm:mt-4">
             Faster correct answers earn more. Wrong or time up = 0.00
           </p>
         </div>

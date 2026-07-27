@@ -18,6 +18,8 @@ const NODE_SPACING = 140;
 const VIEW_WIDTH = 400;
 const CENTER_X = 200;
 const FADE_RANGE_PX = 110;
+const DESKTOP_OFFSETS = [0, 64, -64, 72, -72, 56, -56, 0];
+const MOBILE_OFFSETS = [0, 28, -28, 34, -34, 24, -24, 0];
 
 type FadeStyle = { scale: number; opacity: number };
 
@@ -69,9 +71,18 @@ export default function ProgressPath({
     userProgress.filter((p) => p.completed).map((p) => p.day_number),
   );
 
-  const offsets = sortedRecords.map(
-    (_, i) => [0, 64, -64, 72, -72, 56, -56, 0][i % 8],
-  );
+  const [isNarrow, setIsNarrow] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const sync = () => setIsNarrow(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const offsetPattern = isNarrow ? MOBILE_OFFSETS : DESKTOP_OFFSETS;
+  const offsets = sortedRecords.map((_, i) => offsetPattern[i % 8]);
 
   const pathHeight = Math.max(
     sortedRecords.length * NODE_SPACING,
@@ -171,16 +182,16 @@ export default function ProgressPath({
     };
   }, [scrollRoot, updateFades, scheduleFadeUpdate]);
 
-  // Resume fades after a modal/explainer closes.
+  // Resume fades after a modal/explainer closes or layout width changes.
   useEffect(() => {
     if (!scrollRoot || effectsPaused) return;
     scheduleFadeUpdate();
-  }, [effectsPaused, scrollRoot, scheduleFadeUpdate]);
+  }, [effectsPaused, scrollRoot, scheduleFadeUpdate, isNarrow]);
 
   return (
     <div
       ref={rootRef}
-      className="relative mx-auto flex w-full max-w-xl flex-col items-center px-2 pt-24 pb-6 sm:px-4"
+      className="relative mx-auto flex w-full max-w-xl flex-col items-center overflow-x-clip px-1 pt-16 pb-8 sm:px-4 sm:pt-24 sm:pb-6"
     >
       <div
         className="pointer-events-none absolute inset-x-0 top-8 bottom-24 z-0"

@@ -20,8 +20,8 @@ export default function SacredRecordsExplainer({
   onDismiss,
 }: SacredRecordsExplainerProps) {
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-(--primary-gold)/40 bg-white p-6 shadow-2xl dark:bg-zinc-950 sm:p-7">
+    <div className="fixed inset-0 z-[60] grid place-items-end bg-black/70 p-3 backdrop-blur-sm sm:place-items-center sm:p-4">
+      <div className="relative max-h-[min(90dvh,100%)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-(--primary-gold)/40 bg-white p-5 shadow-2xl dark:bg-zinc-950 sm:max-h-none sm:overflow-visible sm:p-7">
         <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-(--primary-gold)/10 blur-3xl" />
 
         <div className="relative space-y-4">

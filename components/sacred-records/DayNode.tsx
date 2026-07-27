@@ -26,7 +26,7 @@ export default function DayNode({
 
   return (
     <div
-      className="relative flex flex-col items-center"
+      className="relative flex flex-col items-center max-w-[calc(100vw-1.5rem)]"
       style={{ transform: `translateX(${offset}px)` }}
     >
       <div

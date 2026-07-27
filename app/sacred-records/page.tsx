@@ -23,7 +23,7 @@ import RecallChallenge, {
 import SacredRecordsExplainer, {
   sacredExplainerKey,
 } from "@/components/sacred-records/SacredRecordsExplainer";
-import { Loader2, ScrollText, HelpCircle } from "lucide-react";
+import { Loader2, ScrollText } from "lucide-react";
 import {
   MAX_DAY_POINTS,
   QUESTIONS_PER_ROUND,
@@ -292,24 +292,14 @@ export default function SacredRecordsPage() {
   }
 
   return (
-    <main className="relative flex h-[calc(100vh-80px)] flex-col overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setShowExplainer(true)}
-        className="absolute right-4 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-(--primary-gold)/25 bg-white/95 text-(--primary-gold) shadow-sm backdrop-blur-md transition-all hover:border-(--primary-gold)/50 hover:bg-(--primary-gold)/10 dark:border-(--primary-gold)/20 dark:bg-zinc-950/95"
-        aria-label="How Sacred Records works"
-        title="How it works"
-      >
-        <HelpCircle className="h-5 w-5" />
-      </button>
-
+    <main className="relative flex h-[calc(100dvh-80px)] max-h-[calc(100vh-80px)] flex-col overflow-hidden">
       <div
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(143,107,42,0.08),transparent_55%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.08),transparent_55%)]"
         aria-hidden
       />
 
       <div
-        className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]"
         data-sacred-scroll
       >
         <PathStats
@@ -319,9 +309,10 @@ export default function SacredRecordsPage() {
           points={totalPoints}
           isFamilyChamp={isFamilyChamp}
           isOverallChamp={isOverallChamp}
+          onHelpClick={() => setShowExplainer(true)}
         />
 
-        <div className="mx-auto max-w-2xl px-4 pb-24 pt-2">
+        <div className="mx-auto max-w-2xl px-3 pb-28 pt-2 sm:px-4 sm:pb-24">
           {records.length > 0 ? (
             <ProgressPath
               records={records}

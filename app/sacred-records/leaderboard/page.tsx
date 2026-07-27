@@ -9,13 +9,13 @@ import {
   type LeaderboardEntry,
 } from "@/services/sacred-records";
 import { SACRED_RECORDS_FAMILIES } from "@/lib/sacred-records-game";
+import { ArrowLeft, Crown, Loader2, Trophy } from "lucide-react";
 import {
-  ArrowLeft,
-  Crown,
-  Loader2,
-  Trophy,
-} from "lucide-react";
-import { GiPolarStar, GiWingedScepter, GiFruitTree, GiDove } from "react-icons/gi";
+  GiPolarStar,
+  GiWingedScepter,
+  GiFruitTree,
+  GiDove,
+} from "react-icons/gi";
 import { FaBolt } from "react-icons/fa";
 import type { ComponentType } from "react";
 
@@ -133,7 +133,7 @@ export default function SacredRecordsLeaderboardPage() {
 
   return (
     <main className="mx-auto min-h-[calc(100vh-80px)] w-full max-w-3xl px-4 py-8 sm:px-6">
-      <div className="mb-6 flex items-center justify-between gap-3">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/sacred-records"
           className="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-(--primary-gold)"
@@ -143,7 +143,7 @@ export default function SacredRecordsLeaderboardPage() {
         </Link>
         <div className="flex items-center gap-2 text-(--primary-gold)">
           <Trophy className="h-5 w-5" />
-          <h1 className="text-xl font-black">Sacred Leaderboard</h1>
+          <h1 className="text-lg font-black sm:text-xl">Leaderboard</h1>
         </div>
       </div>
 
@@ -255,7 +255,8 @@ export default function SacredRecordsLeaderboardPage() {
       </div>
 
       <p className="mt-4 text-center text-[11px] text-zinc-400">
-        Family #1 earns that family&apos;s seal. Overall #1 also wears the crown.
+        Family #1 earns that family&apos;s seal. Overall #1 also wears the
+        crown.
       </p>
     </main>
   );
