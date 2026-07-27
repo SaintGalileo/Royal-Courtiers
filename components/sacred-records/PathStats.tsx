@@ -65,10 +65,9 @@ export default function PathStats({
               </span>
             )}
             {isFamilyChamp && !isOverallChamp && (
-              <Trophy
-                className="h-3 w-3 text-(--primary-gold)"
-                title="Family #1"
-              />
+              <span title="Family #1">
+                <Trophy className="h-3 w-3 text-(--primary-gold)" />
+              </span>
             )}
           </div>
 
