@@ -15,7 +15,13 @@ const FAMILY_ORDER: CompetitionFamily[] = [
   "Light",
 ];
 
-/** Clickable family chip (icon + name) that opens a roster when available. */
+function focusRosterPanel() {
+  document
+    .getElementById("event-roster-panel")
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** Clickable family chip (icon + name) that focuses the event roster panel family tab. */
 export function FamilyTeamButton({
   name,
   eventName,
@@ -25,11 +31,11 @@ export function FamilyTeamButton({
   name?: string;
   eventName: string;
   align?: "left" | "right";
-  onOpen: (family: CompetitionFamily) => void;
+  onOpen?: (family: CompetitionFamily) => void;
 }) {
   const hasRoster = Boolean(getEventRoster(eventName));
   const isFamily = Boolean(name && isCompetitionFamily(name));
-  const canOpen = hasRoster && isFamily;
+  const canOpen = hasRoster && isFamily && Boolean(onOpen);
 
   const content = (
     <>
@@ -54,7 +60,10 @@ export function FamilyTeamButton({
   return (
     <button
       type="button"
-      onClick={() => onOpen(name as CompetitionFamily)}
+      onClick={() => {
+        onOpen?.(name as CompetitionFamily);
+        focusRosterPanel();
+      }}
       aria-label={`View ${name} participants`}
       className={`flex items-center gap-3 flex-1 rounded-lg transition-opacity hover:opacity-80 active:opacity-70 ${align === "right" ? "justify-end text-right" : "text-left"}`}
     >
@@ -69,11 +78,11 @@ export function AllFamiliesRosterButtons({
   onOpen,
 }: {
   eventName: string;
-  onOpen: (family: CompetitionFamily) => void;
+  onOpen?: (family: CompetitionFamily) => void;
 }) {
   const hasRoster = Boolean(getEventRoster(eventName));
 
-  if (!hasRoster) {
+  if (!hasRoster || !onOpen) {
     return (
       <div className="flex items-center gap-3 flex-1">
         <FamilyShield name="All Families" />
@@ -93,7 +102,10 @@ export function AllFamiliesRosterButtons({
           <button
             key={family}
             type="button"
-            onClick={() => onOpen(family)}
+            onClick={() => {
+              onOpen(family);
+              focusRosterPanel();
+            }}
             aria-label={`View ${family} participants`}
             title={family}
             className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-black uppercase tracking-tight transition-transform hover:scale-105 active:scale-95 ${style.bgColor} ${style.borderColor} ${style.textColor}`}

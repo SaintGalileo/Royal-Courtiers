@@ -1,21 +1,44 @@
 import type { CompetitionFamily, EventName } from "@/lib/competitions";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type RosterSlot = {
   role?: string;
   name: string;
 };
 
+export type RosterSlotData = {
+  role?: string;
+  name: string;
+  memberId?: string | null;
+};
+
+export type SupplementaryEntry = {
+  name: string;
+  memberId?: string | null;
+};
+
 export type FamilyRoster = Record<CompetitionFamily, RosterSlot[]>;
+
+export type FamilyRosterData = Record<CompetitionFamily, RosterSlotData[]>;
+
+export type CompetitionRostersData = {
+  rosters: Partial<Record<EventName, FamilyRosterData>>;
+  supplementary: Partial<
+    Record<EventName, Record<CompetitionFamily, SupplementaryEntry[]>>
+  >;
+};
 
 export const PARTICIPANTS_PENDING_NOTE =
   "Participant names will be published in due course.";
 
-const FAMILIES: CompetitionFamily[] = [
+export const ROSTER_FAMILIES: CompetitionFamily[] = [
   "Virtue",
   "Power",
   "Dominion",
   "Light",
 ];
+
+const FAMILIES = ROSTER_FAMILIES;
 
 function slots(...roles: string[]): RosterSlot[] {
   return roles.map((role) => ({ role, name: "TBA" }));
@@ -94,6 +117,11 @@ export const COMPETITION_ROSTERS: Partial<Record<EventName, FamilyRoster>> = {
   Pageantry: forAllFamilies(siblingPairSlots),
 };
 
+/** Non-choral events that have competition rosters. */
+export const ROSTER_EVENT_NAMES = Object.keys(
+  COMPETITION_ROSTERS,
+) as EventName[];
+
 export function getEventRoster(
   eventName: string,
 ): FamilyRoster | undefined {
@@ -104,6 +132,200 @@ export function rosterHasPendingNames(roster: FamilyRoster): boolean {
   return FAMILIES.some((family) =>
     roster[family].some((slot) => slot.name === "TBA"),
   );
+}
+
+function emptySupplementaryForEvent(): Record<
+  CompetitionFamily,
+  SupplementaryEntry[]
+> {
+  return Object.fromEntries(
+    FAMILIES.map((family) => [family, [] as SupplementaryEntry[]]),
+  ) as Record<CompetitionFamily, SupplementaryEntry[]>;
+}
+
+function templateToSlotData(template: FamilyRoster): FamilyRosterData {
+  return Object.fromEntries(
+    FAMILIES.map((family) => [
+      family,
+      template[family].map((slot) => ({
+        role: slot.role,
+        name: slot.name,
+        memberId: null,
+      })),
+    ]),
+  ) as FamilyRosterData;
+}
+
+/** Empty document hydrated from slot templates (all TBA, empty supplementary). */
+export function createEmptyCompetitionRostersData(): CompetitionRostersData {
+  const rosters: CompetitionRostersData["rosters"] = {};
+  const supplementary: CompetitionRostersData["supplementary"] = {};
+
+  for (const eventName of ROSTER_EVENT_NAMES) {
+    const template = COMPETITION_ROSTERS[eventName];
+    if (!template) continue;
+    rosters[eventName] = templateToSlotData(template);
+    supplementary[eventName] = emptySupplementaryForEvent();
+  }
+
+  return { rosters, supplementary };
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseSlot(raw: unknown, fallbackRole?: string): RosterSlotData {
+  if (!isPlainObject(raw)) {
+    return { role: fallbackRole, name: "TBA", memberId: null };
+  }
+  const name =
+    typeof raw.name === "string" && raw.name.trim()
+      ? raw.name.trim()
+      : "TBA";
+  const role =
+    typeof raw.role === "string"
+      ? raw.role
+      : fallbackRole;
+  const memberId =
+    typeof raw.memberId === "string"
+      ? raw.memberId
+      : raw.memberId === null
+        ? null
+        : null;
+  return { role, name, memberId };
+}
+
+function mergeFamilySlots(
+  template: RosterSlot[],
+  stored: unknown,
+): RosterSlotData[] {
+  const storedList = Array.isArray(stored) ? stored : [];
+  return template.map((slot, index) => {
+    const matchByRole =
+      slot.role != null
+        ? storedList.find(
+            (item) =>
+              isPlainObject(item) &&
+              typeof item.role === "string" &&
+              item.role === slot.role,
+          )
+        : undefined;
+    const match = matchByRole ?? storedList[index];
+    const parsed = parseSlot(match, slot.role);
+    return {
+      role: slot.role,
+      name: parsed.name,
+      memberId: parsed.memberId ?? null,
+    };
+  });
+}
+
+function parseSupplementaryList(raw: unknown): SupplementaryEntry[] {
+  if (!Array.isArray(raw)) return [];
+  const result: SupplementaryEntry[] = [];
+  for (const item of raw) {
+    if (typeof item === "string" && item.trim()) {
+      result.push({ name: item.trim(), memberId: null });
+      continue;
+    }
+    if (!isPlainObject(item)) continue;
+    const name =
+      typeof item.name === "string" && item.name.trim()
+        ? item.name.trim()
+        : "";
+    if (!name) continue;
+    const memberId =
+      typeof item.memberId === "string" ? item.memberId : null;
+    result.push({ name, memberId });
+  }
+  return result;
+}
+
+/** Merge DB JSON onto templates so slot structure always matches code. */
+export function parseCompetitionRostersData(
+  raw: unknown,
+): CompetitionRostersData {
+  const base = createEmptyCompetitionRostersData();
+  if (!isPlainObject(raw)) return base;
+
+  const rawRosters = isPlainObject(raw.rosters) ? raw.rosters : {};
+  const rawSupplementary = isPlainObject(raw.supplementary)
+    ? raw.supplementary
+    : {};
+
+  for (const eventName of ROSTER_EVENT_NAMES) {
+    const template = COMPETITION_ROSTERS[eventName];
+    if (!template) continue;
+
+    const eventStored = isPlainObject(rawRosters[eventName])
+      ? rawRosters[eventName]
+      : {};
+
+    base.rosters[eventName] = Object.fromEntries(
+      FAMILIES.map((family) => [
+        family,
+        mergeFamilySlots(template[family], eventStored[family]),
+      ]),
+    ) as FamilyRosterData;
+
+    const suppStored = isPlainObject(rawSupplementary[eventName])
+      ? rawSupplementary[eventName]
+      : {};
+
+    base.supplementary[eventName] = Object.fromEntries(
+      FAMILIES.map((family) => [
+        family,
+        parseSupplementaryList(suppStored[family]),
+      ]),
+    ) as Record<CompetitionFamily, SupplementaryEntry[]>;
+  }
+
+  return base;
+}
+
+export function serializeCompetitionRostersData(
+  data: CompetitionRostersData,
+): CompetitionRostersData {
+  return parseCompetitionRostersData(data);
+}
+
+/** Family roster view for public UI (drops memberId). */
+export function getMergedEventRoster(
+  data: CompetitionRostersData,
+  eventName: string,
+): FamilyRoster | undefined {
+  const template = getEventRoster(eventName);
+  if (!template) return undefined;
+
+  const stored = data.rosters[eventName as EventName];
+  return Object.fromEntries(
+    FAMILIES.map((family) => [
+      family,
+      (stored?.[family] ?? template[family]).map((slot) => ({
+        role: slot.role,
+        name: slot.name?.trim() ? slot.name : "TBA",
+      })),
+    ]),
+  ) as FamilyRoster;
+}
+
+export async function fetchCompetitionRosters(
+  supabase: SupabaseClient,
+): Promise<CompetitionRostersData> {
+  const { data, error } = await supabase
+    .from("competition_rosters")
+    .select("data")
+    .eq("id", "current")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to fetch competition rosters:", error);
+    return createEmptyCompetitionRostersData();
+  }
+
+  if (!data) return createEmptyCompetitionRostersData();
+  return parseCompetitionRostersData(data.data);
 }
 
 /** Maps a track match round + gender to the roster role prefix(es) for that race. */
@@ -167,4 +389,15 @@ export function getRosterSubtitle(
     return `Table Tennis (${gender === "male" ? "Male" : "Female"}) — Participants`;
   }
   return `${eventName} — Participants`;
+}
+
+export function formatMemberDisplayName(member: {
+  first_name?: string | null;
+  last_name?: string | null;
+  nick_name?: string | null;
+}): string {
+  const first = member.first_name?.trim() ?? "";
+  const last = member.last_name?.trim() ?? "";
+  const full = `${first} ${last}`.trim();
+  return full || member.nick_name?.trim() || "Unknown";
 }

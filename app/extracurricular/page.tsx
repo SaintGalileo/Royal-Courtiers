@@ -9,7 +9,7 @@ import {
   FamilyTeamButton,
   AllFamiliesRosterButtons,
 } from "@/components/competitions/FamilyTeamButton";
-import { FamilyRosterModal } from "@/components/competitions/FamilyRosterModal";
+import { EventRosterPanel } from "@/components/competitions/EventRosterPanel";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
 import PageantryCulturePanel from "@/components/competitions/PageantryCulturePanel";
 import {
@@ -143,6 +143,8 @@ const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
 
 export default function ExtracurricularPage() {
   const [activeTab, setActiveTab] = useState<ExtracurricularTab>("Debate");
+  const [rosterFamily, setRosterFamily] =
+    useState<CompetitionFamily>("Virtue");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const router = useRouter();
@@ -156,6 +158,11 @@ export default function ExtracurricularPage() {
     }
     setIsAuth(true);
   }, [router]);
+
+  const handleTabChange = (tab: ExtracurricularTab) => {
+    setActiveTab(tab);
+    setRosterFamily("Virtue");
+  };
 
   const filteredMatches = MOCK_MATCHES.filter((m) => m.type === activeTab);
 
@@ -202,7 +209,7 @@ export default function ExtracurricularPage() {
           {extracurricularTabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold
                 transition-all border whitespace-nowrap
@@ -219,9 +226,14 @@ export default function ExtracurricularPage() {
           ))}
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 space-y-6">
           <EventInfoCard eventName={activeTab} />
           {activeTab === "Pageantry" && <PageantryCulturePanel />}
+          <EventRosterPanel
+            eventName={activeTab}
+            selectedFamily={rosterFamily}
+            onFamilyChange={setRosterFamily}
+          />
         </div>
 
         <div className="space-y-10">
@@ -243,7 +255,11 @@ export default function ExtracurricularPage() {
                 </div>
                 <div className="grid gap-3">
                   {groupedMatches[date].map((match) => (
-                    <MatchCard key={match.id} match={match} />
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      onFocusFamily={setRosterFamily}
+                    />
                   ))}
                 </div>
               </section>
@@ -263,14 +279,17 @@ export default function ExtracurricularPage() {
   );
 }
 
-function MatchCard({ match }: { match: EventMatch }) {
-  const [openFamily, setOpenFamily] = useState<CompetitionFamily | null>(null);
-
+function MatchCard({
+  match,
+  onFocusFamily,
+}: {
+  match: EventMatch;
+  onFocusFamily: (family: CompetitionFamily) => void;
+}) {
   if (match.isGraded) {
     return (
-      <>
-        <div
-          className={`
+      <div
+        className={`
           group block bg-white dark:bg-zinc-900
           border border-zinc-200 dark:border-zinc-800
           rounded-2xl px-6 py-5
@@ -279,52 +298,43 @@ function MatchCard({ match }: { match: EventMatch }) {
           transition-all duration-200
           ${match.isFinal ? "border-(--primary-gold)/30 dark:border-(--primary-gold)/20" : ""}
         `}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span
-              className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
-            >
-              {match.round}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <span
+            className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
+          >
+            {match.round}
+          </span>
+          {match.info && (
+            <span className="group/info relative cursor-help">
+              <AlertCircle className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600 hover:text-(--primary-gold) transition-colors" />
+              <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-52 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 shadow-lg opacity-0 group-hover/info:opacity-100 group-hover/info:pointer-events-auto transition-opacity z-10">
+                {match.info}
+              </span>
             </span>
-            {match.info && (
-              <span className="group/info relative cursor-help">
-                <AlertCircle className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600 hover:text-(--primary-gold) transition-colors" />
-                <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-52 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 shadow-lg opacity-0 group-hover/info:opacity-100 group-hover/info:pointer-events-auto transition-opacity z-10">
-                  {match.info}
-                </span>
-              </span>
-            )}
-          </div>
+          )}
+        </div>
 
-          <div className="flex items-center justify-between gap-4">
-            <AllFamiliesRosterButtons
-              eventName={match.type}
-              onOpen={setOpenFamily}
-            />
+        <div className="flex items-center justify-between gap-4">
+          <AllFamiliesRosterButtons
+            eventName={match.type}
+            onOpen={onFocusFamily}
+          />
 
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Clock className="h-3 w-3 text-(--primary-gold)" />
-              <span className="text-xs font-black text-(--primary-gold)">
-                {match.time}
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Clock className="h-3 w-3 text-(--primary-gold)" />
+            <span className="text-xs font-black text-(--primary-gold)">
+              {match.time}
+            </span>
           </div>
         </div>
-        {openFamily && (
-          <FamilyRosterModal
-            family={openFamily}
-            eventName={match.type}
-            onClose={() => setOpenFamily(null)}
-          />
-        )}
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <div
-        className={`
+    <div
+      className={`
         group block bg-white dark:bg-zinc-900
         border border-zinc-200 dark:border-zinc-800
         rounded-2xl px-6 py-5
@@ -333,55 +343,47 @@ function MatchCard({ match }: { match: EventMatch }) {
         transition-all duration-200
         ${match.isFinal ? "border-(--primary-gold)/30 dark:border-(--primary-gold)/20" : ""}
       `}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <span
-            className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
-          >
-            {match.round}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <span
+          className={`text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
+        >
+          {match.round}
+        </span>
+      </div>
+
+      {match.topic && (
+        <p className="mb-4 text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 border-l-2 border-(--primary-gold)/40 pl-3">
+          {match.topic}
+        </p>
+      )}
+
+      <div className="flex items-center justify-between gap-4">
+        <FamilyTeamButton
+          name={match.teamA}
+          eventName={match.type}
+          onOpen={onFocusFamily}
+        />
+
+        <div className="flex flex-col items-center shrink-0">
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3 w-3 text-(--primary-gold)" />
+            <span className="text-xs font-black text-(--primary-gold)">
+              {match.time}
+            </span>
+          </div>
+          <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
+            VS
           </span>
         </div>
 
-        {match.topic && (
-          <p className="mb-4 text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 border-l-2 border-(--primary-gold)/40 pl-3">
-            {match.topic}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between gap-4">
-          <FamilyTeamButton
-            name={match.teamA}
-            eventName={match.type}
-            onOpen={setOpenFamily}
-          />
-
-          <div className="flex flex-col items-center shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3 text-(--primary-gold)" />
-              <span className="text-xs font-black text-(--primary-gold)">
-                {match.time}
-              </span>
-            </div>
-            <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
-              VS
-            </span>
-          </div>
-
-          <FamilyTeamButton
-            name={match.teamB}
-            eventName={match.type}
-            align="right"
-            onOpen={setOpenFamily}
-          />
-        </div>
-      </div>
-      {openFamily && (
-        <FamilyRosterModal
-          family={openFamily}
+        <FamilyTeamButton
+          name={match.teamB}
           eventName={match.type}
-          onClose={() => setOpenFamily(null)}
+          align="right"
+          onOpen={onFocusFamily}
         />
-      )}
-    </>
+      </div>
+    </div>
   );
 }

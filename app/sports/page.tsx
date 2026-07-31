@@ -14,15 +14,19 @@ import {
   FaFont,
 } from "react-icons/fa";
 import { IoMaleSharp, IoFemaleSharp, IoMaleFemaleSharp } from "react-icons/io5";
-import GlobalNavbar from "@/components/GlobalNavbar";
-import GlobalFooter from "@/components/GlobalFooter";
 // import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EventInfoCard from "@/components/competitions/EventInfoCard";
-import { FamilyTeamButton, AllFamiliesRosterButtons } from "@/components/competitions/FamilyTeamButton";
-import { FamilyRosterModal } from "@/components/competitions/FamilyRosterModal";
+import {
+  FamilyTeamButton,
+  AllFamiliesRosterButtons,
+} from "@/components/competitions/FamilyTeamButton";
+import { EventRosterPanel } from "@/components/competitions/EventRosterPanel";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
-import { applySemiFinalDraws, type CompetitionFamily } from "@/lib/competitions";
+import {
+  applySemiFinalDraws,
+  type CompetitionFamily,
+} from "@/lib/competitions";
 
 type SportTab =
   | "Football"
@@ -68,7 +72,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Football",
     round: "Semi-Final 1",
     date: "Jul 31",
-    time: "04:00 PM",
+    time: "10:00 A.M.",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -77,7 +81,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Football",
     round: "Semi-Final 2",
     date: "Jul 31",
-    time: "05:00 PM",
+    time: "11:00 A.M.",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -86,7 +90,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Football",
     round: "3rd Place Match",
     date: "Aug 4",
-    time: "04:00 PM",
+    time: "04:00 P.M.",
     teamA: "Runner Up 1",
     teamB: "Runner Up 2",
     isFinal: true,
@@ -96,7 +100,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Football",
     round: "Grand Final",
     date: "Aug 12",
-    time: "09:00 AM",
+    time: "09:00 A.M.",
     teamA: "Winner SF1",
     teamB: "Winner SF2",
     isFinal: true,
@@ -388,7 +392,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Chess",
     round: "Semi-Final 1",
     date: "Aug 10",
-    time: "02:00 PM",
+    time: "02:00 P.M.",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -397,7 +401,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Chess",
     round: "Semi-Final 2",
     date: "Aug 10",
-    time: "02:00 PM",
+    time: "02:00 P.M.",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -415,7 +419,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Chess",
     round: "Grand Final",
     date: "Aug 10",
-    time: "02:00 PM",
+    time: "02:00 P.M.",
     teamA: "Winner SF1",
     teamB: "Winner SF2",
     isFinal: true,
@@ -434,7 +438,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Scrabble",
     round: "Semi-Final 2",
     date: "Aug 10",
-    time: "02:00 PM",
+    time: "02:00 P.M.",
     teamA: "TBD",
     teamB: "TBD",
   },
@@ -443,7 +447,7 @@ const MATCHES = applySemiFinalDraws([
     type: "Scrabble",
     round: "3rd Place Match",
     date: "Aug 10",
-    time: "02:00 PM",
+    time: "02:00 P.M.",
     teamA: "Runner Up 1",
     teamB: "Runner Up 2",
   },
@@ -476,6 +480,8 @@ const SportIcon = ({ sport }: { sport: SportTab }) => {
 
 export default function SportsPage() {
   const [activeTab, setActiveTab] = useState<SportTab>("Football");
+  const [rosterFamily, setRosterFamily] =
+    useState<CompetitionFamily>("Virtue");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const router = useRouter();
@@ -489,6 +495,11 @@ export default function SportsPage() {
     }
     setIsAuth(true);
   }, [router]);
+
+  const handleTabChange = (sport: SportTab) => {
+    setActiveTab(sport);
+    setRosterFamily("Virtue");
+  };
 
   const filteredMatches = MATCHES.filter((m) => m.type === activeTab);
 
@@ -536,7 +547,7 @@ export default function SportsPage() {
           {sports.map((sport) => (
             <button
               key={sport}
-              onClick={() => setActiveTab(sport)}
+              onClick={() => handleTabChange(sport)}
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold
                 transition-all border whitespace-nowrap
@@ -553,8 +564,13 @@ export default function SportsPage() {
           ))}
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 space-y-6">
           <EventInfoCard eventName={activeTab} />
+          <EventRosterPanel
+            eventName={activeTab}
+            selectedFamily={rosterFamily}
+            onFamilyChange={setRosterFamily}
+          />
         </div>
 
         <div className="space-y-10">
@@ -576,7 +592,11 @@ export default function SportsPage() {
                 </div>
                 <div className="grid gap-3">
                   {groupedMatches[date].map((match) => (
-                    <MatchCard key={match.id} match={match} />
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      onFocusFamily={setRosterFamily}
+                    />
                   ))}
                 </div>
               </section>
@@ -596,21 +616,29 @@ export default function SportsPage() {
   );
 }
 
-function MatchCard({ match }: { match: Match }) {
-  const [openFamily, setOpenFamily] = useState<CompetitionFamily | null>(null);
+function MatchGenderIcon({
+  gender,
+}: {
+  gender?: "male" | "female" | "mixed";
+}) {
+  if (gender === "male")
+    return <IoMaleSharp className="ml-1.5 h-3.5 w-3.5 text-blue-500" />;
+  if (gender === "female")
+    return <IoFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-pink-500" />;
+  if (gender === "mixed")
+    return (
+      <IoMaleFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-purple-500" />
+    );
+  return null;
+}
 
-  const GenderIcon = () => {
-    if (match.gender === "male")
-      return <IoMaleSharp className="ml-1.5 h-3.5 w-3.5 text-blue-500" />;
-    if (match.gender === "female")
-      return <IoFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-pink-500" />;
-    if (match.gender === "mixed")
-      return (
-        <IoMaleFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-purple-500" />
-      );
-    return null;
-  };
-
+function MatchCard({
+  match,
+  onFocusFamily,
+}: {
+  match: Match;
+  onFocusFamily: (family: CompetitionFamily) => void;
+}) {
   // Details page disabled — restore Link wrapper + showDetailLink when ready
   const cardClass = `
     group block bg-white dark:bg-zinc-900
@@ -627,14 +655,14 @@ function MatchCard({ match }: { match: Match }) {
           className={`flex items-center text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
         >
           {match.round}
-          <GenderIcon />
+          <MatchGenderIcon gender={match.gender} />
         </span>
       </div>
 
       <div className="flex items-center justify-between gap-4">
         <AllFamiliesRosterButtons
           eventName={match.type}
-          onOpen={setOpenFamily}
+          onOpen={onFocusFamily}
         />
 
         <div className="flex items-center gap-1.5 shrink-0">
@@ -652,7 +680,7 @@ function MatchCard({ match }: { match: Match }) {
           className={`flex items-center text-[10px] font-black uppercase tracking-[0.16em] ${match.isFinal ? "text-(--primary-gold)" : "text-zinc-400 dark:text-zinc-500"}`}
         >
           {match.round}
-          <GenderIcon />
+          <MatchGenderIcon gender={match.gender} />
         </span>
       </div>
 
@@ -660,7 +688,7 @@ function MatchCard({ match }: { match: Match }) {
         <FamilyTeamButton
           name={match.teamA}
           eventName={match.type}
-          onOpen={setOpenFamily}
+          onOpen={onFocusFamily}
         />
 
         <div className="flex flex-col items-center shrink-0">
@@ -679,24 +707,11 @@ function MatchCard({ match }: { match: Match }) {
           name={match.teamB}
           eventName={match.type}
           align="right"
-          onOpen={setOpenFamily}
+          onOpen={onFocusFamily}
         />
       </div>
     </>
   );
 
-  return (
-    <>
-      <div className={cardClass}>{inner}</div>
-      {openFamily && (
-        <FamilyRosterModal
-          family={openFamily}
-          eventName={match.type}
-          round={match.round}
-          gender={match.gender}
-          onClose={() => setOpenFamily(null)}
-        />
-      )}
-    </>
-  );
+  return <div className={cardClass}>{inner}</div>;
 }
