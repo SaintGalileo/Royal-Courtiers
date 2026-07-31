@@ -107,18 +107,21 @@ export default function AdminRostersPage() {
     });
   }, [familyMembers, memberSearch]);
 
-  const membersForSlot = (slot: RosterSlotData) => {
-    if (!slot.memberId) return filteredFamilyMembers;
-    const assigned = familyMembers.find((m) => m.id === slot.memberId);
-    if (!assigned) return filteredFamilyMembers;
-    if (filteredFamilyMembers.some((m) => m.id === assigned.id)) {
-      return filteredFamilyMembers;
-    }
-    return [assigned, ...filteredFamilyMembers];
-  };
-
   const slots: RosterSlotData[] =
     data.rosters[activeEvent]?.[activeFamily] ?? [];
+
+  const assignedMemberIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const slot of slots) {
+      if (slot.memberId) ids.add(slot.memberId);
+    }
+    return ids;
+  }, [slots]);
+
+  const searchableMembers = useMemo(
+    () => filteredFamilyMembers.filter((m) => !assignedMemberIds.has(m.id)),
+    [filteredFamilyMembers, assignedMemberIds],
+  );
 
   const supplementary: SupplementaryEntry[] =
     data.supplementary[activeEvent]?.[activeFamily] ?? [];
@@ -152,6 +155,26 @@ export default function AdminRostersPage() {
       next.rosters[activeEvent] = eventRoster;
       return next;
     });
+  };
+
+  const assignToNextOpenSlot = (memberId: string) => {
+    const member = members.find((m) => m.id === memberId);
+    if (!member) return;
+
+    const nextIndex = slots.findIndex(
+      (slot) => !slot.memberId || slot.name === "TBA",
+    );
+    if (nextIndex === -1) {
+      toast.error("No open slots left for this family roster.");
+      return;
+    }
+
+    const roleLabel = slots[nextIndex]?.role ?? `Slot ${nextIndex + 1}`;
+    updateSlot(nextIndex, memberId);
+    setMemberSearch("");
+    toast.success(
+      `${formatMemberDisplayName(member)} → ${roleLabel}`,
+    );
   };
 
   const addSupplementary = (entry: SupplementaryEntry) => {
@@ -368,9 +391,46 @@ export default function AdminRostersPage() {
                 </button>
               )}
             </div>
+
+            <div className="mt-2 max-h-[8.25rem] overflow-y-auto rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950">
+              {memberSearch.trim() && searchableMembers.length === 0 ? (
+                <p className="px-3 py-3 text-sm text-zinc-400">
+                  No available members match “{memberSearch.trim()}”.
+                </p>
+              ) : searchableMembers.length === 0 ? (
+                <p className="px-3 py-3 text-sm text-zinc-400">
+                  All family members are already on this roster.
+                </p>
+              ) : (
+                <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {searchableMembers.map((member) => (
+                    <li key={member.id}>
+                      <button
+                        type="button"
+                        onClick={() => assignToNextOpenSlot(member.id)}
+                        className="flex h-11 w-full items-center justify-between gap-3 px-3 text-left transition-colors hover:bg-(--primary-gold)/10"
+                      >
+                        <span className="min-w-0 truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                          {formatMemberDisplayName(member)}
+                          {member.nick_name ? (
+                            <span className="font-normal text-zinc-400">
+                              {" "}
+                              (@{member.nick_name})
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-(--primary-gold)">
+                          Add
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <p className="mt-1.5 text-[11px] text-zinc-400">
-              {filteredFamilyMembers.length} of {familyMembers.length} members
-              shown in pickers
+              Click a name to fill the next open slot · 3 visible, scroll for
+              more.
             </p>
           </div>
         )}
@@ -390,7 +450,7 @@ export default function AdminRostersPage() {
                 className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-800 outline-none focus:border-(--primary-gold) dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 sm:max-w-sm"
               >
                 <option value="">TBA — unassigned</option>
-                {membersForSlot(slot).map((member) => (
+                {familyMembers.map((member) => (
                   <option key={member.id} value={member.id}>
                     {formatMemberDisplayName(member)}
                     {member.nick_name ? ` (@${member.nick_name})` : ""}
