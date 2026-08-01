@@ -90,9 +90,9 @@ const MATCHES = applySemiFinalDraws([
     type: "Football",
     round: "3rd Place Match",
     date: "Aug 4",
-    time: "04:00 P.M.",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
+    time: "10:00 A.M.",
+    teamA: "Power",
+    teamB: "Dominion",
     isFinal: true,
   },
   {
@@ -101,8 +101,8 @@ const MATCHES = applySemiFinalDraws([
     round: "Grand Final",
     date: "Aug 12",
     time: "09:00 A.M.",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
+    teamA: "Virtue",
+    teamB: "Light",
     isFinal: true,
   },
 
@@ -480,8 +480,7 @@ const SportIcon = ({ sport }: { sport: SportTab }) => {
 
 export default function SportsPage() {
   const [activeTab, setActiveTab] = useState<SportTab>("Football");
-  const [rosterFamily, setRosterFamily] =
-    useState<CompetitionFamily>("Virtue");
+  const [rosterFamily, setRosterFamily] = useState<CompetitionFamily>("Virtue");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const router = useRouter();
@@ -616,19 +615,13 @@ export default function SportsPage() {
   );
 }
 
-function MatchGenderIcon({
-  gender,
-}: {
-  gender?: "male" | "female" | "mixed";
-}) {
+function MatchGenderIcon({ gender }: { gender?: "male" | "female" | "mixed" }) {
   if (gender === "male")
     return <IoMaleSharp className="ml-1.5 h-3.5 w-3.5 text-blue-500" />;
   if (gender === "female")
     return <IoFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-pink-500" />;
   if (gender === "mixed")
-    return (
-      <IoMaleFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-purple-500" />
-    );
+    return <IoMaleFemaleSharp className="ml-1.5 h-3.5 w-3.5 text-purple-500" />;
   return null;
 }
 

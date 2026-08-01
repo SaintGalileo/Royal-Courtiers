@@ -3,10 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import {
-  FAMILY_STYLES,
-  type CompetitionFamily,
-} from "@/lib/competitions";
+import { FAMILY_STYLES, type CompetitionFamily } from "@/lib/competitions";
 import {
   ROSTER_FAMILIES,
   fetchCompetitionRosters,
@@ -98,7 +95,7 @@ export function EventRosterPanel({
     >
       <div className="border-b border-(--primary-gold)/15 px-5 py-5 sm:px-6">
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-(--primary-gold)">
-          Lineup
+          Lineups
         </p>
         <h2 className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
           {eventName}
