@@ -163,8 +163,8 @@ export const DEBATE_TOPICS: Record<string, string> = {
     "Is something good because God commands it, or does God command it because it is good?",
   "e-sf2-debate":
     "If God is unchanging (immutable), this means that the god of the Old Testament is not the same as the Father whom Christ spoke of. True/False.",
-  "e-3rd-debate": "Which is a Greater Threat to Faith: Doubt or Certainty?",
-  "e-final-debate": "Unconditional Love: Does It Really Exist?",
+  "e-3rd-debate": "Unconditional Love: Does It Really Exist?",
+  "e-final-debate": "Which is a Greater Threat to Faith: Doubt or Certainty?",
 };
 
 export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
