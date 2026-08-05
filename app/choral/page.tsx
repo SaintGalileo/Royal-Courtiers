@@ -6,6 +6,7 @@ import { GiMusicalNotes, GiMusicalScore } from "react-icons/gi";
 import { PiUserSoundFill, PiUsersFill } from "react-icons/pi";
 import { useRouter } from "next/navigation";
 import EventInfoCard from "@/components/competitions/EventInfoCard";
+import { OpenEventRosterPanel } from "@/components/competitions/OpenEventRosterPanel";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
 
 type ChoralTab =
@@ -163,12 +164,13 @@ export default function ChoralPage() {
           ))}
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 space-y-6">
           <EventInfoCard
             eventName={activeTab}
             showGrandFinaleNote={activeTab === "Solo" || activeTab === "Duet"}
             hideSubmissionDeadline
           />
+          <OpenEventRosterPanel eventName={activeTab} />
         </div>
 
         <div className="space-y-10">

@@ -312,7 +312,10 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
       "Open performance session on August 14 at 2:00 PM.",
       "Open to anyone — you do not need to belong to a particular family to enter.",
     ],
-    registration: ["Reach out to the Choirmaster General for registration."],
+    registration: [
+      "Reach out to the Choirmaster General for registration.",
+      "No limit on the number of entrants.",
+    ],
   },
   Solo: {
     name: "Solo",
@@ -324,7 +327,10 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
       "Open to all participants regardless of family.",
       "The winner is invited to perform any song of their choice at the Grand Finale.",
     ],
-    registration: ["Reach out to the Choirmaster General for registration."],
+    registration: [
+      "Reach out to the Choirmaster General for registration.",
+      "No limit on the number of entrants.",
+    ],
     grandFinaleNote: true,
   },
   Duet: {
@@ -337,7 +343,10 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
       "Open to all participants regardless of family.",
       "The winning duet is invited to perform any song of their choice at the Grand Finale.",
     ],
-    registration: ["Reach out to the Choirmaster General for registration."],
+    registration: [
+      "Reach out to the Choirmaster General for registration.",
+      "No limit on the number of entrants.",
+    ],
     grandFinaleNote: true,
   },
   "Singing Competition": {
@@ -348,8 +357,11 @@ export const COMPETITION_EVENTS: Record<EventName, CompetitionEventInfo> = {
     howItWorks: [
       "Performance session on August 14 at 2:00 PM.",
       "Mandatory for all — not restricted by family.",
+      "Limited to 3 choirs; each choir registers under its choirmaster.",
     ],
     registration: [
+      "Register up to 3 choirs.",
+      "Submit the choirmaster's name for each choir.",
       "Reach out to the Choirmaster General for grouping if you don't already have a choir.",
     ],
   },
