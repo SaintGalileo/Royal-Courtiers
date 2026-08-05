@@ -1,20 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Clock } from "lucide-react";
 import {
   FaFutbol,
   FaRunning,
   FaTableTennis,
   FaVolleyballBall,
-  // FaChild,
-  // FaEgg,
-  // FaShoppingBasket,
   FaChess,
   FaFont,
 } from "react-icons/fa";
 import { IoMaleSharp, IoFemaleSharp, IoMaleFemaleSharp } from "react-icons/io5";
-// import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EventInfoCard from "@/components/competitions/EventInfoCard";
 import {
@@ -23,445 +19,26 @@ import {
 } from "@/components/competitions/FamilyTeamButton";
 import { EventRosterPanel } from "@/components/competitions/EventRosterPanel";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
+import { type CompetitionFamily } from "@/lib/competitions";
 import {
-  applySemiFinalDraws,
-  type CompetitionFamily,
-} from "@/lib/competitions";
-
-type SportTab =
-  | "Football"
-  | "Volleyball"
-  | "Table Tennis"
-  | "Track Events"
-  // | "Sack Race (Junior)"
-  // | "Egg Race (Junior)"
-  // | "Filling the Basket (Junior)"
-  | "Chess"
-  | "Scrabble";
-
-interface Match {
-  id: string;
-  type: SportTab;
-  round: string;
-  date: string;
-  time: string;
-  isFinal?: boolean;
-  teamA?: string;
-  teamB?: string;
-  participants?: string;
-  isGraded?: boolean;
-  gender?: "male" | "female" | "mixed";
-}
-
-const sports: SportTab[] = [
-  "Football",
-  "Volleyball",
-  "Table Tennis",
-  "Track Events",
-  // "Sack Race (Junior)",
-  // "Egg Race (Junior)",
-  // "Filling the Basket (Junior)",
-  "Chess",
-  "Scrabble",
-];
-
-const MATCHES = applySemiFinalDraws([
-  // Football
-  {
-    id: "fb-sf1",
-    type: "Football",
-    round: "Semi-Final 1",
-    date: "Jul 31",
-    time: "10:00 A.M.",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "fb-sf2",
-    type: "Football",
-    round: "Semi-Final 2",
-    date: "Jul 31",
-    time: "11:00 A.M.",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "fb-3rd",
-    type: "Football",
-    round: "3rd Place Match",
-    date: "Aug 4",
-    time: "10:00 A.M.",
-    teamA: "Power",
-    teamB: "Dominion",
-    isFinal: true,
-  },
-  {
-    id: "fb-final",
-    type: "Football",
-    round: "Grand Final",
-    date: "Aug 12",
-    time: "09:00 A.M.",
-    teamA: "Virtue",
-    teamB: "Light",
-    isFinal: true,
-  },
-
-  // Volleyball (Mixed: 3 Male + 3 Female) - Aug 11 (Sports Day)
-  {
-    id: "vb-sf1",
-    type: "Volleyball",
-    round: "Semi-Final 1 · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "vb-sf2",
-    type: "Volleyball",
-    round: "Semi-Final 2 · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "mixed",
-  },
-  {
-    id: "vb-3rd",
-    type: "Volleyball",
-    round: "3rd Place Match · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "mixed",
-  },
-  {
-    id: "vb-final",
-    type: "Volleyball",
-    round: "Grand Final · Mixed (3M + 3F)",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "mixed",
-  },
-
-  // Table Tennis (Singles — Male & Female) - Aug 11 (Sports Day)
-  {
-    id: "tt-sf1-m",
-    type: "Table Tennis",
-    round: "Semi-Final 1",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "male",
-  },
-  {
-    id: "tt-sf2-m",
-    type: "Table Tennis",
-    round: "Semi-Final 2",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "male",
-  },
-  {
-    id: "tt-sf1-f",
-    type: "Table Tennis",
-    round: "Semi-Final 1",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "female",
-  },
-  {
-    id: "tt-sf2-f",
-    type: "Table Tennis",
-    round: "Semi-Final 2",
-    date: "Aug 11",
-    time: "",
-    teamA: "TBD",
-    teamB: "TBD",
-    gender: "female",
-  },
-  {
-    id: "tt-3rd-m",
-    type: "Table Tennis",
-    round: "3rd Place Match",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "male",
-  },
-  {
-    id: "tt-3rd-f",
-    type: "Table Tennis",
-    round: "3rd Place Match",
-    date: "Aug 11",
-    time: "",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    gender: "female",
-  },
-  {
-    id: "tt-final-m",
-    type: "Table Tennis",
-    round: "Grand Final",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tt-final-f",
-    type: "Table Tennis",
-    round: "Grand Final",
-    date: "Aug 11",
-    time: "",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-    gender: "female",
-  },
-
-  // Track Events - Aug 11 (Sports Day)
-
-  {
-    id: "tr-100m-final-m",
-    type: "Track Events",
-    round: "100m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-100m-final-f",
-    type: "Track Events",
-    round: "100m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-  {
-    id: "tr-200m-final-m",
-    type: "Track Events",
-    round: "200m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-200m-final-f",
-    type: "Track Events",
-    round: "200m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-  {
-    id: "tr-400m-final-m",
-    type: "Track Events",
-    round: "400m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-400m-final-f",
-    type: "Track Events",
-    round: "400m Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-  {
-    id: "tr-relay-final-m",
-    type: "Track Events",
-    round: "4 × 100m Relay Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "male",
-  },
-  {
-    id: "tr-relay-final-f",
-    type: "Track Events",
-    round: "4 × 100m Relay Final",
-    date: "Aug 11",
-    time: "",
-    participants: "All Families",
-    isGraded: true,
-    isFinal: true,
-    gender: "female",
-  },
-
-  // Junior Games - Aug 11 (Sports Day)
-  // {
-  //   id: "jr-sack-m",
-  //   type: "Sack Race (Junior)",
-  //   round: "Male Category",
-  //   date: "Aug 11",
-  //   time: "",
-  //   participants: "All Junior Families",
-  //   isGraded: true,
-  //   gender: "male",
-  // },
-  // {
-  //   id: "jr-sack-f",
-  //   type: "Sack Race (Junior)",
-  //   round: "Female Category",
-  //   date: "Aug 11",
-  //   time: "",
-  //   participants: "All Junior Families",
-  //   isGraded: true,
-  //   gender: "female",
-  // },
-  // {
-  //   id: "jr-egg-m",
-  //   type: "Egg Race (Junior)",
-  //   round: "Male Category",
-  //   date: "Aug 11",
-  //   time: "",
-  //   participants: "All Junior Families",
-  //   isGraded: true,
-  //   gender: "male",
-  // },
-  // {
-  //   id: "jr-egg-f",
-  //   type: "Egg Race (Junior)",
-  //   round: "Female Category",
-  //   date: "Aug 11",
-  //   time: "",
-  //   participants: "All Junior Families",
-  //   isGraded: true,
-  //   gender: "female",
-  // },
-  // {
-  //   id: "jr-basket-m",
-  //   type: "Filling the Basket (Junior)",
-  //   round: "Male Category",
-  //   date: "Aug 11",
-  //   time: "",
-  //   participants: "All Junior Families",
-  //   isGraded: true,
-  //   gender: "male",
-  // },
-  // {
-  //   id: "jr-basket-f",
-  //   type: "Filling the Basket (Junior)",
-  //   round: "Female Category",
-  //   date: "Aug 11",
-  //   time: "",
-  //   participants: "All Junior Families",
-  //   isGraded: true,
-  //   gender: "female",
-  // },
-
-  // Indoor Games (Chess, Scrabble) - Aug 10
-  {
-    id: "ch-sf1",
-    type: "Chess",
-    round: "Semi-Final 1",
-    date: "Aug 10",
-    time: "02:00 P.M.",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "ch-sf2",
-    type: "Chess",
-    round: "Semi-Final 2",
-    date: "Aug 10",
-    time: "02:00 P.M.",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "ch-3rd",
-    type: "Chess",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
-    id: "ch-final",
-    type: "Chess",
-    round: "Grand Final",
-    date: "Aug 10",
-    time: "02:00 P.M.",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-  },
-  {
-    id: "sc-sf1",
-    type: "Scrabble",
-    round: "Semi-Final 1",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "sc-sf2",
-    type: "Scrabble",
-    round: "Semi-Final 2",
-    date: "Aug 10",
-    time: "02:00 P.M.",
-    teamA: "TBD",
-    teamB: "TBD",
-  },
-  {
-    id: "sc-3rd",
-    type: "Scrabble",
-    round: "3rd Place Match",
-    date: "Aug 10",
-    time: "02:00 P.M.",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-  },
-  {
-    id: "sc-final",
-    type: "Scrabble",
-    round: "Grand Final",
-    date: "Aug 10",
-    time: "02:00 PM",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    isFinal: true,
-  },
-] as Match[]);
+  SPORT_MATCHES,
+  SPORT_TABS,
+  isWinnerMode,
+  winnerOutcomeLabel,
+  type SportMatch,
+  type SportTab,
+} from "@/lib/match-fixtures";
+import { applyPublishedBracketAdvancement } from "@/lib/match-brackets";
+import {
+  createEmptyMatchResults,
+  getWinnerSide,
+  hasPenaltyShootout,
+  isPublishedResult,
+  parseMatchResults,
+  type MatchResult,
+  type MatchResultsData,
+} from "@/lib/match-results";
+import { createClient } from "@/lib/supabase/client";
 
 const SportIcon = ({ sport }: { sport: SportTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
@@ -469,10 +46,6 @@ const SportIcon = ({ sport }: { sport: SportTab }) => {
   if (sport === "Volleyball") return <FaVolleyballBall className={cls} />;
   if (sport === "Table Tennis") return <FaTableTennis className={cls} />;
   if (sport === "Track Events") return <FaRunning className={cls} />;
-  // if (sport === "Sack Race (Junior)") return <FaChild className={cls} />;
-  // if (sport === "Egg Race (Junior)") return <FaEgg className={cls} />;
-  // if (sport === "Filling the Basket (Junior)")
-  //   return <FaShoppingBasket className={cls} />;
   if (sport === "Chess") return <FaChess className={cls} />;
   if (sport === "Scrabble") return <FaFont className={cls} />;
   return <FaFutbol className={cls} />;
@@ -483,7 +56,11 @@ export default function SportsPage() {
   const [rosterFamily, setRosterFamily] = useState<CompetitionFamily>("Virtue");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
+  const [results, setResults] = useState<MatchResultsData>(
+    createEmptyMatchResults(),
+  );
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     setIsClient(true);
@@ -493,23 +70,67 @@ export default function SportsPage() {
       return;
     }
     setIsAuth(true);
-  }, [router]);
+
+    async function fetchResults() {
+      try {
+        const { data, error } = await supabase
+          .from("match_results")
+          .select("data")
+          .eq("id", "current")
+          .maybeSingle();
+
+        if (data && !error) {
+          setResults(parseMatchResults(data.data));
+        }
+      } catch (err) {
+        console.error("Match results fetch error:", err);
+      }
+    }
+
+    fetchResults();
+
+    const channel = supabase
+      .channel("public:match_results")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "match_results",
+          filter: "id=eq.current",
+        },
+        (payload) => {
+          if (payload.new && (payload.new as { data?: unknown }).data) {
+            setResults(
+              parseMatchResults((payload.new as { data: unknown }).data),
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router, supabase]);
 
   const handleTabChange = (sport: SportTab) => {
     setActiveTab(sport);
     setRosterFamily("Virtue");
   };
 
-  const filteredMatches = MATCHES.filter((m) => m.type === activeTab);
+  const filteredMatches = applyPublishedBracketAdvancement(
+    SPORT_MATCHES.filter((m) => m.type === activeTab),
+    results,
+  );
 
-  // Group matches by date
   const groupedMatches = filteredMatches.reduce(
     (acc, match) => {
       if (!acc[match.date]) acc[match.date] = [];
       acc[match.date].push(match);
       return acc;
     },
-    {} as Record<string, Match[]>,
+    {} as Record<string, SportMatch[]>,
   );
 
   const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
@@ -528,7 +149,6 @@ export default function SportsPage() {
       <main className="max-w-2xl mx-auto px-4 py-12">
         <CompetitionBackButton />
 
-        {/* Header */}
         <header className="mb-10">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500 mb-2">
             Official Schedule
@@ -541,9 +161,8 @@ export default function SportsPage() {
           </p>
         </header>
 
-        {/* Sport Tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-8">
-          {sports.map((sport) => (
+          {SPORT_TABS.map((sport) => (
             <button
               key={sport}
               onClick={() => handleTabChange(sport)}
@@ -594,6 +213,7 @@ export default function SportsPage() {
                     <MatchCard
                       key={match.id}
                       match={match}
+                      result={results[match.id]}
                       onFocusFamily={setRosterFamily}
                     />
                   ))}
@@ -627,12 +247,22 @@ function MatchGenderIcon({ gender }: { gender?: "male" | "female" | "mixed" }) {
 
 function MatchCard({
   match,
+  result,
   onFocusFamily,
 }: {
-  match: Match;
+  match: SportMatch;
+  result?: MatchResult;
   onFocusFamily: (family: CompetitionFamily) => void;
 }) {
-  // Details page disabled — restore Link wrapper + showDetailLink when ready
+  const published = isPublishedResult(result);
+  const winnerMode = isWinnerMode(match.type);
+  const winnerSide = published ? getWinnerSide(result) : null;
+  const winnerName =
+    winnerSide === "A"
+      ? match.teamA
+      : winnerSide === "B"
+        ? match.teamB
+        : undefined;
   const cardClass = `
     group block bg-white dark:bg-zinc-900
     border border-zinc-200 dark:border-zinc-800
@@ -685,15 +315,39 @@ function MatchCard({
         />
 
         <div className="flex flex-col items-center shrink-0">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3 w-3 text-(--primary-gold)" />
-            <span className="text-xs font-black text-(--primary-gold)">
-              {match.time}
+          {match.time ? (
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-(--primary-gold)" />
+              <span className="text-xs font-black text-(--primary-gold)">
+                {match.time}
+              </span>
+            </div>
+          ) : null}
+          {published && winnerMode && winnerName ? (
+            <div className="mt-0.5 flex flex-col items-center max-w-[7.5rem]">
+              <span className="text-[10px] font-black uppercase tracking-[0.12em] text-(--primary-gold) text-center leading-tight">
+                {winnerOutcomeLabel(match.round)}
+              </span>
+              <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 text-center truncate w-full">
+                {winnerName}
+              </span>
+            </div>
+          ) : published ? (
+            <div className="mt-0.5 flex flex-col items-center">
+              <span className="text-base font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
+                {result.scoreA} – {result.scoreB}
+              </span>
+              {hasPenaltyShootout(result) ? (
+                <span className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-400 dark:text-zinc-500">
+                  {result.penaltyA}–{result.penaltyB} pens
+                </span>
+              ) : null}
+            </div>
+          ) : (
+            <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
+              VS
             </span>
-          </div>
-          <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
-            VS
-          </span>
+          )}
         </div>
 
         <FamilyTeamButton

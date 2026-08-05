@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Clock, AlertCircle } from "lucide-react";
 import { FaComments, FaPenFancy, FaCrown } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -12,126 +12,25 @@ import {
 import { EventRosterPanel } from "@/components/competitions/EventRosterPanel";
 import CompetitionBackButton from "@/components/competitions/CompetitionBackButton";
 import PageantryCulturePanel from "@/components/competitions/PageantryCulturePanel";
+import { type CompetitionFamily } from "@/lib/competitions";
 import {
-  applySemiFinalDraws,
-  DEBATE_TOPICS,
-  type CompetitionFamily,
-} from "@/lib/competitions";
-
-type ExtracurricularTab =
-  | "Debate"
-  | "Essay Writing"
-  | "Pageantry";
-
-interface EventMatch {
-  id: string;
-  type: ExtracurricularTab;
-  round: string;
-  date: string;
-  time: string;
-  isFinal?: boolean;
-  teamA?: string;
-  teamB?: string;
-  participants?: string;
-  isGraded?: boolean;
-  info?: string;
-  topic?: string;
-}
-
-const extracurricularTabs: ExtracurricularTab[] = [
-  "Debate",
-  "Essay Writing",
-  "Pageantry",
-];
-
-const MOCK_MATCHES: EventMatch[] = applySemiFinalDraws([
-  // Debate (Matchup)
-  {
-    id: "e-sf1-debate",
-    type: "Debate",
-    date: "Aug 10",
-    round: "Semi-Final 1",
-    teamA: "TBD",
-    teamB: "TBD",
-    time: "04:00 PM",
-    topic: DEBATE_TOPICS["e-sf1-debate"],
-  },
-  {
-    id: "e-sf2-debate",
-    type: "Debate",
-    date: "Aug 10",
-    round: "Semi-Final 2",
-    teamA: "TBD",
-    teamB: "TBD",
-    time: "05:00 PM",
-    topic: DEBATE_TOPICS["e-sf2-debate"],
-  },
-  {
-    id: "e-3rd-debate",
-    type: "Debate",
-    date: "Aug 13",
-    round: "3rd Place Match",
-    teamA: "Runner Up 1",
-    teamB: "Runner Up 2",
-    time: "05:30 PM",
-    info: "Holy Father's Vestry",
-    topic: DEBATE_TOPICS["e-3rd-debate"],
-  },
-  {
-    id: "e-final-debate",
-    type: "Debate",
-    date: "Aug 16",
-    round: "Grand Final",
-    teamA: "Winner SF1",
-    teamB: "Winner SF2",
-    time: "",
-    isFinal: true,
-    topic: DEBATE_TOPICS["e-final-debate"],
-  },
-
-  // Essay Writing (Graded)
-  {
-    id: "e-topic-essay",
-    type: "Essay Writing",
-    date: "Aug 10",
-    round: "Topic Announcement",
-    participants: "All Families",
-    time: "11:30 AM",
-    isGraded: true,
-    info: "Topic announced after Morning Devotion",
-  },
-  {
-    id: "e-submit-essay",
-    type: "Essay Writing",
-    date: "Aug 12",
-    round: "Submission Deadline",
-    participants: "All Families",
-    time: "10:00 AM",
-    isGraded: true,
-    info: "Essays to be submitted on or before 10 a.m.",
-  },
-
-  // Pageantry
-  {
-    id: "e-pageant1",
-    type: "Pageantry",
-    date: "Aug 12",
-    round: "Phase 1 (Quiz / Spelling Bee)",
-    participants: "All Families",
-    time: "01:00 PM",
-    isGraded: true,
-  },
-  {
-    id: "e-pageant2",
-    type: "Pageantry",
-    date: "Aug 15",
-    round: "Phase 2 (Cultural Day)",
-    participants: "All Families",
-    time: "07:00 PM",
-    isGraded: true,
-    isFinal: true,
-  },
-] as EventMatch[]);
+  EXTRACURRICULAR_MATCHES,
+  EXTRACURRICULAR_TABS,
+  isWinnerMode,
+  winnerOutcomeLabel,
+  type ExtracurricularMatch,
+  type ExtracurricularTab,
+} from "@/lib/match-fixtures";
+import { applyPublishedBracketAdvancement } from "@/lib/match-brackets";
+import {
+  createEmptyMatchResults,
+  getWinnerSide,
+  isPublishedResult,
+  parseMatchResults,
+  type MatchResult,
+  type MatchResultsData,
+} from "@/lib/match-results";
+import { createClient } from "@/lib/supabase/client";
 
 const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
   const cls = "h-3.5 w-3.5 shrink-0";
@@ -147,7 +46,11 @@ export default function ExtracurricularPage() {
     useState<CompetitionFamily>("Virtue");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
+  const [results, setResults] = useState<MatchResultsData>(
+    createEmptyMatchResults(),
+  );
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     setIsClient(true);
@@ -157,23 +60,67 @@ export default function ExtracurricularPage() {
       return;
     }
     setIsAuth(true);
-  }, [router]);
+
+    async function fetchResults() {
+      try {
+        const { data, error } = await supabase
+          .from("match_results")
+          .select("data")
+          .eq("id", "current")
+          .maybeSingle();
+
+        if (data && !error) {
+          setResults(parseMatchResults(data.data));
+        }
+      } catch (err) {
+        console.error("Match results fetch error:", err);
+      }
+    }
+
+    fetchResults();
+
+    const channel = supabase
+      .channel("public:match_results:extra")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "match_results",
+          filter: "id=eq.current",
+        },
+        (payload) => {
+          if (payload.new && (payload.new as { data?: unknown }).data) {
+            setResults(
+              parseMatchResults((payload.new as { data: unknown }).data),
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router, supabase]);
 
   const handleTabChange = (tab: ExtracurricularTab) => {
     setActiveTab(tab);
     setRosterFamily("Virtue");
   };
 
-  const filteredMatches = MOCK_MATCHES.filter((m) => m.type === activeTab);
+  const filteredMatches = applyPublishedBracketAdvancement(
+    EXTRACURRICULAR_MATCHES.filter((m) => m.type === activeTab),
+    results,
+  );
 
-  // Group matches by date
   const groupedMatches = filteredMatches.reduce(
     (acc, match) => {
       if (!acc[match.date]) acc[match.date] = [];
       acc[match.date].push(match);
       return acc;
     },
-    {} as Record<string, EventMatch[]>,
+    {} as Record<string, ExtracurricularMatch[]>,
   );
 
   const sortedDates = Object.keys(groupedMatches).sort((a, b) => {
@@ -191,7 +138,6 @@ export default function ExtracurricularPage() {
       <main className="max-w-2xl mx-auto px-4 py-12">
         <CompetitionBackButton />
 
-        {/* Header */}
         <header className="mb-10">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500 mb-2">
             Official Schedule
@@ -204,9 +150,8 @@ export default function ExtracurricularPage() {
           </p>
         </header>
 
-        {/* Extracurricular Tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-8">
-          {extracurricularTabs.map((tab) => (
+          {EXTRACURRICULAR_TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
@@ -258,6 +203,7 @@ export default function ExtracurricularPage() {
                     <MatchCard
                       key={match.id}
                       match={match}
+                      result={results[match.id]}
                       onFocusFamily={setRosterFamily}
                     />
                   ))}
@@ -281,11 +227,23 @@ export default function ExtracurricularPage() {
 
 function MatchCard({
   match,
+  result,
   onFocusFamily,
 }: {
-  match: EventMatch;
+  match: ExtracurricularMatch;
+  result?: MatchResult;
   onFocusFamily: (family: CompetitionFamily) => void;
 }) {
+  const published = isPublishedResult(result);
+  const winnerMode = isWinnerMode(match.type);
+  const winnerSide = published ? getWinnerSide(result) : null;
+  const winnerName =
+    winnerSide === "A"
+      ? match.teamA
+      : winnerSide === "B"
+        ? match.teamB
+        : undefined;
+
   if (match.isGraded) {
     return (
       <div
@@ -366,15 +324,28 @@ function MatchCard({
         />
 
         <div className="flex flex-col items-center shrink-0">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3 w-3 text-(--primary-gold)" />
-            <span className="text-xs font-black text-(--primary-gold)">
-              {match.time}
+          {match.time ? (
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-(--primary-gold)" />
+              <span className="text-xs font-black text-(--primary-gold)">
+                {match.time}
+              </span>
+            </div>
+          ) : null}
+          {published && winnerMode && winnerName ? (
+            <div className="mt-0.5 flex flex-col items-center max-w-[7.5rem]">
+              <span className="text-[10px] font-black uppercase tracking-[0.12em] text-(--primary-gold) text-center leading-tight">
+                {winnerOutcomeLabel(match.round)}
+              </span>
+              <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 text-center truncate w-full">
+                {winnerName}
+              </span>
+            </div>
+          ) : (
+            <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
+              VS
             </span>
-          </div>
-          <span className="text-[9px] font-black text-zinc-300 dark:text-zinc-600 tracking-[0.14em] mt-0.5">
-            VS
-          </span>
+          )}
         </div>
 
         <FamilyTeamButton

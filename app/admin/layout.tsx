@@ -14,6 +14,7 @@ import {
   Trophy,
   Shirt,
   ClipboardList,
+  Medal,
 } from "lucide-react";
 import { GiDove as GiDoveIcon } from "react-icons/gi";
 
@@ -67,6 +68,7 @@ export default function AdminLayout({
       icon: ScrollText,
     },
     { label: "Rosters", href: "/admin/rosters", icon: ClipboardList },
+    { label: "Match Scores", href: "/admin/match-scores", icon: Medal },
     { label: "Scoresheet", href: "/admin/scoresheet", icon: Trophy },
   ];
 
