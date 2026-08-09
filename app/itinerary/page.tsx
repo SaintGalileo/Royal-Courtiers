@@ -17,11 +17,6 @@ const ITINERARY: ItineraryDay[] = [
         location: "The Great Hall",
       },
       {
-        time: "08:00 AM",
-        title: "Event Logo Unveiling",
-        location: "The Great Hall",
-      },
-      {
         time: "11:30 PM",
         title: "Essay Topic Announcement",
         location: "Morning Devotion",
@@ -154,12 +149,12 @@ const ITINERARY: ItineraryDay[] = [
       },
       {
         time: "",
-        title: "Choral Champions Performances",
+        title: "Performance by Choral Champions",
         location: "The Great Hall",
       },
       {
         time: "",
-        title: "Induction of Hall of Famers",
+        title: "Hall of Fame Induction Ceremony",
         location: "The Great Hall",
       },
       {

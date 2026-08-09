@@ -416,7 +416,7 @@ export default function AdminMatchScoresPage() {
       if (error) {
         console.error(error);
         toast.error(
-          "Failed to save. Ensure the 'match_results' table exists (run the migration SQL).",
+          `Failed to save: ${error.message}. If this mentions permissions or a missing table, run match-results-schema.sql in the Supabase SQL Editor.`,
         );
       } else {
         toast.success("Match scores saved.");
