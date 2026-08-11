@@ -69,6 +69,12 @@ const familyStyles: Record<
   string,
   { color: string; className: string; icon: IconType; whatsapp?: string }
 > = {
+  Dominion: {
+    color: "Purple",
+    className: "text-purple-500",
+    icon: GiWingedScepter,
+    whatsapp: "https://chat.whatsapp.com/HH5CsLRZhMV1i2Ic7QNo9Z?mode=gi_t",
+  },
   Light: {
     color: "Gold",
     className: "text-yellow-500",
@@ -80,12 +86,6 @@ const familyStyles: Record<
     className: "text-red-500",
     icon: FaBolt,
     whatsapp: "https://chat.whatsapp.com/DqQOrFH7Ly632ugZcztGB6?mode=gi_t",
-  },
-  Dominion: {
-    color: "Purple",
-    className: "text-purple-500",
-    icon: GiWingedScepter,
-    whatsapp: "https://chat.whatsapp.com/HH5CsLRZhMV1i2Ic7QNo9Z?mode=gi_t",
   },
   Virtue: {
     color: "Green",

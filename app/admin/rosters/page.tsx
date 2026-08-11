@@ -49,7 +49,7 @@ export default function AdminRostersPage() {
     ALL_ROSTER_EVENT_NAMES[0] ?? "Football",
   );
   const [activeFamily, setActiveFamily] =
-    useState<CompetitionFamily>("Virtue");
+    useState<CompetitionFamily>("Dominion");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [supplementaryDraft, setSupplementaryDraft] = useState("");

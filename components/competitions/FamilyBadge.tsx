@@ -10,10 +10,10 @@ import {
 type IconType = ComponentType<{ className?: string }>;
 
 export const FAMILY_ICONS: Record<CompetitionFamily, IconType> = {
-  Virtue: GiFruitTree,
-  Power: FaBolt,
   Dominion: GiWingedScepter,
   Light: GiPolarStar,
+  Power: FaBolt,
+  Virtue: GiFruitTree,
 };
 
 export function FamilyBadge({ family }: { family: CompetitionFamily }) {

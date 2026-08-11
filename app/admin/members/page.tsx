@@ -54,17 +54,17 @@ const familyStyles: Record<
   string,
   { bgColor: string; borderColor: string; textColor: string; dotColor: string }
 > = {
-  Light: {
-    bgColor: "bg-yellow-500/10",
-    borderColor: "border-yellow-500/30",
-    textColor: "text-yellow-700 dark:text-yellow-400",
-    dotColor: "bg-yellow-500",
-  },
   Dominion: {
     bgColor: "bg-purple-500/10",
     borderColor: "border-purple-500/30",
     textColor: "text-purple-700 dark:text-purple-400",
     dotColor: "bg-purple-500",
+  },
+  Light: {
+    bgColor: "bg-yellow-500/10",
+    borderColor: "border-yellow-500/30",
+    textColor: "text-yellow-700 dark:text-yellow-400",
+    dotColor: "bg-yellow-500",
   },
   Power: {
     bgColor: "bg-red-500/10",

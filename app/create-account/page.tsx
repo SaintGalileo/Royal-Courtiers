@@ -15,7 +15,7 @@ import TalentSelector, { TALENT_OPTIONS } from "@/components/TalentSelector";
 import ShirtSizeInput, { validateChestInches } from "@/components/ShirtSizeInput";
 
 const STORAGE_KEY = "create-account-form-v2";
-const FAMILY_OPTIONS = ["Light", "Dominion", "Virtue", "Power", "Seraphs"] as const;
+const FAMILY_OPTIONS = ["Dominion", "Light", "Power", "Virtue", "Seraphs"] as const;
 type Family = typeof FAMILY_OPTIONS[number];
 
 const COUNTRY_STATES: Record<string, string[]> = {

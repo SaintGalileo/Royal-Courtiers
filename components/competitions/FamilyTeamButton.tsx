@@ -1,19 +1,13 @@
 "use client";
 
 import {
+  COMPETITION_FAMILIES,
   FAMILY_STYLES,
   isCompetitionFamily,
   type CompetitionFamily,
 } from "@/lib/competitions";
 import { FAMILY_ICONS, FamilyShield } from "@/components/competitions/FamilyBadge";
 import { getEventRoster } from "@/lib/competition-rosters";
-
-const FAMILY_ORDER: CompetitionFamily[] = [
-  "Virtue",
-  "Power",
-  "Dominion",
-  "Light",
-];
 
 function focusRosterPanel() {
   document
@@ -95,7 +89,7 @@ export function AllFamiliesRosterButtons({
 
   return (
     <div className="flex items-center gap-2 flex-1 flex-wrap">
-      {FAMILY_ORDER.map((family) => {
+      {COMPETITION_FAMILIES.map((family) => {
         const style = FAMILY_STYLES[family];
         const Icon = FAMILY_ICONS[family];
         return (

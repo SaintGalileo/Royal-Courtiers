@@ -1,4 +1,12 @@
-export type CompetitionFamily = "Virtue" | "Power" | "Dominion" | "Light";
+/** Canonical chronological family order (access codes / scoresheet / help). */
+export const COMPETITION_FAMILIES = [
+  "Dominion",
+  "Light",
+  "Power",
+  "Virtue",
+] as const;
+
+export type CompetitionFamily = (typeof COMPETITION_FAMILIES)[number];
 
 export type CompetitionCategory =
   | "Sports Arena"
@@ -116,18 +124,6 @@ export const FAMILY_STYLES: Record<
   CompetitionFamily,
   { bgColor: string; borderColor: string; textColor: string; initial: string }
 > = {
-  Virtue: {
-    bgColor: "bg-green-500/10",
-    borderColor: "border-green-500/40",
-    textColor: "text-green-700 dark:text-green-400",
-    initial: "V",
-  },
-  Power: {
-    bgColor: "bg-red-500/10",
-    borderColor: "border-red-500/40",
-    textColor: "text-red-700 dark:text-red-400",
-    initial: "P",
-  },
   Dominion: {
     bgColor: "bg-purple-500/10",
     borderColor: "border-purple-500/40",
@@ -139,6 +135,18 @@ export const FAMILY_STYLES: Record<
     borderColor: "border-yellow-500/40",
     textColor: "text-yellow-700 dark:text-yellow-400",
     initial: "L",
+  },
+  Power: {
+    bgColor: "bg-red-500/10",
+    borderColor: "border-red-500/40",
+    textColor: "text-red-700 dark:text-red-400",
+    initial: "P",
+  },
+  Virtue: {
+    bgColor: "bg-green-500/10",
+    borderColor: "border-green-500/40",
+    textColor: "text-green-700 dark:text-green-400",
+    initial: "V",
   },
 };
 

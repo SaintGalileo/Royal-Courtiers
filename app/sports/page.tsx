@@ -63,7 +63,7 @@ const SportIcon = ({ sport }: { sport: SportTab }) => {
 
 export default function SportsPage() {
   const [activeTab, setActiveTab] = useState<SportTab>("Football");
-  const [rosterFamily, setRosterFamily] = useState<CompetitionFamily>("Virtue");
+  const [rosterFamily, setRosterFamily] = useState<CompetitionFamily>("Dominion");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const [results, setResults] = useState<MatchResultsData>(
@@ -167,7 +167,7 @@ export default function SportsPage() {
 
   const handleTabChange = (sport: SportTab) => {
     setActiveTab(sport);
-    setRosterFamily("Virtue");
+    setRosterFamily("Dominion");
   };
 
   const filteredMatches = applyPublishedBracketAdvancement(

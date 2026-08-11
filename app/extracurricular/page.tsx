@@ -53,7 +53,7 @@ const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
 export default function ExtracurricularPage() {
   const [activeTab, setActiveTab] = useState<ExtracurricularTab>("Debate");
   const [rosterFamily, setRosterFamily] =
-    useState<CompetitionFamily>("Virtue");
+    useState<CompetitionFamily>("Dominion");
   const [isClient, setIsClient] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const [results, setResults] = useState<MatchResultsData>(
@@ -157,7 +157,7 @@ export default function ExtracurricularPage() {
 
   const handleTabChange = (tab: ExtracurricularTab) => {
     setActiveTab(tab);
-    setRosterFamily("Virtue");
+    setRosterFamily("Dominion");
   };
 
   const filteredMatches = applyPublishedBracketAdvancement(

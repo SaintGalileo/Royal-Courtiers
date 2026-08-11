@@ -30,6 +30,17 @@ const familyStyles: Record<
     icon: IconType;
   }
 > = {
+  Dominion: {
+    color: "Purple",
+    bgColor: "bg-purple-500/10",
+    borderColor: "border-purple-500/40",
+    textColor: "text-purple-700",
+    ringColor: "border-purple-500",
+    glowColor: "ring-purple-400/20",
+    barColor: "bg-purple-500/70",
+    lineColor: "bg-purple-400/30",
+    icon: GiWingedScepter,
+  },
   Light: {
     color: "Gold",
     bgColor: "bg-yellow-500/10",
@@ -51,17 +62,6 @@ const familyStyles: Record<
     barColor: "bg-red-500/70",
     lineColor: "bg-red-400/30",
     icon: FaBolt,
-  },
-  Dominion: {
-    color: "Purple",
-    bgColor: "bg-purple-500/10",
-    borderColor: "border-purple-500/40",
-    textColor: "text-purple-700",
-    ringColor: "border-purple-500",
-    glowColor: "ring-purple-400/20",
-    barColor: "bg-purple-500/70",
-    lineColor: "bg-purple-400/30",
-    icon: GiWingedScepter,
   },
   Virtue: {
     color: "Green",

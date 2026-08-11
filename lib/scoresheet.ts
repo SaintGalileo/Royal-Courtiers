@@ -1,6 +1,10 @@
-export const FAMILIES = ["Dominion", "Light", "Power", "Virtue"] as const;
+import {
+  COMPETITION_FAMILIES,
+  type CompetitionFamily,
+} from "@/lib/competitions";
 
-export type FamilyName = (typeof FAMILIES)[number];
+export const FAMILIES = COMPETITION_FAMILIES;
+export type FamilyName = CompetitionFamily;
 
 export const CATEGORIES = {
   "Sports Arena": [

@@ -33,7 +33,7 @@ export function EventRosterPanel({
   > | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [internalFamily, setInternalFamily] =
-    useState<CompetitionFamily>("Virtue");
+    useState<CompetitionFamily>("Dominion");
 
   const activeFamily = selectedFamily ?? internalFamily;
 
@@ -46,7 +46,7 @@ export function EventRosterPanel({
 
   useEffect(() => {
     if (selectedFamily === undefined) {
-      setInternalFamily("Virtue");
+      setInternalFamily("Dominion");
     }
   }, [eventName, selectedFamily]);
 

@@ -1,4 +1,8 @@
-import type { CompetitionFamily, EventName } from "@/lib/competitions";
+import {
+  COMPETITION_FAMILIES,
+  type CompetitionFamily,
+  type EventName,
+} from "@/lib/competitions";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type RosterSlot = {
@@ -36,12 +40,7 @@ export type CompetitionRostersData = {
 export const PARTICIPANTS_PENDING_NOTE =
   "Participant names will be published in due course.";
 
-export const ROSTER_FAMILIES: CompetitionFamily[] = [
-  "Virtue",
-  "Power",
-  "Dominion",
-  "Light",
-];
+export const ROSTER_FAMILIES: CompetitionFamily[] = [...COMPETITION_FAMILIES];
 
 const FAMILIES = ROSTER_FAMILIES;
 
