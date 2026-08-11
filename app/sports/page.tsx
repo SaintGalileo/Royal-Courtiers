@@ -38,6 +38,16 @@ import {
   type MatchResult,
   type MatchResultsData,
 } from "@/lib/match-results";
+import {
+  createEmptyScoresheetData,
+  fixtureShowsScoresheetResults,
+  getFamilyPlacementsForEvent,
+  getScoresheetEventForFixture,
+  parseScoresheetData,
+  type FamilyPlacement,
+  type ScoresheetData,
+} from "@/lib/scoresheet";
+import GradedEventStandings from "@/components/competitions/GradedEventStandings";
 import { createClient } from "@/lib/supabase/client";
 
 const SportIcon = ({ sport }: { sport: SportTab }) => {
@@ -58,6 +68,9 @@ export default function SportsPage() {
   const [isAuth, setIsAuth] = useState(false);
   const [results, setResults] = useState<MatchResultsData>(
     createEmptyMatchResults(),
+  );
+  const [scoresheet, setScoresheet] = useState<ScoresheetData>(
+    createEmptyScoresheetData(),
   );
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -87,9 +100,26 @@ export default function SportsPage() {
       }
     }
 
-    fetchResults();
+    async function fetchScoresheet() {
+      try {
+        const { data, error } = await supabase
+          .from("scoresheet")
+          .select("data")
+          .eq("id", "current")
+          .maybeSingle();
 
-    const channel = supabase
+        if (data && !error) {
+          setScoresheet(parseScoresheetData(data.data));
+        }
+      } catch (err) {
+        console.error("Scoresheet fetch error:", err);
+      }
+    }
+
+    fetchResults();
+    fetchScoresheet();
+
+    const matchChannel = supabase
       .channel("public:match_results")
       .on(
         "postgres_changes",
@@ -109,8 +139,29 @@ export default function SportsPage() {
       )
       .subscribe();
 
+    const scoresheetChannel = supabase
+      .channel("public:scoresheet:sports")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "scoresheet",
+          filter: "id=eq.current",
+        },
+        (payload) => {
+          if (payload.new && (payload.new as { data?: unknown }).data) {
+            setScoresheet(
+              parseScoresheetData((payload.new as { data: unknown }).data),
+            );
+          }
+        },
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(matchChannel);
+      supabase.removeChannel(scoresheetChannel);
     };
   }, [router, supabase]);
 
@@ -214,6 +265,7 @@ export default function SportsPage() {
                       key={match.id}
                       match={match}
                       result={results[match.id]}
+                      placements={getGradedPlacements(match, scoresheet)}
                       onFocusFamily={setRosterFamily}
                     />
                   ))}
@@ -245,13 +297,29 @@ function MatchGenderIcon({ gender }: { gender?: "male" | "female" | "mixed" }) {
   return null;
 }
 
+function getGradedPlacements(
+  match: SportMatch,
+  scoresheet: ScoresheetData,
+): FamilyPlacement[] {
+  if (!fixtureShowsScoresheetResults(match)) return [];
+  const ref = getScoresheetEventForFixture(match);
+  if (!ref) return [];
+  return getFamilyPlacementsForEvent(
+    scoresheet.scores,
+    ref.category,
+    ref.event,
+  );
+}
+
 function MatchCard({
   match,
   result,
+  placements = [],
   onFocusFamily,
 }: {
   match: SportMatch;
   result?: MatchResult;
+  placements?: FamilyPlacement[];
   onFocusFamily: (family: CompetitionFamily) => void;
 }) {
   const published = isPublishedResult(result);
@@ -295,6 +363,11 @@ function MatchCard({
           </span>
         </div>
       </div>
+
+      <GradedEventStandings
+        placements={placements}
+        onFocusFamily={onFocusFamily}
+      />
     </>
   ) : (
     <>

@@ -30,6 +30,16 @@ import {
   type MatchResult,
   type MatchResultsData,
 } from "@/lib/match-results";
+import {
+  createEmptyScoresheetData,
+  fixtureShowsScoresheetResults,
+  getFamilyPlacementsForEvent,
+  getScoresheetEventForFixture,
+  parseScoresheetData,
+  type FamilyPlacement,
+  type ScoresheetData,
+} from "@/lib/scoresheet";
+import GradedEventStandings from "@/components/competitions/GradedEventStandings";
 import { createClient } from "@/lib/supabase/client";
 
 const ExtracurricularIcon = ({ tab }: { tab: ExtracurricularTab }) => {
@@ -48,6 +58,9 @@ export default function ExtracurricularPage() {
   const [isAuth, setIsAuth] = useState(false);
   const [results, setResults] = useState<MatchResultsData>(
     createEmptyMatchResults(),
+  );
+  const [scoresheet, setScoresheet] = useState<ScoresheetData>(
+    createEmptyScoresheetData(),
   );
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -77,9 +90,26 @@ export default function ExtracurricularPage() {
       }
     }
 
-    fetchResults();
+    async function fetchScoresheet() {
+      try {
+        const { data, error } = await supabase
+          .from("scoresheet")
+          .select("data")
+          .eq("id", "current")
+          .maybeSingle();
 
-    const channel = supabase
+        if (data && !error) {
+          setScoresheet(parseScoresheetData(data.data));
+        }
+      } catch (err) {
+        console.error("Scoresheet fetch error:", err);
+      }
+    }
+
+    fetchResults();
+    fetchScoresheet();
+
+    const matchChannel = supabase
       .channel("public:match_results:extra")
       .on(
         "postgres_changes",
@@ -99,8 +129,29 @@ export default function ExtracurricularPage() {
       )
       .subscribe();
 
+    const scoresheetChannel = supabase
+      .channel("public:scoresheet:extra")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "scoresheet",
+          filter: "id=eq.current",
+        },
+        (payload) => {
+          if (payload.new && (payload.new as { data?: unknown }).data) {
+            setScoresheet(
+              parseScoresheetData((payload.new as { data: unknown }).data),
+            );
+          }
+        },
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(matchChannel);
+      supabase.removeChannel(scoresheetChannel);
     };
   }, [router, supabase]);
 
@@ -204,6 +255,7 @@ export default function ExtracurricularPage() {
                       key={match.id}
                       match={match}
                       result={results[match.id]}
+                      placements={getGradedPlacements(match, scoresheet)}
                       onFocusFamily={setRosterFamily}
                     />
                   ))}
@@ -225,13 +277,29 @@ export default function ExtracurricularPage() {
   );
 }
 
+function getGradedPlacements(
+  match: ExtracurricularMatch,
+  scoresheet: ScoresheetData,
+): FamilyPlacement[] {
+  if (!fixtureShowsScoresheetResults(match)) return [];
+  const ref = getScoresheetEventForFixture(match);
+  if (!ref) return [];
+  return getFamilyPlacementsForEvent(
+    scoresheet.scores,
+    ref.category,
+    ref.event,
+  );
+}
+
 function MatchCard({
   match,
   result,
+  placements = [],
   onFocusFamily,
 }: {
   match: ExtracurricularMatch;
   result?: MatchResult;
+  placements?: FamilyPlacement[];
   onFocusFamily: (family: CompetitionFamily) => void;
 }) {
   const published = isPublishedResult(result);
@@ -286,6 +354,11 @@ function MatchCard({
             </span>
           </div>
         </div>
+
+        <GradedEventStandings
+          placements={placements}
+          onFocusFamily={onFocusFamily}
+        />
       </div>
     );
   }

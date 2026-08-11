@@ -142,6 +142,125 @@ export function scoreFromPosition(position: string, maxScore: number): number {
   return 0;
 }
 
+export type ScoresheetEventRef = {
+  category: CategoryName;
+  event: string;
+};
+
+export type FamilyPlacement = {
+  family: FamilyName;
+  position: 1 | 2 | 3 | 4;
+  points: number;
+};
+
+const POSITION_LABELS: Record<1 | 2 | 3 | 4, string> = {
+  1: "1st",
+  2: "2nd",
+  3: "3rd",
+  4: "4th",
+};
+
+export function formatPlacementLabel(position: 1 | 2 | 3 | 4): string {
+  return POSITION_LABELS[position];
+}
+
+/** Map a track fixture round + gender onto the scoresheet event key. */
+export function getTrackScoresheetEvent(
+  round?: string,
+  gender?: "male" | "female" | "mixed",
+): string | null {
+  if (!round || !gender || gender === "mixed") return null;
+  const genderLabel = gender === "male" ? "Male" : "Female";
+  const normalized = round.replace(/\s+Final$/i, "").trim();
+  if (/^100m$/i.test(normalized)) return `100m (${genderLabel})`;
+  if (/^200m$/i.test(normalized)) return `200m (${genderLabel})`;
+  if (/^400m$/i.test(normalized)) return `400m (${genderLabel})`;
+  if (/4\s*[×x]\s*100m\s*Relay/i.test(normalized)) {
+    return `4 × 100m Relay (${genderLabel})`;
+  }
+  return null;
+}
+
+/**
+ * Resolve the scoresheet category/event for a graded fixture card.
+ * Returns null for head-to-head matches and events not on the family scoresheet (e.g. Choral).
+ */
+export function getScoresheetEventForFixture(fixture: {
+  type: string;
+  round?: string;
+  gender?: "male" | "female" | "mixed";
+  isGraded?: boolean;
+}): ScoresheetEventRef | null {
+  if (!fixture.isGraded) return null;
+
+  if (fixture.type === "Track Events") {
+    const event = getTrackScoresheetEvent(fixture.round, fixture.gender);
+    if (!event) return null;
+    return { category: "Sports Arena", event };
+  }
+
+  if (fixture.type === "Essay Writing") {
+    return {
+      category: "Extracurricular Competitions",
+      event: "Essay Writing",
+    };
+  }
+
+  if (fixture.type === "Pageantry") {
+    return {
+      category: "Extracurricular Competitions",
+      event: "Pageantry",
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Whether this fixture card should display scoresheet standings.
+ * Essay results appear on the submission card; Pageantry on the final phase.
+ */
+export function fixtureShowsScoresheetResults(fixture: {
+  type: string;
+  id?: string;
+  isGraded?: boolean;
+  isFinal?: boolean;
+}): boolean {
+  if (!fixture.isGraded) return false;
+  if (fixture.type === "Essay Writing") {
+    return fixture.id === "e-submit-essay";
+  }
+  if (fixture.type === "Pageantry") {
+    return Boolean(fixture.isFinal) || fixture.id === "e-pageant2";
+  }
+  return true;
+}
+
+/** Build ordered family placements from scoresheet points for one event. */
+export function getFamilyPlacementsForEvent(
+  scores: ScoresType,
+  category: string,
+  event: string,
+): FamilyPlacement[] {
+  const maxScore = getMaxScore(event);
+  const eventScores = scores[category]?.[event];
+  if (!eventScores) return [];
+
+  const placements: FamilyPlacement[] = [];
+  for (const family of FAMILIES) {
+    const points = eventScores[family] ?? 0;
+    const pos = getPositionFromScore(points, maxScore);
+    if (pos !== "1" && pos !== "2" && pos !== "3" && pos !== "4") continue;
+    placements.push({
+      family,
+      position: Number(pos) as 1 | 2 | 3 | 4,
+      points,
+    });
+  }
+
+  return placements.sort((a, b) => a.position - b.position);
+}
+
 export function createEmptyScores(): ScoresType {
   const initial: ScoresType = {};
   Object.entries(CATEGORIES).forEach(([cat, events]) => {
