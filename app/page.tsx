@@ -4,10 +4,17 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import WelcomePopup from "@/components/WelcomePopup";
 import SacredScrollFab from "@/components/SacredScrollFab";
-import { GiPolarStar, GiWingedScepter, GiFruitTree } from "react-icons/gi";
-import { FaBolt } from "react-icons/fa";
-import { ChevronDown, Cake, Gift } from "lucide-react";
+import { ChevronDown, Cake, Gift, Trophy, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  FAMILIES,
+  CONDUCT_STARTING_POINTS,
+  type ScoresheetData,
+  createEmptyScoresheetData,
+  getConductScore,
+  getFamilyTotal,
+  parseScoresheetData,
+} from "@/lib/scoresheet";
 
 type Countdown = {
   days: number;
@@ -17,46 +24,7 @@ type Countdown = {
 };
 
 const EVENT_DATE = new Date("2026-08-10T00:00:00");
-
-const EVENT_FAMILIES = [
-  {
-    family: "Family of Dominion",
-    father: "Brother David Abeng",
-    mother: "Sister Divine Edosomwan",
-    icon: GiWingedScepter,
-    colorClass: "text-purple-500 drop-shadow-[0_0_14px_rgba(168,85,247,0.85)]",
-    fatherImage:
-      "https://res.cloudinary.com/dgmo4mkhk/image/upload/v1776934848/photo_2026-04-23_10-00-57_rhas9s.jpg",
-    motherImage: "/family-heads/divine.png",
-  },
-  {
-    family: "Family of Light",
-    father: "Brother Paul Etop",
-    mother: "Sister Sarah Cyril",
-    icon: GiPolarStar,
-    colorClass: "text-yellow-500 drop-shadow-[0_0_14px_rgba(234,179,8,0.85)]",
-    fatherImage: "/family-heads/linho.png",
-    motherImage: "/family-heads/sarah.jpeg",
-  },
-  {
-    family: "Family of Power",
-    father: "Brother Victor Omolu",
-    mother: "Sister Fortune Umoh",
-    icon: FaBolt,
-    colorClass: "text-red-500 drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]",
-    fatherImage: "/family-heads/bassey.png",
-    motherImage: "/family-heads/fortune.png",
-  },
-  {
-    family: "Family of Virtue",
-    father: "Brother Henry Igani",
-    mother: "Sister Mercy Alexander",
-    icon: GiFruitTree,
-    colorClass: "text-green-500 drop-shadow-[0_0_14px_rgba(34,197,94,0.85)]",
-    fatherImage: "/family-heads/henry.png",
-    motherImage: "/family-heads/malexa.jpg",
-  },
-];
+const SHOW_COUNTDOWN = false;
 
 const PORTRAIT_IMAGES = [
   "/virgins/portrait/prime.jpg",
@@ -314,6 +282,10 @@ export default function Home() {
   const [shuffledLandscape, setShuffledLandscape] = useState<string[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [scoresheet, setScoresheet] = useState<ScoresheetData>(
+    createEmptyScoresheetData(),
+  );
+  const [scoresheetLoading, setScoresheetLoading] = useState(true);
   const preloadedImages = useRef<Set<string>>(new Set());
   const heroRef = useRef<HTMLElement | null>(null);
 
@@ -327,6 +299,7 @@ export default function Home() {
 
   // Countdown tick (zeros during SSR so server/client markup match)
   useEffect(() => {
+    if (!SHOW_COUNTDOWN) return;
     setCountdown(getCountdown(new Date()));
     const timer = setInterval(
       () => setCountdown(getCountdown(new Date())),
@@ -452,6 +425,56 @@ export default function Home() {
     fetchBirthdays();
   }, [supabase]);
 
+  // Live scoresheet preview
+  useEffect(() => {
+    async function fetchScores() {
+      setScoresheetLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("scoresheet")
+          .select("data")
+          .eq("id", "current")
+          .maybeSingle();
+
+        if (data && !error) {
+          setScoresheet(parseScoresheetData(data.data));
+        } else {
+          setScoresheet(createEmptyScoresheetData());
+        }
+      } catch (err) {
+        console.error("Scoresheet fetch error:", err);
+      } finally {
+        setScoresheetLoading(false);
+      }
+    }
+
+    fetchScores();
+
+    const channel = supabase
+      .channel("homepage:scoresheet")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "scoresheet",
+          filter: "id=eq.current",
+        },
+        (payload) => {
+          if (payload.new && payload.new.data) {
+            setScoresheet(parseScoresheetData(payload.new.data));
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  const { scores, penalties, familyPenalties } = scoresheet;
+
   const countdownBlocks = useMemo(
     () => [
       { label: "Days", value: countdown.days },
@@ -470,7 +493,9 @@ export default function Home() {
       <section
         ref={heroRef}
         className="relative w-full h-screen overflow-hidden"
-      >        {/* Slide images */}
+      >
+        {" "}
+        {/* Slide images */}
         {activeImages.map((src, idx) => {
           const isCurrent = idx === currentSlide;
           const isPrev = idx === prevSlide;
@@ -509,11 +534,9 @@ export default function Home() {
             </div>
           );
         })}
-
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/90 via-black/50 to-transparent md:via-black/30" />
         <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-
         {/* Hero content */}
         <div className="absolute inset-0 z-30 flex flex-col items-start justify-start pt-32 sm:pt-0 sm:justify-center px-6 sm:px-12 md:px-24 lg:px-32">
           <div className="max-w-4xl animate-in fade-in slide-in-from-left-8 duration-1000">
@@ -553,38 +576,38 @@ export default function Home() {
             )}
           </div>
         </div>
-
         {/* ─── COUNTDOWN — Centered on mobile, bottom-right on sm+ ─── */}
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 sm:left-auto sm:right-10 sm:translate-x-0 sm:bottom-12 z-40">
-          <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-black/40 backdrop-blur-md px-6 py-4 shadow-2xl">
-            {/* Gold top accent line */}
-            <div className="absolute top-0 left-4 right-4 h-[1.5px] bg-gradient-to-r from-transparent via-(--primary-gold) to-transparent" />
+        {SHOW_COUNTDOWN && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 sm:left-auto sm:right-10 sm:translate-x-0 sm:bottom-12 z-40">
+            <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-black/40 backdrop-blur-md px-6 py-4 shadow-2xl">
+              {/* Gold top accent line */}
+              <div className="absolute top-0 left-4 right-4 h-[1.5px] bg-gradient-to-r from-transparent via-(--primary-gold) to-transparent" />
 
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-(--primary-gold) text-center mb-3">
-              Countdown
-            </p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-(--primary-gold) text-center mb-3">
+                Countdown
+              </p>
 
-            <div className="flex items-center justify-center gap-2 sm:gap-4">
-              {countdownBlocks.map((item, i) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 sm:gap-4"
-                >
-                  <CountdownDigit value={item.value} label={item.label} />
-                  {i < countdownBlocks.length - 1 && (
-                    <span className="text-white/30 text-xl sm:text-2xl font-thin mb-5 sm:mb-6">
-                      :
-                    </span>
-                  )}
-                </div>
-              ))}
+              <div className="flex items-center justify-center gap-2 sm:gap-4">
+                {countdownBlocks.map((item, i) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center gap-2 sm:gap-4"
+                  >
+                    <CountdownDigit value={item.value} label={item.label} />
+                    {i < countdownBlocks.length - 1 && (
+                      <span className="text-white/30 text-xl sm:text-2xl font-thin mb-5 sm:mb-6">
+                        :
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Gold bottom accent line */}
+              <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-(--primary-gold)/50 to-transparent" />
             </div>
-
-            {/* Gold bottom accent line */}
-            <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-(--primary-gold)/50 to-transparent" />
           </div>
-        </div>
-
+        )}
         {/* Carousel indicators — hidden on mobile */}
         <div className="absolute right-6 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col items-center gap-4">
           <div className="text-[10px] font-black text-(--primary-gold) tracking-widest my-2 select-none">
@@ -610,135 +633,78 @@ export default function Home() {
             )}
           </div>
         </div>
-
         {/* Scroll cue */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 translate-y-8 flex flex-col items-center gap-1 text-white/40 animate-bounce">
           <ChevronDown size={20} />
         </div>
       </section>
 
-      {/* ─── EVENT FAMILIES — VERTICAL STICKY STACK ─── */}
-      <section className="relative w-full">
-        {/* Section Header — sticky at top */}
-        <div className="relative pb-12 pt-24">
-          <div className="px-6 sm:px-12 md:px-24 lg:px-32">
+      {/* ─── LIVE SCORESHEET PREVIEW ─── */}
+      <section className="relative w-full py-16 sm:py-24">
+        <div className="px-6 sm:px-12 md:px-24 lg:px-32 max-w-6xl mx-auto w-full">
+          <div className="mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-(--primary-gold)/10 border border-(--primary-gold)/20 text-[10px] font-black uppercase tracking-[0.3em] text-(--primary-gold) mb-4">
-              Foundational Pillars
+              <Trophy className="h-3 w-3" />
+              Live Leaderboard
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
-              Event Families
+              Live Scoresheet
             </h2>
             <p className="text-zinc-500 text-sm mt-2 max-w-xl font-medium">
-              Scroll to discover the families anchoring the 35th Anniversary
-              celebration.
+              Family standings at a glance. Tap to open the full scoresheet.
             </p>
           </div>
-        </div>
 
-        {/* Stacking Cards */}
-        <div className="relative px-6 sm:px-12 md:px-24 lg:px-32">
-          {EVENT_FAMILIES.map((item, idx) => {
-            const FamilyIcon = item.icon;
-            const bgColor = item.colorClass.includes("purple")
-              ? "bg-purple-500"
-              : item.colorClass.includes("yellow")
-                ? "bg-yellow-500"
-                : item.colorClass.includes("red")
-                  ? "bg-red-500"
-                  : "bg-green-500";
-            return (
-              <div
-                key={item.family}
-                className="sticky top-0 h-screen flex items-center justify-center"
-                style={{ zIndex: 10 + idx }}
-              >
-                <div
-                  className="group relative w-full max-w-6xl h-[700px] sm:h-[750px] md:h-[600px] rounded-[2.5rem] border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950 overflow-hidden shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] transition-all duration-700 hover:border-(--primary-gold)/30"
-                  style={{
-                    transform: `scale(${1 - idx * 0.02})`,
-                  }}
-                >
-                  {/* Decorative glow */}
-                  <div
-                    className={`absolute -top-20 -right-20 w-60 h-60 rounded-full blur-[100px] opacity-15 pointer-events-none ${bgColor}`}
-                  />
-                  <div
-                    className={`absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-[80px] opacity-10 pointer-events-none ${bgColor}`}
-                  />
-
-                  <div className="relative grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-0 h-full">
-                    {/* Left — Info Panel */}
-                    <div className="flex flex-col justify-center p-8 sm:p-10 md:p-14">
-                      {/* Pillar Icon */}
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="relative">
-                          <div
-                            className={`absolute inset-0 blur-xl opacity-30 dark:opacity-50 ${bgColor}`}
-                          />
-                          <div
-                            className={`relative p-4 rounded-2xl bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/10 ${item.colorClass}`}
-                          >
-                            <FamilyIcon size={28} />
-                          </div>
-                        </div>
-                        <div className="h-px flex-1 bg-gradient-to-r from-zinc-200 dark:from-white/10 to-transparent" />
+          <Link
+            href="/scoresheet"
+            className="group block rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950 p-6 sm:p-8 shadow-[0_0_50px_-12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:border-(--primary-gold)/40 hover:shadow-[0_0_50px_-12px_rgba(143,107,42,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary-gold)"
+          >
+            {scoresheetLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-(--primary-gold)" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {FAMILIES.map((family) => {
+                  const total = getFamilyTotal(
+                    scores,
+                    penalties,
+                    familyPenalties,
+                    family,
+                  );
+                  const conduct = getConductScore(
+                    penalties,
+                    familyPenalties,
+                    family,
+                  );
+                  return (
+                    <div
+                      key={family}
+                      className="bg-zinc-50 dark:bg-zinc-900 border border-(--primary-gold)/30 rounded-2xl p-6 text-center relative overflow-hidden"
+                    >
+                      <div className="absolute -right-4 -top-4 opacity-[0.03] dark:opacity-[0.02] pointer-events-none transition-transform duration-500 group-hover:scale-110">
+                        <Trophy className="h-32 w-32" />
                       </div>
-
-                      <h3 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight leading-none mb-4">
-                        {item.family}
+                      <h3 className="text-sm font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-2 relative z-10">
+                        {family}
                       </h3>
-                      <p className="text-[10px] font-black text-zinc-400 dark:text-white/25 uppercase tracking-[0.3em] mb-4">
-                        35th Anniversary Pillar
+                      <p className="text-4xl sm:text-5xl font-black text-(--primary-gold) tracking-tighter relative z-10">
+                        {total}
+                      </p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mt-2 relative z-10">
+                        Conduct: {conduct}/{CONDUCT_STARTING_POINTS}
                       </p>
                     </div>
-
-                    {/* Right — Portraits */}
-                    <div className="grid grid-cols-2 gap-px h-[450px] md:h-[600px]">
-                      {/* Father Portrait */}
-                      <div className="group/portrait relative overflow-hidden">
-                        <img
-                          src={item.fatherImage}
-                          alt={item.father}
-                          className="h-full w-full object-cover transition-transform duration-1000 group-hover/portrait:scale-110 grayscale-[20%] group-hover/portrait:grayscale-0"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
-                        <div className="absolute bottom-6 left-6 right-6">
-                          <p className="text-[10px] font-black text-(--primary-gold) uppercase tracking-[0.2em] mb-1">
-                            Family Father
-                          </p>
-                          <p className="text-lg font-black text-white tracking-tight leading-none">
-                            {item.father.replace("Brother ", "Bro. ")}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Mother Portrait */}
-                      <div className="group/portrait relative overflow-hidden">
-                        <img
-                          src={item.motherImage}
-                          alt={item.mother}
-                          className="h-full w-full object-cover transition-transform duration-1000 group-hover/portrait:scale-110 grayscale-[20%] group-hover/portrait:grayscale-0"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/portrait:opacity-100 transition-opacity" />
-                        <div className="absolute bottom-6 left-6 right-6">
-                          <p className="text-[10px] font-black text-primary-gold uppercase tracking-[0.2em] mb-1">
-                            Family Mother
-                          </p>
-                          <p className="text-lg font-black text-white tracking-tight leading-none">
-                            {item.mother.replace("Sister ", "Sis. ")}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            )}
 
-        {/* Bottom spacer for scroll clearance */}
-        <div className="h-24" />
+            <p className="mt-6 text-center text-[11px] font-black uppercase tracking-[0.25em] text-(--primary-gold) group-hover:underline underline-offset-4">
+              View full scoresheet
+            </p>
+          </Link>
+        </div>
       </section>
 
       {/* ─── BIRTHDAY CELEBRATIONS ─── */}
@@ -852,11 +818,8 @@ export default function Home() {
 
                       {/* Birthday message */}
                       <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                        Wishing you a wonderful{" "}
-                        <span className="font-bold text-amber-600 dark:text-amber-400">
-                          +1
-                        </span>{" "}
-                        birthday filled with love, grace & blessings! 🎉
+                        Wishing you a wonderful birthday filled with love, grace
+                        & blessings! 🎉
                       </p>
 
                       {/* Gift icon divider */}

@@ -119,7 +119,8 @@ export type ScoresheetData = {
 export function getMaxScore(event: string): number {
   if (event === "Football") return 100;
   if (event === "Volleyball") return 100;
-  if (event === "Debate") return 100;
+  if (event === "Debate") return 200;
+  if (event === "Essay Writing") return 100;
   if (event === "Pageantry") return 200;
   return 50;
 }

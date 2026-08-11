@@ -93,8 +93,8 @@ export const EVENT_POINTS: Partial<Record<EventName, EventPointsInfo>> = {
   // },
   Chess: { maxPoints: 50, unit: "total" },
   Scrabble: { maxPoints: 50, unit: "total" },
-  Debate: { maxPoints: 100, unit: "total" },
-  "Essay Writing": { maxPoints: 50, unit: "total" },
+  Debate: { maxPoints: 200, unit: "total" },
+  "Essay Writing": { maxPoints: 100, unit: "total" },
   Pageantry: { maxPoints: 200, unit: "total" },
 };
 
