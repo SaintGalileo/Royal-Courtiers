@@ -75,18 +75,21 @@ export function parseMatchResults(raw: unknown): MatchResultsData {
   return out;
 }
 
+/**
+ * Persist every entered result (draft or published).
+ * Public schedule still only shows rows with status === "final".
+ */
 export function serializeMatchResults(data: MatchResultsData): MatchResultsData {
   const out: MatchResultsData = {};
   for (const [matchId, result] of Object.entries(data)) {
-    // Unchecked admin entries are drafts only and must not be persisted.
-    if (result.status !== "final") continue;
-
     const scoreA = normalizeNonNegInt(result.scoreA);
     const scoreB = normalizeNonNegInt(result.scoreB);
+    const status: MatchResultStatus =
+      result.status === "final" ? "final" : "pending";
     const next: MatchResult = {
       scoreA,
       scoreB,
-      status: "final",
+      status,
     };
     if (
       scoreA === scoreB &&

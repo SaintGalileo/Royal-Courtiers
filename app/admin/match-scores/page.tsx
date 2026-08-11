@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, RefreshCw, Save } from "lucide-react";
 import { IoMaleSharp, IoFemaleSharp, IoMaleFemaleSharp } from "react-icons/io5";
 import { createClient } from "@/lib/supabase/client";
@@ -112,7 +112,7 @@ function MatchScoreEditor({
 }: {
   fixture: ScoreableFixture;
   results: MatchResultsData;
-  onChange: (next: MatchResultsData) => void;
+  onChange: (updater: (prev: MatchResultsData) => MatchResultsData) => void;
 }) {
   const mode = getScoringMode(fixture.type)!;
   const winnerMode = isWinnerMode(fixture.type);
@@ -133,36 +133,48 @@ function MatchScoreEditor({
   const outcome = winnerOutcomeLabel(fixture.round);
 
   const commit = (partial: Partial<MatchResult>) => {
-    const nextA = partial.scoreA ?? scoreA;
-    const nextB = partial.scoreB ?? scoreB;
-    const nextStatus = partial.status ?? status;
-    const next: MatchResult = {
-      scoreA: nextA,
-      scoreB: nextB,
-      status: nextStatus,
-    };
-    if (fixture.type === "Football" && nextA === nextB) {
-      const pensTouched =
-        "penaltyA" in partial ||
-        "penaltyB" in partial ||
-        (existing?.penaltyA !== undefined && existing?.penaltyB !== undefined);
-      if (pensTouched) {
-        next.penaltyA = partial.penaltyA ?? existing?.penaltyA ?? 0;
-        next.penaltyB = partial.penaltyB ?? existing?.penaltyB ?? 0;
+    onChange((prev) => {
+      const current = getMatchResult(prev, fixture.id);
+      const nextA = partial.scoreA ?? current?.scoreA ?? 0;
+      const nextB = partial.scoreB ?? current?.scoreB ?? 0;
+      const nextStatus = partial.status ?? current?.status ?? "pending";
+      const next: MatchResult = {
+        scoreA: nextA,
+        scoreB: nextB,
+        status: nextStatus,
+      };
+      if (fixture.type === "Football" && nextA === nextB) {
+        const pensTouched =
+          "penaltyA" in partial ||
+          "penaltyB" in partial ||
+          (current?.penaltyA !== undefined && current?.penaltyB !== undefined);
+        if (pensTouched) {
+          next.penaltyA = partial.penaltyA ?? current?.penaltyA ?? 0;
+          next.penaltyB = partial.penaltyB ?? current?.penaltyB ?? 0;
+        }
       }
-    }
-    if (
-      next.status === "final" &&
-      !hasDecisiveWinner(next, fixture.type === "Football")
-    ) {
-      next.status = "pending";
-    }
-    onChange(setMatchResult(results, fixture.id, next));
+
+      const allowPens = fixture.type === "Football";
+      const wasDecisive = current
+        ? hasDecisiveWinner(current, allowPens)
+        : false;
+      const nowDecisive = hasDecisiveWinner(next, allowPens);
+
+      // Auto-publish when a score first becomes decisive (same as winner-mode events).
+      if (partial.status === undefined && nowDecisive && !wasDecisive) {
+        next.status = "final";
+      }
+
+      if (next.status === "final" && !nowDecisive) {
+        next.status = "pending";
+      }
+      return setMatchResult(prev, fixture.id, next);
+    });
   };
 
   const pickWinner = (side: WinnerSide) => {
-    onChange(
-      setMatchResult(results, fixture.id, resultFromWinner(side, "final")),
+    onChange((prev) =>
+      setMatchResult(prev, fixture.id, resultFromWinner(side, "final")),
     );
   };
 
@@ -295,7 +307,9 @@ function MatchScoreEditor({
         {hasEntry && (
           <button
             type="button"
-            onClick={() => onChange(clearMatchResult(results, fixture.id))}
+            onClick={() =>
+              onChange((prev) => clearMatchResult(prev, fixture.id))
+            }
             className="text-xs font-bold text-red-500 hover:text-red-600"
           >
             Clear
@@ -328,7 +342,7 @@ function MatchScoreEditor({
         )}
         {!winnerMode && hasEntry && hasWinner && status === "pending" && (
           <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
-            Not selected — this entry will not be saved
+            Draft — saved on Save, but not shown publicly until published
           </span>
         )}
         {!winnerMode && hasEntry && status === "final" && (
@@ -349,6 +363,8 @@ export default function AdminMatchScoresPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const supabase = useMemo(() => createClient(), []);
+  const resultsRef = useRef(results);
+  resultsRef.current = results;
 
   const fixtures = useMemo(
     () => getScoreableFixtures(activeTab, results),
@@ -364,14 +380,22 @@ export default function AdminMatchScoresPage() {
         .eq("id", "current")
         .maybeSingle();
 
-      if (data && !error) {
+      if (error) {
+        console.error(error);
+        toast.error(
+          `Failed to load match results: ${error.message}. Existing edits were kept.`,
+        );
+        return;
+      }
+
+      if (data) {
         setResults(parseMatchResults(data.data));
       } else {
         setResults(createEmptyMatchResults());
       }
     } catch (err) {
       console.error("Fetch error:", err);
-      toast.error("Failed to load match results.");
+      toast.error("Failed to load match results. Existing edits were kept.");
     } finally {
       setIsLoading(false);
     }
@@ -384,8 +408,9 @@ export default function AdminMatchScoresPage() {
   }, [supabase]);
 
   const handleSave = async () => {
-    const allFixtures = getScoreableFixtures(undefined, results);
-    const invalidEntry = Object.entries(results).find(([matchId, result]) => {
+    const latest = resultsRef.current;
+    const allFixtures = getScoreableFixtures(undefined, latest);
+    const invalidEntry = Object.entries(latest).find(([matchId, result]) => {
       if (result.status !== "final") return false;
       const fixture = allFixtures.find((item) => item.id === matchId);
       return !hasDecisiveWinner(result, fixture?.type === "Football");
@@ -395,31 +420,73 @@ export default function AdminMatchScoresPage() {
       const fixture = allFixtures.find((item) => item.id === invalidEntry[0]);
       toast.error(
         fixture
-          ? `${fixture.type} · ${fixture.round} must have a winner before scores can be saved.`
-          : "Every saved match must have a winner.",
+          ? `${fixture.type} · ${fixture.round} must have a winner before published scores can be saved.`
+          : "Every published match must have a winner.",
       );
       return;
     }
 
     setIsSaving(true);
     try {
-      const payload = serializeMatchResults(results);
-      const { error } = await supabase.from("match_results").upsert(
-        {
-          id: "current",
-          data: payload,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
-      );
+      const payload = serializeMatchResults(latest);
+      const updatedAt = new Date().toISOString();
+
+      // Prefer UPDATE + select so we can detect silent RLS / 0-row writes.
+      let { data: written, error } = await supabase
+        .from("match_results")
+        .update({ data: payload, updated_at: updatedAt })
+        .eq("id", "current")
+        .select("data")
+        .maybeSingle();
+
+      if (!error && !written) {
+        const inserted = await supabase
+          .from("match_results")
+          .insert({ id: "current", data: payload, updated_at: updatedAt })
+          .select("data")
+          .maybeSingle();
+        written = inserted.data;
+        error = inserted.error;
+      }
 
       if (error) {
         console.error(error);
         toast.error(
           `Failed to save: ${error.message}. If this mentions permissions or a missing table, run match-results-schema.sql in the Supabase SQL Editor.`,
         );
+        return;
+      }
+
+      if (!written) {
+        toast.error(
+          "Save did not persist (no row returned). Check Supabase RLS policies for match_results.",
+        );
+        return;
+      }
+
+      const confirmed = parseMatchResults(written.data);
+      setResults(confirmed);
+      resultsRef.current = confirmed;
+
+      const confirmedPublished = Object.values(confirmed).filter(
+        (result) => result.status === "final",
+      ).length;
+      const confirmedDrafts = Object.keys(confirmed).length - confirmedPublished;
+
+      if (confirmedPublished === 0 && confirmedDrafts > 0) {
+        toast.success(
+          `Saved ${confirmedDrafts} draft${confirmedDrafts === 1 ? "" : "s"}. Check “Publish on schedule” to show scores publicly.`,
+        );
+      } else if (confirmedDrafts > 0) {
+        toast.success(
+          `Saved ${confirmedPublished} published and ${confirmedDrafts} draft result${confirmedDrafts === 1 ? "" : "s"}.`,
+        );
       } else {
-        toast.success("Match scores saved.");
+        toast.success(
+          confirmedPublished > 0
+            ? `Saved ${confirmedPublished} published result${confirmedPublished === 1 ? "" : "s"}.`
+            : "Match scores saved.",
+        );
       }
     } catch (err) {
       console.error("Save error:", err);
@@ -437,8 +504,9 @@ export default function AdminMatchScoresPage() {
             Match Scores
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Enter live results. Only published results appear on Sports Arena
-            and Extracurriculars. Chess, Scrabble, and Debate use a winner pick.
+            Enter live results — all scores are saved. Only published results
+            appear on Sports Arena and Extracurriculars. Chess, Scrabble, and
+            Debate use a winner pick.
           </p>
         </div>
 
